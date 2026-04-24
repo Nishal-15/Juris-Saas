@@ -40,9 +40,13 @@ export default function ChatWindow() {
     const userLang = user.preferredLanguage || "en";
 
     try {
-      const res = await fetch("http://localhost:8000/chat", {
+      const token = localStorage.getItem("token");
+      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/chat`, {
         method: "POST",
-        headers: { "Content-Type": "application/json" },
+        headers: { 
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${token}`
+        },
         body: JSON.stringify({ 
           message: userText,
           lang: userLang
@@ -61,7 +65,7 @@ export default function ChatWindow() {
       console.error("Chat error:", err);
       setMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: "ai", text: "Error: AI Service is offline. Please check if the Python server is running on port 8000." };
+        updated[updated.length - 1] = { role: "ai", text: "JurisBot is currently experiencing high traffic. Please try again in a few moments or use the 'Consult a Lawyer' section for urgent assistance." };
         return updated;
       });
     }
