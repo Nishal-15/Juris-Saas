@@ -1,0 +1,17 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <rect width="64" height="64" rx="14" fill="#0c1221"/>
+  <rect x="1" y="1" width="62" height="62" rx="13" fill="none" stroke="#c9a84c" stroke-width="2" opacity="0.4"/>
+  <!-- Balance scale -->
+  <line x1="32" y1="14" x2="32" y2="46" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="18" y1="22" x2="46" y2="22" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+  <circle cx="32" cy="13" r="2.5" fill="#c9a84c"/>
+  <!-- Left pan -->
+  <path d="M18 22 Q14 30 18 34 Q22 38 26 34 Q30 30 26 22 Z" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+  <!-- Right pan -->
+  <path d="M46 22 Q42 30 46 34 Q50 38 54 34 Q58 30 54 22 Z" fill="none" stroke="#c9a84c" stroke-width="2" stroke-linecap="round"/>
+  <!-- Base -->
+  <line x1="24" y1="48" x2="40" y2="48" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+  <line x1="32" y1="46" x2="32" y2="48" stroke="#c9a84c" stroke-width="2.5" stroke-linecap="round"/>
+  <!-- JB text -->
+  <text x="32" y="58" font-family="Arial" font-size="7" font-weight="bold" fill="#c9a84c" text-anchor="middle" letter-spacing="1">JURISBOT</text>
+</svg>

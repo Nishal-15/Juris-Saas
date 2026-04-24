@@ -1,0 +1,99 @@
+/* Legal Vault */
+.dv-page { display: flex; height: 100vh; background: #0d1117; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+.dv-body { flex: 1; overflow-y: auto; padding: 36px 44px; }
+.dv-body::-webkit-scrollbar { width: 4px; }
+.dv-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+
+.dv-header { margin-bottom: 28px; }
+.dv-title { font-size: 26px; font-weight: 800; color: #f0f0f0; letter-spacing: -0.4px; margin: 0 0 4px; }
+.dv-subtitle { font-size: 13.5px; color: rgba(255,255,255,0.35); margin: 0; }
+
+/* Upload Zone */
+.dv-upload-zone {
+  display: flex; flex-direction: column; align-items: center; gap: 10px;
+  border: 2px dashed rgba(201,168,76,0.2);
+  border-radius: 14px;
+  padding: 36px 24px;
+  cursor: pointer;
+  transition: all 0.2s;
+  margin-bottom: 28px;
+  background: rgba(201,168,76,0.02);
+}
+.dv-upload-zone:hover, .dv-upload-zone.drag-over {
+  border-color: rgba(201,168,76,0.45);
+  background: rgba(201,168,76,0.05);
+}
+.dv-upload-zone.uploading { opacity: 0.65; pointer-events: none; }
+
+.dv-upload-icon {
+  width: 48px; height: 48px;
+  background: rgba(201,168,76,0.08);
+  border: 1px solid rgba(201,168,76,0.18);
+  border-radius: 12px;
+  display: flex; align-items: center; justify-content: center;
+}
+.dv-upload-icon svg { width: 22px; height: 22px; stroke: #c9a84c; }
+
+.dv-upload-text { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.7); }
+.dv-upload-hint { font-size: 12px; color: rgba(255,255,255,0.25); }
+
+/* Empty */
+.dv-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 60px 40px; color: rgba(255,255,255,0.25); font-size: 14px; text-align: center;
+}
+.dv-empty svg { width: 40px; height: 40px; opacity: 0.2; }
+
+.dv-spinner {
+  width: 24px; height: 24px;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-top-color: #c9a84c;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Grid */
+.dv-grid { display: flex; flex-direction: column; gap: 8px; }
+
+.dv-doc-card {
+  display: flex; align-items: center; gap: 16px;
+  background: #161b25;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 12px;
+  padding: 14px 18px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.dv-doc-card:hover { border-color: rgba(201,168,76,0.18); background: rgba(255,255,255,0.015); }
+
+.dv-doc-icon {
+  width: 40px; height: 40px;
+  background: rgba(78,205,196,0.08);
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.dv-doc-icon svg { width: 20px; height: 20px; stroke: #4ecdc4; }
+
+.dv-doc-info { flex: 1; min-width: 0; }
+.dv-doc-name { font-size: 14px; font-weight: 600; color: rgba(255,255,255,0.82); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; margin-bottom: 5px; }
+.dv-doc-meta { display: flex; align-items: center; gap: 10px; font-size: 12px; color: rgba(255,255,255,0.28); }
+
+.dv-ext-badge {
+  font-size: 9px; font-weight: 800; letter-spacing: 0.5px;
+  padding: 2px 7px; border-radius: 5px;
+  background: rgba(78,205,196,0.1); color: #4ecdc4;
+}
+
+.dv-doc-open {
+  width: 34px; height: 34px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.07);
+  border-radius: 9px;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer; transition: all 0.18s; flex-shrink: 0;
+}
+.dv-doc-open svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.4); }
+.dv-doc-open:hover { border-color: rgba(201,168,76,0.25); }
+.dv-doc-open:hover svg { stroke: #c9a84c; }

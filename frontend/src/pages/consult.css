@@ -1,0 +1,142 @@
+/* Expert Advocates / Consult Lawyer */
+.cl-page { display: flex; height: 100vh; background: #0d1117; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+.cl-body { flex: 1; overflow-y: auto; padding: 36px 44px; }
+.cl-body::-webkit-scrollbar { width: 4px; }
+.cl-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+
+.cl-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
+.cl-title { font-size: 26px; font-weight: 800; color: #f0f0f0; letter-spacing: -0.4px; margin: 0 0 4px; }
+.cl-subtitle { font-size: 13.5px; color: rgba(255,255,255,0.35); margin: 0; }
+
+.cl-clear-filter {
+  padding: 9px 16px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  color: rgba(255,255,255,0.45);
+  font-size: 12.5px; font-weight: 600;
+  cursor: pointer; font-family: inherit; transition: all 0.2s;
+}
+.cl-clear-filter:hover { border-color: rgba(201,168,76,0.25); color: #c9a84c; }
+
+/* Empty */
+.cl-empty {
+  display: flex; flex-direction: column; align-items: center; gap: 14px;
+  padding: 80px 40px; color: rgba(255,255,255,0.25); font-size: 14px; text-align: center;
+}
+.cl-empty svg { width: 40px; height: 40px; opacity: 0.2; }
+.cl-spinner {
+  width: 26px; height: 26px;
+  border: 2px solid rgba(255,255,255,0.08);
+  border-top-color: #c9a84c;
+  border-radius: 50%;
+  animation: spin 0.9s linear infinite;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* Grid */
+.cl-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+/* Card */
+.cl-card {
+  background: #161b25;
+  border: 1px solid rgba(255,255,255,0.06);
+  border-radius: 16px;
+  padding: 24px 20px;
+  display: flex; flex-direction: column; align-items: center;
+  gap: 10px;
+  position: relative;
+  transition: all 0.2s;
+}
+.cl-card:hover { border-color: rgba(201,168,76,0.18); transform: translateY(-2px); }
+
+.cl-pro-badge {
+  position: absolute; top: 16px; left: 16px;
+  background: #c9a84c; color: #000;
+  font-size: 9px; font-weight: 900; letter-spacing: 1px;
+  padding: 3px 8px; border-radius: 5px;
+}
+
+/* Avatar */
+.cl-avatar-wrap {
+  margin-top: 8px;
+  width: 70px; height: 70px;
+  border-radius: 50%;
+  background: rgba(201,168,76,0.06);
+  border: 2px solid rgba(201,168,76,0.2);
+  display: flex; align-items: center; justify-content: center;
+}
+.cl-avatar {
+  font-size: 22px; font-weight: 800;
+  color: #c9a84c;
+}
+
+.cl-name { font-size: 17px; font-weight: 800; color: #f0f0f0; text-align: center; }
+
+.cl-location {
+  display: flex; align-items: center; gap: 5px;
+  font-size: 10px; font-weight: 700;
+  color: rgba(255,255,255,0.28); letter-spacing: 1px; text-transform: uppercase;
+}
+.cl-location svg { width: 11px; height: 11px; stroke: rgba(255,255,255,0.25); flex-shrink: 0; }
+
+.cl-bio {
+  font-size: 13px; color: rgba(255,255,255,0.45);
+  text-align: center; line-height: 1.55;
+  margin: 4px 0;
+}
+
+/* Buttons */
+.cl-btn {
+  width: 100%; padding: 12px;
+  border-radius: 10px; border: none;
+  font-size: 13.5px; font-weight: 700;
+  cursor: pointer; font-family: inherit;
+  transition: all 0.2s;
+  display: flex; align-items: center; justify-content: center; gap: 8px;
+}
+.cl-btn-book { background: #c9a84c; color: #000; }
+.cl-btn-book:hover:not(:disabled) { background: #e8c96a; }
+.cl-btn-book:disabled { opacity: 0.6; cursor: not-allowed; }
+
+.cl-btn-active {
+  background: rgba(78,205,196,0.1);
+  color: #4ecdc4;
+  border: 1px solid rgba(78,205,196,0.25) !important;
+}
+.cl-btn-active:hover { background: rgba(78,205,196,0.18); }
+
+.cl-active-dot {
+  width: 7px; height: 7px; border-radius: 50%;
+  background: #4ecdc4;
+  animation: pulse 1.5s infinite;
+}
+
+.cl-btn-pending {
+  background: rgba(255,255,255,0.03);
+  color: rgba(255,255,255,0.3);
+  border: 1px solid rgba(255,255,255,0.06) !important;
+  cursor: not-allowed;
+}
+
+/* Tags */
+.cl-tags-section { width: 100%; margin-top: 4px; }
+.cl-tags-label {
+  display: block; font-size: 9px; font-weight: 800;
+  color: rgba(255,255,255,0.2); letter-spacing: 1.2px;
+  text-transform: uppercase; margin-bottom: 8px;
+}
+.cl-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+.cl-tag {
+  padding: 4px 11px; border-radius: 100px;
+  font-size: 11px; font-weight: 600;
+  background: rgba(255,255,255,0.05);
+  color: rgba(255,255,255,0.45);
+  border: 1px solid rgba(255,255,255,0.06);
+}
+
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }

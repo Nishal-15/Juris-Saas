@@ -1,0 +1,35 @@
+# Dependency directories
+node_modules/
+jspm_packages/
+venv/
+.venv/
+env/
+.env
+
+# Build outputs
+dist/
+build/
+.next/
+out/
+
+# IDE files
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# AI Service temporary/data files
+backend/ai-service/__pycache__/
+backend/ai-service/faiss.index
+backend/ai-service/meta.npy
+backend/ai-service/*.log
+backend/ai-service/laws/

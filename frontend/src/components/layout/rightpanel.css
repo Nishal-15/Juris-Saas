@@ -1,0 +1,189 @@
+/* ── Right Panel — Premium Design ── */
+
+.rp-shell {
+  width: 270px;
+  min-width: 270px;
+  background: #161b25;
+  border-left: 1px solid rgba(255,255,255,0.06);
+  height: 100vh;
+  overflow-y: auto;
+  padding: 24px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 28px;
+  font-family: 'Inter', system-ui, sans-serif;
+  position: sticky;
+  top: 0;
+}
+.rp-shell::-webkit-scrollbar { width: 3px; }
+.rp-shell::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
+
+/* Section */
+.rp-section { display: flex; flex-direction: column; gap: 10px; }
+
+.rp-section-head {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 9.5px;
+  font-weight: 800;
+  color: rgba(255,255,255,0.25);
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  margin-bottom: 4px;
+}
+.rp-section-head svg { width: 13px; height: 13px; stroke: #c9a84c; flex-shrink: 0; }
+
+.rp-empty {
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.2);
+  padding: 12px 0;
+}
+
+/* ── Alarm Card ── */
+.rp-alarm-card {
+  background: rgba(239,68,68,0.05);
+  border: 1px solid rgba(239,68,68,0.15);
+  border-radius: 11px;
+  padding: 14px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: border-color 0.2s;
+}
+.rp-alarm-card:hover { border-color: rgba(239,68,68,0.3); }
+.rp-alarm-card.urgent {
+  background: rgba(239,68,68,0.07);
+  border-color: rgba(239,68,68,0.25);
+  animation: alarmPulse 2s infinite;
+}
+
+@keyframes alarmPulse {
+  0%, 100% { box-shadow: none; }
+  50% { box-shadow: 0 0 0 3px rgba(239,68,68,0.08); }
+}
+
+.rp-alarm-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rp-alarm-label {
+  font-size: 9px;
+  font-weight: 800;
+  color: #ef4444;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+}
+
+.rp-alarm-countdown {
+  font-size: 11px;
+  font-weight: 700;
+  color: #c9a84c;
+  padding: 2px 8px;
+  background: rgba(201,168,76,0.1);
+  border-radius: 100px;
+}
+.rp-alarm-countdown.urgent {
+  color: #ef4444;
+  background: rgba(239,68,68,0.1);
+}
+
+.rp-alarm-date {
+  font-size: 15px;
+  font-weight: 800;
+  color: #f0f0f0;
+  letter-spacing: -0.2px;
+}
+
+.rp-alarm-loc {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.38);
+}
+.rp-alarm-loc svg { width: 11px; height: 11px; flex-shrink: 0; }
+
+.rp-alarm-title {
+  font-size: 12px;
+  color: rgba(255,255,255,0.55);
+  line-height: 1.4;
+  margin-top: 2px;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+/* ── Case Card ── */
+.rp-case-card {
+  background: rgba(255,255,255,0.02);
+  border: 1px solid rgba(255,255,255,0.05);
+  border-radius: 11px;
+  padding: 13px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  cursor: pointer;
+  transition: all 0.18s;
+}
+.rp-case-card:hover {
+  background: rgba(255,255,255,0.04);
+  border-color: rgba(201,168,76,0.15);
+}
+
+.rp-case-top {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.rp-case-type {
+  font-size: 9.5px;
+  font-weight: 800;
+  color: rgba(59,130,246,0.9);
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+  background: rgba(59,130,246,0.08);
+  padding: 2px 8px;
+  border-radius: 100px;
+}
+
+.rp-case-status {
+  font-size: 10px;
+  font-weight: 700;
+}
+
+.rp-case-title {
+  font-size: 12.5px;
+  font-weight: 600;
+  color: rgba(255,255,255,0.8);
+  line-height: 1.4;
+  display: -webkit-box;
+  -webkit-line-clamp: 2;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.rp-case-advocate {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 11.5px;
+  color: rgba(255,255,255,0.38);
+  margin-top: 2px;
+}
+
+.rp-check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  background: rgba(16,185,129,0.1);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.rp-check svg { width: 9px; height: 9px; }

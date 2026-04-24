@@ -1,0 +1,200 @@
+/* Custom DatePicker — JurisBot Gold Theme */
+
+.dp-wrapper { display: flex; flex-direction: column; gap: 6px; position: relative; }
+
+/* Trigger Button */
+.dp-trigger {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  background: rgba(255,255,255,0.04);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 9px;
+  color: rgba(255,255,255,0.85);
+  font-size: 13.5px;
+  padding: 10px 14px;
+  font-family: inherit;
+  cursor: pointer;
+  text-align: left;
+  width: 100%;
+  transition: border-color 0.2s;
+}
+.dp-trigger svg { width: 16px; height: 16px; stroke: #c9a84c; flex-shrink: 0; }
+.dp-trigger:hover { border-color: rgba(201,168,76,0.35); }
+
+/* Overlay */
+.dp-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(0,0,0,0.6);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeOverlay 0.18s ease;
+}
+
+@keyframes fadeOverlay {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+
+/* Modal */
+.dp-modal {
+  background: #1a2035;
+  border-radius: 18px;
+  overflow: hidden;
+  width: 320px;
+  box-shadow: 0 32px 80px rgba(0,0,0,0.6);
+  animation: slideUp 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+@keyframes slideUp {
+  from { opacity: 0; transform: translateY(20px) scale(0.97); }
+  to   { opacity: 1; transform: translateY(0) scale(1); }
+}
+
+/* Header */
+.dp-header {
+  background: #c9a84c;
+  padding: 20px 24px 18px;
+}
+
+.dp-header-label {
+  display: block;
+  font-size: 10px;
+  font-weight: 800;
+  letter-spacing: 2px;
+  color: rgba(0,0,0,0.6);
+  margin-bottom: 8px;
+}
+
+.dp-header-date {
+  display: block;
+  font-size: 30px;
+  font-weight: 800;
+  color: #000;
+  letter-spacing: -0.5px;
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+/* Calendar Body */
+.dp-body {
+  padding: 18px 20px 12px;
+}
+
+/* Nav */
+.dp-nav {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 16px;
+}
+
+.dp-month-label {
+  font-size: 14px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.85);
+  font-family: 'Inter', system-ui, sans-serif;
+}
+
+.dp-nav-btns { display: flex; gap: 4px; }
+
+.dp-nav-btn {
+  width: 30px; height: 30px;
+  background: rgba(255,255,255,0.05);
+  border: 1px solid rgba(255,255,255,0.08);
+  border-radius: 8px;
+  display: flex; align-items: center; justify-content: center;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  transition: all 0.15s;
+}
+.dp-nav-btn svg { width: 14px; height: 14px; }
+.dp-nav-btn:hover { background: rgba(201,168,76,0.1); border-color: rgba(201,168,76,0.25); color: #c9a84c; }
+
+/* Grid */
+.dp-grid {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 3px;
+}
+
+.dp-day-name {
+  font-size: 11px;
+  font-weight: 700;
+  color: rgba(255,255,255,0.28);
+  text-align: center;
+  padding: 4px 0;
+  letter-spacing: 0.3px;
+}
+
+.dp-day {
+  aspect-ratio: 1;
+  border: none;
+  border-radius: 50%;
+  background: transparent;
+  color: rgba(255,255,255,0.72);
+  font-size: 13px;
+  font-weight: 500;
+  font-family: 'Inter', system-ui, sans-serif;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  transition: all 0.15s;
+  width: 36px; height: 36px;
+  margin: 0 auto;
+}
+
+.dp-day:hover {
+  background: rgba(201,168,76,0.12);
+  color: #c9a84c;
+}
+
+.dp-day.today {
+  border: 2px solid rgba(201,168,76,0.5);
+  color: #c9a84c;
+  font-weight: 700;
+}
+
+.dp-day.selected {
+  background: #c9a84c;
+  color: #000;
+  font-weight: 800;
+  box-shadow: 0 4px 14px rgba(201,168,76,0.35);
+}
+.dp-day.selected:hover { background: #e8c96a; }
+
+/* Footer */
+.dp-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 8px;
+  padding: 12px 20px 18px;
+  border-top: 1px solid rgba(255,255,255,0.05);
+}
+
+.dp-btn-cancel, .dp-btn-ok {
+  padding: 8px 18px;
+  border: none;
+  border-radius: 8px;
+  font-size: 12px;
+  font-weight: 800;
+  letter-spacing: 0.8px;
+  cursor: pointer;
+  font-family: inherit;
+  transition: all 0.15s;
+}
+
+.dp-btn-cancel {
+  background: transparent;
+  color: rgba(255,255,255,0.4);
+}
+.dp-btn-cancel:hover { color: rgba(255,255,255,0.75); }
+
+.dp-btn-ok {
+  background: #c9a84c;
+  color: #000;
+}
+.dp-btn-ok:hover { background: #e8c96a; }

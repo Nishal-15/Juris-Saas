@@ -1,0 +1,27 @@
+/* ── Global Citizen Layout ── */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html, body, #root {
+  height: 100%;
+  background: #0d1117;
+  font-family: 'Inter', system-ui, sans-serif;
+  color: rgba(255,255,255,0.82);
+  -webkit-font-smoothing: antialiased;
+}
+
+.layout {
+  display: flex;
+  height: 100vh;
+  overflow: hidden;
+  background: #0d1117;
+}
+
+.layout-center {
+  flex: 1;
+  overflow-y: auto;
+  min-width: 0;
+}
+.layout-center::-webkit-scrollbar { width: 4px; }
+.layout-center::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }

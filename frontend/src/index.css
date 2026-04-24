@@ -1,0 +1,153 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Outfit:wght@600;700;800&display=swap');
+
+:root {
+  /* ── Color Tokens ── */
+  --bg:         #0d1117;
+  --bg-2:       #161b25;
+  --bg-3:       #1c2333;
+  --border:     rgba(255,255,255,0.06);
+  --gold:       #c9a84c;
+  --gold-lite:  #e8c96a;
+  --gold-dim:   rgba(201,168,76,0.09);
+  --white:      #f0f0f0;
+  --muted:      rgba(255,255,255,0.38);
+  --muted-2:    rgba(255,255,255,0.22);
+
+  /* ── Typography ── */
+  --font-body:    'Inter', system-ui, sans-serif;
+  --font-display: 'Outfit', system-ui, sans-serif;
+
+  /* ── Misc ── */
+  --shadow:     0 10px 30px -5px rgba(0,0,0,0.5);
+  --transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
+  --radius:     12px;
+}
+
+
+*, *::before, *::after { 
+  box-sizing: border-box; 
+  margin: 0; 
+  padding: 0; 
+  font-family: var(--font-main);
+}
+
+html { font-size: 16px; }
+
+body {
+  background: var(--bg);
+  color: var(--white);
+  min-height: 100vh;
+  -webkit-font-smoothing: antialiased;
+  overflow-x: hidden;
+}
+
+a { text-decoration: none; color: var(--gold); }
+
+input, button, select, textarea {
+  font-family: var(--font-body);
+  outline: none;
+}
+
+/* ── Global Dropdown Styling ── */
+select {
+  background-color: var(--bg-2);
+  color: var(--white);
+  border: 1px solid var(--border);
+  padding: 10px 16px;
+  border-radius: 10px;
+  cursor: pointer;
+  appearance: none;
+  background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24' fill='none' stroke='%23c9a84c' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+  background-repeat: no-repeat;
+  background-position: right 12px center;
+  background-size: 16px;
+  padding-right: 40px;
+  transition: all 0.2s;
+}
+
+select:focus {
+  border-color: var(--gold);
+  background-color: var(--bg-3);
+  box-shadow: 0 0 0 4px var(--gold-dim);
+}
+
+option {
+  background-color: var(--bg-2);
+  color: var(--white);
+  padding: 12px;
+}
+
+::-webkit-scrollbar { width: 4px; height: 4px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: var(--bg-3); border-radius: 4px; }
+
+/* ── Shared utility classes ── */
+.tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 4px 10px;
+  border-radius: 100px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+}
+
+.tag-success { background: rgba(62,207,142,0.1); color: var(--success); border: 1px solid rgba(62,207,142,0.2); }
+.tag-warn    { background: rgba(244,167,35,0.1);  color: var(--warn);    border: 1px solid rgba(244,167,35,0.2); }
+.tag-danger  { background: rgba(224,84,84,0.1);   color: var(--danger);  border: 1px solid rgba(224,84,84,0.2); }
+.tag-gold    { background: var(--gold-dim);        color: var(--gold);    border: 1px solid rgba(201,168,76,0.25); }
+.tag-muted   { background: rgba(255,255,255,0.05); color: var(--muted);   border: 1px solid var(--border); }
+
+/* ── Layout ── */
+.layout {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  background: var(--bg);
+}
+
+.layout-center {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  position: relative;
+}
+
+.gold-bar::before {
+  content: '';
+  position: absolute;
+  top: 0; left: 0; right: 0;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
+}
+
+/* ── Mobile Optimization Overlay ── */
+@media (max-width: 768px) {
+  .layout {
+    flex-direction: column;
+  }
+  
+  .sidebar {
+    width: 100% !important;
+    height: auto !important;
+    position: fixed;
+    bottom: 0;
+    left: 0;
+    z-index: 1000;
+  }
+  
+  .layout-center {
+    width: 100%;
+    margin-bottom: 70px; /* Space for mobile nav */
+  }
+
+  /* Prevent text selection and unwanted zoom */
+  * {
+    -webkit-tap-highlight-color: transparent;
+    touch-action: manipulation;
+  }
+}
