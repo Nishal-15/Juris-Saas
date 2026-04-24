@@ -4,12 +4,20 @@
   overflow: hidden;
 }
 
-@media (max-width: 1024px) {
-  .register-page { flex-direction: column; overflow-y: auto; }
-  .register-left { display: none; }
-  .register-right { padding: 40px 24px; border-left: none; }
-  .register-form-title { font-size: 32px; }
-  .register-lang { top: 20px; right: 20px; }
+@media (max-width: 768px) {
+  .register-page { flex-direction: column; height: auto; overflow-y: auto; background: var(--bg-2); }
+  .register-left { display: none !important; }
+  .register-right { 
+    padding: 40px 20px 80px; 
+    border-left: none; 
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .register-form-title { font-size: 36px; margin-top: 10px; }
+  .register-lang { position: relative; top: 0; right: 0; margin-bottom: 24px; }
 }
 
 /* LEFT */

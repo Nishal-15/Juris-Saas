@@ -1,6 +1,7 @@
 import Sidebar from "../components/layout/Sidebar";
 import RightPanel from "../components/layout/RightPanel";
 import ChatWindow from "../components/chat/ChatWindow";
+import BottomNav from "../components/layout/BottomNav";
 import "./user.css";
 
 export default function UserDashboard() {
@@ -11,6 +12,7 @@ export default function UserDashboard() {
         <ChatWindow />
       </div>
       <RightPanel />
+      <BottomNav />
     </div>
   );
 }

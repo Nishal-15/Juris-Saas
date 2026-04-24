@@ -2,6 +2,7 @@ import { Routes, Route } from "react-router-dom";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import UserDashboard from "./pages/UserDashboard";
+import DashboardHome from "./pages/DashboardHome";
 import LawyerDashboard from "./pages/LawyerDashboard";
 import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
@@ -36,6 +37,10 @@ return (
 
 
       <Route path="/user" element={
+        <ProtectedRoute allowedRoles={["user", "admin"]}><DashboardHome /></ProtectedRoute>
+      }/>
+
+      <Route path="/ai-chat" element={
         <ProtectedRoute allowedRoles={["user", "admin"]}><UserDashboard /></ProtectedRoute>
       }/>
 

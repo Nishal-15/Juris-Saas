@@ -27,7 +27,8 @@ const ADMIN_SYSTEM_NAV = [
 ];
 
 const CITIZEN_NAV = [
-  { icon: "ai",      label: "Legal AI Chat",   path: "/user" },
+  { icon: "scales",   label: "Dashboard",       path: "/user" },
+  { icon: "ai",       label: "Legal AI Chat",   path: "/ai-chat" },
   { icon: "cases",   label: "My Cases",        path: "/cases" },
   { icon: "consult", label: "Consult a Lawyer", path: "/lawyers" },
   { icon: "docs",    label: "Documents",       path: "/documents" },

@@ -5,12 +5,20 @@
   background: var(--bg);
 }
 
-@media (max-width: 1024px) {
-  .login-page { flex-direction: column; overflow-y: auto; }
-  .login-left { display: none; }
-  .login-right { padding: 40px 24px; border-left: none; box-shadow: none; }
-  .login-form-title { font-size: 32px; }
-  .login-headline { font-size: 38px; }
+@media (max-width: 768px) {
+  .login-page { flex-direction: column; height: auto; overflow-y: auto; background: var(--bg-2); }
+  .login-left { display: none !important; }
+  .login-right { 
+    padding: 40px 20px 80px; 
+    border-left: none; 
+    width: 100%;
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+  }
+  .login-form-title { font-size: 38px; margin-top: 10px; }
+  .login-headline { display: none; }
   .login-lang { top: 20px; right: 20px; }
 }
 
