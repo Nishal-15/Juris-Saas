@@ -4,20 +4,26 @@
   overflow: hidden;
 }
 
-@media (max-width: 768px) {
-  .register-page { flex-direction: column; height: auto; overflow-y: auto; background: var(--bg-2); }
-  .register-left { display: none !important; }
-  .register-right { 
-    padding: 40px 20px 80px; 
-    border-left: none; 
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+@media (max-width: 850px) {
+  div.register-page { flex-direction: column !important; height: 100vh !important; overflow-y: auto !important; }
+  div.register-left, .register-left-grid, .register-left-glow, .register-brand { 
+    display: none !important; 
+    visibility: hidden !important; 
+    height: 0 !important; 
+    width: 0 !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    opacity: 0 !important;
   }
-  .register-form-title { font-size: 36px; margin-top: 10px; }
-  .register-lang { position: relative; top: 0; right: 0; margin-bottom: 24px; }
+  div.register-right { 
+    width: 100% !important; 
+    padding: 40px 20px 100px !important; 
+    min-height: 100vh !important; 
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+  }
+  .register-form-title { font-size: 36px !important; margin-top: 0 !important; }
 }
 
 /* LEFT */

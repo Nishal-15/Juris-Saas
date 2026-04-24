@@ -5,21 +5,26 @@
   background: var(--bg);
 }
 
-@media (max-width: 768px) {
-  .login-page { flex-direction: column; height: auto; overflow-y: auto; background: var(--bg-2); }
-  .login-left { display: none !important; }
-  .login-right { 
-    padding: 40px 20px 80px; 
-    border-left: none; 
-    width: 100%;
-    min-height: 100vh;
-    display: flex;
-    flex-direction: column;
-    justify-content: flex-start;
+@media (max-width: 850px) {
+  div.login-page { flex-direction: column !important; height: 100vh !important; overflow-y: auto !important; }
+  div.login-left, .login-left-grid, .login-left-glow, .login-brand { 
+    display: none !important; 
+    visibility: hidden !important; 
+    height: 0 !important; 
+    width: 0 !important; 
+    padding: 0 !important; 
+    margin: 0 !important; 
+    opacity: 0 !important;
   }
-  .login-form-title { font-size: 38px; margin-top: 10px; }
-  .login-headline { display: none; }
-  .login-lang { top: 20px; right: 20px; }
+  div.login-right { 
+    width: 100% !important; 
+    padding: 40px 20px 100px !important; 
+    min-height: 100vh !important; 
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: flex-start !important;
+  }
+  .login-form-title { font-size: 38px !important; margin-top: 0 !important; }
 }
 
 /* ── LEFT ── */
