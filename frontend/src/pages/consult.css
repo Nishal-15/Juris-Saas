@@ -140,3 +140,16 @@
 }
 
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.4; } }
+
+/* -- Mobile Optimization -- */
+@media (max-width: 768px) {
+  .cl-body { padding: 20px 16px; }
+  .cl-header { flex-direction: column; gap: 16px; }
+  .cl-clear-filter { width: 100%; text-align: center; }
+  .cl-grid { grid-template-columns: 1fr; gap: 16px; }
+  .cl-card { padding: 20px 16px; }
+  .cl-avatar-wrap { width: 60px; height: 60px; }
+  .cl-name { font-size: 16px; }
+  .cl-bio { font-size: 12.5px; }
+  .cl-btn { padding: 10px; font-size: 13px; }
+}

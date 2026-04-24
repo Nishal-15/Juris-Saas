@@ -84,3 +84,16 @@
   animation: pulseDot 1.5s infinite;
 }
 @keyframes pulseDot { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+
+/* -- Mobile Optimization -- */
+@media (max-width: 768px) {
+  .np-body { padding: 20px 16px; }
+  .np-header { flex-direction: column; gap: 16px; }
+  .np-clear-btn { width: 100%; justify-content: center; }
+  .np-card { padding: 14px 16px; }
+  .np-card-icon { width: 34px; height: 34px; }
+  .np-card-title { font-size: 13.5px; }
+  .np-card-msg { font-size: 12.5px; }
+  .np-card-right { gap: 4px; }
+  .np-time { font-size: 10.5px; }
+}

@@ -133,3 +133,16 @@
   border: 1px solid rgba(255,255,255,0.06) !important;
   cursor: not-allowed;
 }
+
+/* -- Mobile Optimization -- */
+@media (max-width: 768px) {
+  .rc-body { padding: 20px 16px; }
+  .rc-header { flex-direction: column; gap: 16px; }
+  .rc-new-btn { width: 100%; justify-content: center; }
+  .rc-card { flex-direction: column; align-items: stretch; }
+  .rc-card-bar { width: 100%; height: 3px; }
+  .rc-actions { padding: 0 20px 20px; border-top: 1px solid rgba(255,255,255,0.03); }
+  .rc-btn { flex: 1; justify-content: center; }
+  .rc-meta-row { gap: 12px; }
+  .rc-case-title { font-size: 14.5px; }
+}

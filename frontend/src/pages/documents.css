@@ -97,3 +97,14 @@
 .dv-doc-open svg { width: 14px; height: 14px; stroke: rgba(255,255,255,0.4); }
 .dv-doc-open:hover { border-color: rgba(201,168,76,0.25); }
 .dv-doc-open:hover svg { stroke: #c9a84c; }
+
+/* -- Mobile Optimization -- */
+@media (max-width: 768px) {
+  .dv-body { padding: 20px 16px; }
+  .dv-upload-zone { padding: 24px 16px; margin-bottom: 20px; }
+  .dv-upload-icon { width: 40px; height: 40px; }
+  .dv-doc-card { padding: 12px 14px; gap: 12px; }
+  .dv-doc-icon { width: 36px; height: 36px; }
+  .dv-doc-name { font-size: 13.5px; }
+  .dv-doc-open { width: 32px; height: 32px; }
+}

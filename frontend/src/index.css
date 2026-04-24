@@ -142,7 +142,23 @@ option {
   
   .layout-center {
     width: 100%;
-    margin-bottom: 70px; /* Space for mobile nav */
+    margin-bottom: 70px;
+    padding: 0 16px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
+
+  .mobile-hide { display: none !important; }
+
+  .mobile-stack {
+    flex-direction: column !important;
+    gap: 16px !important;
+  }
+
+  .mobile-card-grid {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
   }
 
   /* Prevent text selection and unwanted zoom */

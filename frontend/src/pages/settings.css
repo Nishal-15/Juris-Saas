@@ -116,3 +116,15 @@
   white-space: nowrap;
 }
 .st-btn-red:hover { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.35); }
+
+/* -- Mobile Optimization -- */
+@media (max-width: 768px) {
+  .st-body { padding: 20px 16px; }
+  .st-grid { grid-template-columns: 1fr; }
+  .st-card-head { padding: 14px 18px; }
+  .st-card-body { padding: 18px; }
+  .st-row { flex-direction: column; align-items: stretch; gap: 12px; }
+  .st-btn-gold { width: 100%; }
+  .st-danger-row { flex-direction: column; align-items: stretch; gap: 16px; }
+  .st-btn-red { width: 100%; text-align: center; }
+}
