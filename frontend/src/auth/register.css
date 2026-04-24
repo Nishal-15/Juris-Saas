@@ -142,9 +142,10 @@
 
 .register-form-title {
   font-family: var(--font-display);
-  font-size: 40px; font-weight: 600;
-  color: var(--white); letter-spacing: -0.5px;
-  margin-bottom: 6px;
+  font-size: 42px; font-weight: 700;
+  color: var(--white); letter-spacing: -1.5px;
+  margin-bottom: 2px;
+  text-transform: lowercase;
 }
 
 .register-form-sub {
@@ -194,12 +195,12 @@
 }
 
 .form-label {
-  font-size: 12px;
-  font-weight: 600;
+  font-size: 11px;
+  font-weight: 700;
   color: var(--muted);
-  letter-spacing: 1px;
+  letter-spacing: 1.2px;
   text-transform: uppercase;
-  margin-left: 4px;
+  margin-bottom: 6px;
 }
 
 .form-input {
@@ -296,14 +297,14 @@ select.form-input option {
 .btn-primary {
   width: 100%;
   padding: 16px;
-  background: linear-gradient(135deg, var(--gold), #f3d48e);
+  background: #c9a84c; /* Solid Gold look */
   color: #08090d;
   border: none;
   border-radius: 12px;
   font-size: 16px;
   font-weight: 700;
   cursor: pointer;
-  letter-spacing: 0.5px;
+  text-transform: lowercase;
   transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   margin-top: 12px;
   box-shadow: 0 4px 15px rgba(201,168,76,0.2);

@@ -79,11 +79,11 @@ export default function Login() {
 
       {/* RIGHT */}
       <div className="login-right">
-        <h2 className="login-form-title">{t("login")}</h2>
+        <h2 className="login-form-title">login</h2>
         <p className="login-form-sub">Enter your credentials to access your legal workspace.</p>
 
         <div className="form-field">
-          <label className="form-label">Email Address</label>
+          <label className="form-label">EMAIL ADDRESS</label>
           <input
             className="form-input"
             placeholder="e.g. advocate@jurisbot.com"
@@ -93,7 +93,7 @@ export default function Login() {
         </div>
 
         <div className="form-field">
-          <label className="form-label">Password</label>
+          <label className="form-label">PASSWORD</label>
           <div className="password-box">
             <input
               type={showPassword ? "text" : "password"}
@@ -118,7 +118,7 @@ export default function Login() {
           onClick={submit}
           disabled={loading}
         >
-          {loading ? "Signing in..." : "Login to Dashboard"}
+          {loading ? "signing in..." : "login to dashboard"}
         </button>
 
         <div className="form-divider">OR</div>

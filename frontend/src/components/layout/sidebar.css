@@ -212,8 +212,14 @@
   border: none; border-radius: 12px;
   color: #000; z-index: 1100;
   align-items: center; justify-content: center;
-  box-shadow: 0 4px 15px rgba(201,168,76,0.3);
+  box-shadow: 0 4px 20px rgba(201,168,76,0.5);
   cursor: pointer;
+  animation: toggleGlow 3s infinite;
+}
+
+@keyframes toggleGlow {
+  0%, 100% { box-shadow: 0 4px 15px rgba(201,168,76,0.3); }
+  50% { box-shadow: 0 4px 25px rgba(201,168,76,0.6); }
 }
 .cs-mobile-toggle svg { width: 24px; height: 24px; }
 

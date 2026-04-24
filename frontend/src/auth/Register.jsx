@@ -100,7 +100,7 @@ export default function Register() {
       <div className="register-right">
 
         <div className="form-field">
-          <label className="form-label">Choose your language and get the answers from chatbot in your own language</label>
+          <label className="form-label">CHOOSE YOUR LANGUAGE AND GET THE ANSWERS FROM CHATBOT IN YOUR OWN LANGUAGE</label>
           <select 
             className="form-input"
             value={form.preferredLanguage}
@@ -122,13 +122,13 @@ export default function Register() {
               { name: "اردو (Urdu)", code: "ur" },
               { name: "संस्कृतम् (Sanskrit)", code: "sa" },
               { name: "मैथिली (Maithili)", code: "mai" },
-              { name: "कोंकणी (Konkani)", code: "kok" },
+              { name: "कोंಕಣಿ (Konkani)", code: "kok" },
               { name: "डोगरी (Dogri)", code: "doi" },
               { name: "नेपाली (Nepali)", code: "ne" },
               { name: "सिंधी (Sindhi)", code: "sd" },
               { name: "संताली (Santali)", code: "sat" },
               { name: "मणिपुरी (Manipuri)", code: "mni" },
-              { name: "बोडो (Bodo)", code: "brx" },
+              { name: "বোডো (Bodo)", code: "brx" },
               { name: "कश्मीरी (Kashmiri)", code: "ks" }
             ].map(l => (
               <option key={l.code} value={l.code}>
@@ -137,8 +137,9 @@ export default function Register() {
             ))}
           </select>
         </div>
+
         <div className="form-field">
-          <label className="form-label">Phone Number</label>
+          <label className="form-label">PHONE NUMBER</label>
           <input
             type="tel"
             className="form-input"
@@ -147,11 +148,11 @@ export default function Register() {
           />
         </div>
 
-        <h2 className="register-form-title">{t("register")}</h2>
+        <h2 className="register-form-title">register</h2>
         <p className="register-form-sub">Free forever. No credit card required.</p>
 
         <div className="form-field">
-          <label className="form-label">{t("name")}</label>
+          <label className="form-label">NAME</label>
           <input
             type="text"
             className="form-input"
@@ -161,7 +162,7 @@ export default function Register() {
         </div>
 
         <div className="form-field">
-          <label className="form-label">{t("email")}</label>
+          <label className="form-label">EMAIL</label>
           <input
             type="email"
             className="form-input"
@@ -171,7 +172,7 @@ export default function Register() {
         </div>
 
         <div className="form-field">
-          <label className="form-label">{t("password")}</label>
+          <label className="form-label">PASSWORD</label>
           <div className="password-box">
             <input
               type={showPassword ? "text" : "password"}
@@ -201,7 +202,7 @@ export default function Register() {
         </div>
 
         <button className="btn-primary" onClick={submit} disabled={loading || !form.agreed}>
-          {loading ? "Creating account…" : t("create")}
+          {loading ? "creating account…" : "create"}
         </button>
 
         <div className="form-divider">or</div>

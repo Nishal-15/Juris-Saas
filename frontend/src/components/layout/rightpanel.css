@@ -187,3 +187,23 @@
   flex-shrink: 0;
 }
 .rp-check svg { width: 9px; height: 9px; }
+/* -- Mobile Optimization -- */
+@media (max-width: 1024px) {
+  .rp-shell {
+    width: 100%;
+    min-width: 0;
+    height: auto;
+    border-left: none;
+    border-top: 1px solid rgba(255,255,255,0.06);
+    padding: 24px 16px;
+    position: relative;
+  }
+  .rp-empty {
+    background: rgba(255,255,255,0.02);
+    border: 1px dashed rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 20px;
+    text-align: center;
+    color: rgba(255,255,255,0.3);
+  }
+}
