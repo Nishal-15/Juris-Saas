@@ -1,5 +1,6 @@
 import { useState, useRef, useEffect } from "react";
 import { useTranslation } from "react-i18next";
+import axios from "../../api/axios"; // 👈 Standard project axios
 import "./chat.css";
 import { startListening } from "./VoiceControls";
 
@@ -40,24 +41,14 @@ export default function ChatWindow() {
     const userLang = user.preferredLanguage || "en";
 
     try {
-      const token = localStorage.getItem("token");
-      const res = await fetch(`${import.meta.env.VITE_API_URL || ""}/chat`, {
-        method: "POST",
-        headers: { 
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${token}`
-        },
-        body: JSON.stringify({ 
-          message: userText,
-          lang: userLang
-        }),
+      const res = await axios.post("/chat", { 
+        message: userText,
+        lang: userLang
       });
-
-      const data = await res.json();
       
       setMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: "ai", text: data.answer || "I'm sorry, I couldn't process that legal query." };
+        updated[updated.length - 1] = { role: "ai", text: res.data.answer || "I'm sorry, I couldn't process that legal query." };
         return updated;
       });
 
