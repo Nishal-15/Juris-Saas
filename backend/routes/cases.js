@@ -3,6 +3,7 @@ const Case = require("../models/Case");
 const User = require("../models/User");
 const Lawyer = require("../models/Lawyer"); // 👈 Added
 const auth = require("../middleware/auth");
+const axios = require("axios");
 const checkSub = require("../middleware/checkSubscription");
 
 /* Create Case */
