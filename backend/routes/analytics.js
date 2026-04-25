@@ -48,9 +48,14 @@ router.get("/admin", auth(["admin"]), async (req, res) => {
     const totalCases = await Case.countDocuments();
     const emergencyCases = await Case.countDocuments({ urgency: "Emergency" });
 
-    const recentCases = await Case.find()
+    // 🔬 PENDING CASES: Awaiting Expert assignment
+    const pendingCases = await Case.find({ assignedLawyer: null })
       .sort({ createdAt: -1 })
-      .limit(6)
+      .populate("user", "name");
+
+    // 📁 ALL CASES: For the Admin "Marketplace" view
+    const allCases = await Case.find()
+      .sort({ createdAt: -1 })
       .populate("user", "name")
       .populate("assignedLawyer", "name");
 
@@ -61,7 +66,8 @@ router.get("/admin", auth(["admin"]), async (req, res) => {
         totalCases,
         emergencyCases
       },
-      recentCases
+      pendingCases,
+      allCases
     });
   } catch (err) {
     res.status(500).json({ message: err.message });
