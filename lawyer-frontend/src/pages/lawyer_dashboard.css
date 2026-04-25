@@ -229,10 +229,10 @@
   transition: background 0.15s;
 }
 
-.ld-client-cell { width: 160px; flex-shrink: 0; }
-.ld-matter-cell { flex: 1; min-width: 0; padding-right: 15px; }
-.ld-scheduled-cell { width: 170px; flex-shrink: 0; }
-.ld-status-cell { width: 100px; flex-shrink: 0; }
+.ld-client-cell { width: 140px; flex-shrink: 0; }
+.ld-matter-cell { flex: 1; min-width: 250px; padding-right: 20px; }
+.ld-scheduled-cell { width: 160px; flex-shrink: 0; }
+.ld-status-cell { width: 90px; flex-shrink: 0; }
 .ld-actions-cell { 
   width: 140px; 
   flex-shrink: 0; 
@@ -280,9 +280,14 @@
 .ld-muted-text {
   font-size: 13px;
   color: var(--ld-muted);
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
+}
+
+.ld-filing-date {
+  font-size: 11px;
+  color: var(--ld-gold);
+  opacity: 0.7;
+  margin-top: 3px;
+  font-weight: 500;
 }
 
 /* Tags */

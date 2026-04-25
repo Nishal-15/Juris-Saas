@@ -155,7 +155,10 @@ export default function LawyerDashboard() {
                     </div>
                     <div className="ld-matter-cell">
                       {p.caseId ? (
-                        <span className="ld-matter-title">{p.caseId.title}</span>
+                        <>
+                          <div className="ld-matter-title">{p.caseId.title}</div>
+                          <div className="ld-filing-date">Filed: {new Date(p.caseId.createdAt).toLocaleDateString('en-GB')}</div>
+                        </>
                       ) : (
                         <span className="ld-muted-text">General Inquiry</span>
                       )}
