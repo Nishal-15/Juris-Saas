@@ -1,19 +1,51 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import "./createcase.css";
 
+// 🌍 22 Scheduled Languages of India
+const INDIAN_LANGUAGES = [
+  { code: "en-IN", name: "English", flag: "🇮🇳" },
+  { code: "ta-IN", name: "Tamil (தமிழ்)", flag: "🇮🇳" },
+  { code: "hi-IN", name: "Hindi (हिन्दी)", flag: "🇮🇳" },
+  { code: "te-IN", name: "Telugu (తెలుగు)", flag: "🇮🇳" },
+  { code: "kn-IN", name: "Kannada (ಕನ್ನಡ)", flag: "🇮🇳" },
+  { code: "ml-IN", name: "Malayalam (മലയാളം)", flag: "🇮🇳" },
+  { code: "mr-IN", name: "Marathi (मराठी)", flag: "🇮🇳" },
+  { code: "gu-IN", name: "Gujarati (ગુજરાતી)", flag: "🇮🇳" },
+  { code: "bn-IN", name: "Bengali (বাংলা)", flag: "🇮🇳" },
+  { code: "pa-IN", name: "Punjabi (ਪੰਜਾਬੀ)", flag: "🇮🇳" },
+  { code: "or-IN", name: "Odia (ଓଡ଼ିଆ)", flag: "🇮🇳" },
+  { code: "as-IN", name: "Assamese (অসমীয়া)", flag: "🇮🇳" },
+  { code: "mai-IN", name: "Maithili (मैथिली)", flag: "🇮🇳" },
+  { code: "doi-IN", name: "Dogri (डोगरी)", flag: "🇮🇳" },
+  { code: "ks-IN", name: "Kashmiri (کٲشُر)", flag: "🇮🇳" },
+  { code: "kok-IN", name: "Konkani (कोंकणी)", flag: "🇮🇳" },
+  { code: "mni-IN", name: "Manipuri (মণিপুরী)", flag: "🇮🇳" },
+  { code: "ne-IN", name: "Nepali (नेपाली)", flag: "🇮🇳" },
+  { code: "sa-IN", name: "Sanskrit (संस्कृतम्)", flag: "🇮🇳" },
+  { code: "sat-IN", name: "Santali (संताली)", flag: "🇮🇳" },
+  { code: "sd-IN", name: "Sindhi (सिंधी)", flag: "🇮🇳" },
+  { code: "ur-IN", name: "Urdu (اردو)", flag: "🇮🇳" }
+];
+
+const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+const recognition = SpeechRecognition ? new SpeechRecognition() : null;
+
 export default function FilingConsole() {
   const [step, setStep] = useState(1);
+  const [selectedLang, setSelectedLang] = useState(INDIAN_LANGUAGES[0]);
   const [formData, setFormData] = useState({
     title: "",
     description: "",
-    category: "Home & Property",
+    category: "",
     oppositeParty: "",
-    urgency: "Normal",
-    documents: []
+    urgency: "Normal"
   });
+  const [isListening, setIsListening] = useState(false);
+  const [aiMessage, setAiMessage] = useState("Ready to help. I can understand any of the 22 Indian languages!");
+  const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -25,25 +57,104 @@ export default function FilingConsole() {
     { id: "other",    label: "Something Else",   icon: "⚖️", desc: "Any other legal problem" }
   ];
 
+  // 🎙️ Setup Recognition Language
+  useEffect(() => {
+    if (recognition) {
+      recognition.lang = selectedLang.code;
+      recognition.continuous = true;
+      recognition.interimResults = true;
+    }
+  }, [selectedLang]);
+
+  const toggleListening = () => {
+    if (!recognition) return alert("Browser not supported.");
+    if (isListening) {
+      recognition.stop();
+      setIsListening(false);
+      handleAIAutoFill(); // Analyze when stopped
+    } else {
+      recognition.start();
+      setIsListening(true);
+      setAiMessage(`Listening in ${selectedLang.name}...`);
+    }
+  };
+
+  if (recognition) {
+    recognition.onresult = (event) => {
+      let finalTranscript = "";
+      for (let i = event.resultIndex; i < event.results.length; ++i) {
+        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
+      }
+      if (finalTranscript) {
+        setFormData(prev => ({ ...prev, description: prev.description + " " + finalTranscript }));
+      }
+    };
+    recognition.onerror = () => setIsListening(false);
+  }
+
+  // ✨ MAGIC AUTO-FILL: AI Analyze the story
+  const handleAIAutoFill = async () => {
+    if (formData.description.length < 20) return;
+    setIsAnalyzing(true);
+    setAiMessage("JurisBot AI is analyzing your story to generate a professional title...");
+    try {
+      const res = await axios.post("/cases/analyze-story", { description: formData.description });
+      setFormData(prev => ({ 
+        ...prev, 
+        title: res.data.title || prev.title,
+        category: res.data.category || prev.category
+      }));
+      setAiMessage("✨ Magic! I've suggested a Title and Category for you based on your story.");
+    } catch (err) {
+      setAiMessage("I've captured your story. Please review the details below.");
+    } finally {
+      setIsAnalyzing(false);
+    }
+  };
+
   const handleSubmit = async () => {
+    if (!formData.title.trim() || !formData.description.trim() || !formData.category) {
+      return alert("Incomplete Details: Please provide a meaningful Title and Story before finalizing.");
+    }
     setLoading(true);
     try {
-      // Map layman category back to internal role-based category if needed, or just send as is
       await axios.post("/cases", formData);
-      alert("✅ Your case has been successfully filed! We are matching you with the best legal experts.");
+      alert("✅ Your case has been successfully filed!");
       navigate("/cases");
     } catch (err) {
-      alert("Failed to file case. Please try again.");
+      alert("Failed to file case.");
     } finally {
       setLoading(false);
     }
   };
 
   return (
-    <div className="wizard-page">
+    <div className="wizard-page light-theme">
       <Sidebar />
       
       <main className="wizard-main">
+        {/* 🤖 Advanced AI Header Dock */}
+        <div className="wizard-ai-dock">
+          <div className="ai-dock-info">
+            <div className="ai-mini-avatar">🤖</div>
+            <div className="ai-text-container">
+              <span className="ai-dock-label">JURISBOT CORE INTELLIGENCE</span>
+              <p className="ai-dock-msg">{aiMessage}</p>
+            </div>
+          </div>
+          <div className="language-selector-dock">
+            <span className="lang-icon-global">🌐</span>
+            <select 
+              value={selectedLang.code} 
+              onChange={(e) => setSelectedLang(INDIAN_LANGUAGES.find(l => l.code === e.target.value))}
+            >
+              {INDIAN_LANGUAGES.map(l => (
+                <option key={l.code} value={l.code}>{l.name.replace(/\(.*\)/, '')}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {/* Progress Bar */}
         <div className="wizard-header">
           <div className="wizard-progress">
@@ -51,22 +162,18 @@ export default function FilingConsole() {
               <div key={s} className={`wizard-step-node ${step >= s ? 'active' : ''}`}>
                 <div className="node-circle">{s}</div>
                 <span className="node-label">
-                  {s === 1 ? "Basic Info" : s === 2 ? "Details" : s === 3 ? "Evidence" : "Finish"}
+                  {s === 1 ? "Category" : s === 2 ? "Narration" : s === 3 ? "Evidence" : "Finalize"}
                 </span>
               </div>
             ))}
-            <div className="wizard-progress-line">
-              <div className="line-fill" style={{ width: `${(step - 1) * 33.33}%` }}></div>
-            </div>
           </div>
         </div>
 
         <div className="wizard-content">
-          {/* STEP 1: CATEGORY SELECTION */}
           {step === 1 && (
             <div className="wizard-slide fade-in">
-              <h1 className="wizard-title">What is the main problem?</h1>
-              <p className="wizard-subtitle">Select the option that best describes your situation.</p>
+              <h1 className="wizard-title">Select Matter Category <span className="req">*</span></h1>
+              <p className="wizard-subtitle">Classify your legal concern for specialized expert matching.</p>
               
               <div className="category-grid">
                 {categories.map(c => (
@@ -86,71 +193,83 @@ export default function FilingConsole() {
 
               <div className="wizard-actions">
                 <div />
-                <button className="wizard-btn-next" onClick={() => setStep(2)}>Continue →</button>
+                <button className="wizard-btn-next" disabled={!formData.category} onClick={() => setStep(2)}>
+                  Continue to Narration →
+                </button>
               </div>
             </div>
           )}
 
-          {/* STEP 2: DETAILS */}
           {step === 2 && (
             <div className="wizard-slide fade-in">
-              <h1 className="wizard-title">Tell us your story</h1>
-              <p className="wizard-subtitle">Describe what happened in simple words. The more detail, the better.</p>
+              <h1 className="wizard-title">Incident Narration <span className="req">*</span></h1>
+              <p className="wizard-subtitle">Provide a detailed account. Use voice for natural expression.</p>
               
               <div className="wizard-form-box">
                 <div className="form-group">
-                  <label>Give this a short name (e.g. Salary Dispute)</label>
-                  <input 
-                    className="wizard-input"
-                    value={formData.title}
-                    onChange={e => setFormData({...formData, title: e.target.value})}
-                    placeholder="Short summary..."
-                  />
-                </div>
-
-                <div className="form-group">
-                  <label>Tell us what happened</label>
+                  <div className="label-with-action">
+                    <label>Statement of Facts</label>
+                    <button className={`voice-btn-large ${isListening ? 'recording' : ''}`} onClick={toggleListening}>
+                      <span className="pulse-dot"></span>
+                      {isListening ? "Finalize Narration" : `Narrate in ${selectedLang.name.split(' ')[0]}`}
+                    </button>
+                  </div>
                   <textarea 
                     className="wizard-textarea"
                     value={formData.description}
                     onChange={e => setFormData({...formData, description: e.target.value})}
-                    placeholder="Describe your problem here..."
-                    rows="8"
+                    onBlur={handleAIAutoFill}
+                    placeholder="Describe the incident details here..."
+                    rows="6"
                   />
                 </div>
 
                 <div className="form-group">
-                  <label>Who is this against? (Opposite Party)</label>
+                  <label>Smart Case Title</label>
+                  <div className={`input-container ${isAnalyzing ? 'glow' : ''}`}>
+                    <input 
+                      className="wizard-input"
+                      value={formData.title}
+                      onChange={e => setFormData({...formData, title: e.target.value})}
+                      placeholder={isAnalyzing ? "Processing narration..." : "Formal title for legal filing"}
+                    />
+                    {formData.title && !isAnalyzing && <span className="ai-tag">SMART GEN</span>}
+                  </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Adversary Details</label>
                   <input 
                     className="wizard-input"
                     value={formData.oppositeParty}
                     onChange={e => setFormData({...formData, oppositeParty: e.target.value})}
-                    placeholder="Name of person or company"
+                    placeholder="Name of opposing person or entity"
                   />
                 </div>
               </div>
 
               <div className="wizard-actions">
-                <button className="wizard-btn-back" onClick={() => setStep(1)}>← Back</button>
-                <button className="wizard-btn-next" onClick={() => setStep(3)}>Add Proof →</button>
+                <button className="wizard-btn-back" onClick={() => setStep(1)}>← Previous</button>
+                <button 
+                  className="wizard-btn-next" 
+                  disabled={!formData.description.trim()} 
+                  onClick={() => setStep(3)}
+                >
+                  Proceed to Evidence →
+                </button>
               </div>
             </div>
           )}
 
-          {/* STEP 3: EVIDENCE */}
           {step === 3 && (
             <div className="wizard-slide fade-in">
-              <h1 className="wizard-title">Show us the Proof</h1>
-              <p className="wizard-subtitle">Upload any photos, bills, or documents that can help your case.</p>
-              
-              <div className="upload-zone">
-                <div className="upload-box">
-                  <span className="upload-icon">📁</span>
-                  <p>Click or drag files to upload</p>
-                  <span>Supports: PDF, JPG, PNG</span>
-                </div>
+              <h1 className="wizard-title">Evidence</h1>
+              <p className="wizard-subtitle">Upload any relevant photos or documents.</p>
+              <div className="upload-zone" onClick={() => document.getElementById('f-up').click()}>
+                <input type="file" id="f-up" style={{ display: 'none' }} multiple />
+                <span className="upload-icon">📂</span>
+                <p>Click to add documents</p>
               </div>
-
               <div className="wizard-actions">
                 <button className="wizard-btn-back" onClick={() => setStep(2)}>← Back</button>
                 <button className="wizard-btn-next" onClick={() => setStep(4)}>Final Review →</button>
@@ -158,47 +277,24 @@ export default function FilingConsole() {
             </div>
           )}
 
-          {/* STEP 4: REVIEW */}
           {step === 4 && (
             <div className="wizard-slide fade-in">
-              <h1 className="wizard-title">Ready to File?</h1>
-              <p className="wizard-subtitle">Please review your information before submitting to our legal team.</p>
-              
+              <h1 className="wizard-title">Review & Submit</h1>
+              <p className="wizard-subtitle">Please double-check everything before sending to our lawyers.</p>
               <div className="review-card">
-                <div className="review-item">
-                  <span className="review-label">PROBLEM TYPE</span>
-                  <span className="review-val">{formData.category}</span>
-                </div>
-                <div className="review-item">
-                  <span className="review-label">SUBJECT</span>
-                  <span className="review-val">{formData.title || "Not specified"}</span>
-                </div>
-                <div className="review-item">
-                  <span className="review-label">AGAINST</span>
-                  <span className="review-val">{formData.oppositeParty || "Not specified"}</span>
-                </div>
-                <div className="review-item">
-                  <span className="review-label">STORY</span>
-                  <p className="review-desc">{formData.description || "No description provided."}</p>
-                </div>
+                <div className="review-item"><strong>CATEGORY:</strong> {formData.category}</div>
+                <div className="review-item"><strong>SUBJECT:</strong> {formData.title}</div>
+                <div className="review-item"><strong>OPPONENT:</strong> {formData.oppositeParty || "N/A"}</div>
+                <div className="review-item"><strong>DESCRIPTION:</strong> {formData.description}</div>
               </div>
-
               <div className="wizard-actions">
                 <button className="wizard-btn-back" onClick={() => setStep(3)}>← Edit</button>
                 <button className="wizard-btn-submit" onClick={handleSubmit} disabled={loading}>
-                  {loading ? "Filing Case..." : "SUBMIT TO LEGAL TEAM"}
+                  {loading ? "Filing..." : "FINALIZE & FILE CASE"}
                 </button>
               </div>
             </div>
           )}
-        </div>
-
-        {/* AI Assistant Bubble (Design purely visual as per mockup) */}
-        <div className="wizard-ai-bubble">
-          <div className="ai-avatar">🤖</div>
-          <div className="ai-text">
-            Need help? Describe your problem and I will categorize it for you!
-          </div>
         </div>
       </main>
     </div>

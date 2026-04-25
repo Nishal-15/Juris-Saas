@@ -249,4 +249,32 @@ router.get("/:id/ai-brief", auth(["lawyer", "admin"]), async (req, res) => {
   }
 });
 
+/* AI Analysis: Generate Title & Category from Description */
+router.post("/analyze-story", auth(), async (req, res) => {
+  try {
+    const { description } = req.body;
+    if (!description || description.length < 10) {
+      return res.status(400).json({ message: "Description too short to analyze." });
+    }
+
+    // Call Python AI Service
+    const axios = require("axios");
+    try {
+      const aiRes = await axios.post("http://127.0.0.1:8000/analyze", { description }, { timeout: 5000 });
+      return res.json({ 
+        title: aiRes.data.title, 
+        category: aiRes.data.category || "General Legal" 
+      });
+    } catch (aiErr) {
+      // Fallback: If AI Service is down, provide a smart regex/heuristic summary
+      console.warn("AI Analysis Service down, using fallback heuristic.");
+      const words = description.split(" ");
+      const fallbackTitle = words.slice(0, 5).join(" ") + "...";
+      res.json({ title: fallbackTitle, category: "General Legal" });
+    }
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
