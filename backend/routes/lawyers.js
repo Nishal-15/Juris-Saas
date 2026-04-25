@@ -1,19 +1,14 @@
 const router = require("express").Router();
-const User = require("../models/User");
-const bcrypt = require("bcryptjs");
+const Lawyer = require("../models/Lawyer"); // 👈 Pointing to the NEW collection
 
-// Get All Lawyers (With Safe Sync)
+// Get All Lawyers from the 'lawyers' collection
 router.get("/", async (req, res) => {
   try {
-    // 🔍 Fetch only VERIFIED experts
-    const lawyers = await User.find({ 
-      role: "lawyer", 
+    const lawyers = await Lawyer.find({ 
       isVerified: true 
-    }).select("name email role specialization experience fees rating avatar reviews");
+    });
     
-    console.log(`🔍 Advocate Fetch: Found ${lawyers.length} verified experts.`);
-
-
+    console.log(`🔍 Expert Marketplace: Found ${lawyers.length} advocates in the 'lawyers' collection.`);
     res.json(lawyers);
 
   } catch (err) {
