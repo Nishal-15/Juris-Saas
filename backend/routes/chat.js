@@ -5,8 +5,9 @@ const auth = require("../middleware/auth");
 // 🤖 MISTRAL AI CHAT (Secured)
 router.post("/", auth(), async (req, res) => {
   try {
-    const aiUrl = process.env.AI_SERVICE_URL || "http://127.0.0.1:8080";
-    console.log(`📡 AI Bridge: Sending request to ${aiUrl}/chat...`);
+    const aiUrl = (process.env.AI_SERVICE_URL || "http://127.0.0.1:8080").trim();
+    console.log(`📡 [AI BRIDGE] Target: ${aiUrl}/chat`);
+    console.log(`📩 [AI BRIDGE] Payload:`, req.body);
     
     const userLang = (req.user.preferredLanguage || "en").split('-')[0].toLowerCase();
     
@@ -15,19 +16,25 @@ router.post("/", auth(), async (req, res) => {
         `${aiUrl}/chat`,
         { ...req.body, lang: userLang },
         { 
-          timeout: 600000, // 👈 10 Minutes (Mistral on CPU is very slow)
+          timeout: 600000, 
           family: 4
         }
       );
 
+      console.log(`✅ [AI BRIDGE] Success:`, response.status);
+      
       // ✅ Check if Python returned an error
       if (response.data.error) {
+        console.error(`❌ [AI BRIDGE] Python Error:`, response.data.error);
         return res.json({ answer: `AI Service Error: ${response.data.error}` });
       }
 
       res.json(response.data);
     } catch (aiErr) {
-      console.error("Mistral Service Error:", aiErr.message);
+      console.error("❌ [AI BRIDGE] CRASH:", aiErr.message);
+      if (aiErr.code === 'ECONNREFUSED') {
+         console.error("🚫 Connection Refused. Is app.py running on 8080?");
+      }
       
       // ✅ If the server responded with an error (e.g. 500)
       if (aiErr.response) {
