@@ -469,36 +469,67 @@ router.post("/analyze-story", auth(), async (req, res) => {
   }
 });
 
-/* ⚖️ CONNECT: Link Case to Lawyer */
+/* ⚖️ CONNECT: Client requests a lawyer */
 router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   try {
     const { caseId, lawyerId } = req.params;
     
-    // Update Case with assigned lawyer and set status to 'In Progress'
+    // Set status to 'Pending Expert Acceptance' - Lawyer is NOT officially assigned yet
     const updatedCase = await Case.findByIdAndUpdate(
       caseId,
       { 
         assignedLawyer: lawyerId,
-        status: "In Progress",
-        $push: { trackingHistory: { status: "Expert Connected", date: new Date() } }
+        status: "Pending Expert Acceptance",
+        $push: { trackingHistory: { status: "Connection Requested", date: new Date() } }
       },
       { new: true }
     ).populate("user", "name");
 
-    // 🔔 NOTIFY LAWYER: Send real-time alert to the lawyer's dashboard
+    // 🔔 NOTIFY LAWYER: Send request to the Consultation Queue
     const io = req.app.get("io");
     if (io) {
       io.emit(`new-request-${lawyerId}`, {
-        message: "New Case Request Received!",
+        message: "New Consultation Request!",
         case: updatedCase
       });
     }
 
-    console.log(`🤝 Connection established: Case ${caseId} -> Lawyer ${lawyerId}`);
-    res.json({ message: "Expert Connected Successfully", case: updatedCase });
+    console.log(`📡 Request Sent: Case ${caseId} -> Lawyer ${lawyerId} (Pending Approval)`);
+    res.json({ message: "Request Sent to Expert", case: updatedCase });
 
   } catch (err) {
-    console.error("Connection Error:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* ✅ ACCEPT: Lawyer accepts the client request */
+router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
+  try {
+    const { caseId } = req.params;
+    
+    // Officially set status to 'In Progress' and confirm the lawyer
+    const acceptedCase = await Case.findByIdAndUpdate(
+      caseId,
+      { 
+        status: "In Progress",
+        $push: { trackingHistory: { status: "Lawyer Accepted", date: new Date() } }
+      },
+      { new: true }
+    ).populate("user", "name");
+
+    // 🔔 NOTIFY CLIENT: Their expert is ready
+    const io = req.app.get("io");
+    if (io) {
+      io.emit(`case-accepted-${acceptedCase.user._id}`, {
+        message: "Your expert has accepted the case!",
+        case: acceptedCase
+      });
+    }
+
+    console.log(`✅ Case Accepted: ${caseId} by Lawyer ${req.user.id}`);
+    res.json({ message: "Case Accepted Successfully", case: acceptedCase });
+
+  } catch (err) {
     res.status(500).json({ message: err.message });
   }
 });

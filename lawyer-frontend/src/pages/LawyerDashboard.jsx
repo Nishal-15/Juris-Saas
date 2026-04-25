@@ -16,13 +16,27 @@ export default function LawyerDashboard() {
 
   const fetchData = async () => {
     try {
-      const [statsRes, pendingRes, openRes] = await Promise.all([
+      const [statsRes, pendingRes, openRes, requestedCasesRes] = await Promise.all([
         axios.get("/analytics/lawyer"),
         axios.get("/appointments/received"),
         axios.get("/cases/open"),
+        axios.get("/cases/requested"),
       ]);
       setStats(statsRes.data);
-      setPending(pendingRes.data);
+      // Merge appointments and pending case requests
+      const mergedPending = [
+        ...pendingRes.data.map(p => ({ ...p, itemType: 'appointment' })),
+        ...requestedCasesRes.data.map(c => ({ 
+          _id: c._id, 
+          userId: c.user, 
+          caseId: c, 
+          status: c.status === "Pending Expert Acceptance" ? "Requested" : "Accepted",
+          itemType: 'case_request',
+          date: new Date(c.createdAt).toLocaleDateString(),
+          time: new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        }))
+      ];
+      setPending(mergedPending);
       setOpenCases(openRes.data);
     } catch (err) {
       console.error("Dashboard fetch error:", err);
@@ -56,16 +70,22 @@ export default function LawyerDashboard() {
     }
   };
 
-  const handleStatusUpdate = async (id, newStatus) => {
+  const handleStatusUpdate = async (id, newStatus, itemType) => {
     try {
-      const appt = pending.find((p) => p._id === id);
-      await axios.patch(`/appointments/${id}/status`, { status: newStatus });
-      setPending(pending.map((p) => (p._id === id ? { ...p, status: newStatus } : p)));
-      if (newStatus === "Accepted" && appt?.userId?._id) {
-        socket.emit("notify", { to: appt.userId._id, text: "Your consultation request has been accepted!" });
+      if (itemType === 'case_request') {
+        await axios.post(`/cases/accept/${id}`);
+        setToast("Case Accepted! You can now start the consultation.");
+      } else {
+        const appt = pending.find((p) => p._id === id);
+        await axios.patch(`/appointments/${id}/status`, { status: newStatus });
+        if (newStatus === "Accepted" && appt?.userId?._id) {
+          socket.emit("notify", { to: appt.userId._id, text: "Your consultation request has been accepted!" });
+        }
       }
-    } catch {
-      alert("Status update failed.");
+      fetchData();
+      setTimeout(() => setToast(null), 4000);
+    } catch (err) {
+      alert("Action failed: " + (err.response?.data?.message || err.message));
     }
   };
 
@@ -168,10 +188,10 @@ export default function LawyerDashboard() {
                       <span className={`ld-tag ${p.status === "Accepted" ? "green" : "gold"}`}>{p.status}</span>
                     </div>
                     <div className="ld-actions-cell">
-                      {p.status === "Accepted" ? (
+                      {p.status === "Accepted" || p.status === "In Progress" ? (
                         <button className="ld-btn-primary" onClick={() => navigate(`/chat/${p.userId?._id}`)}>Consult</button>
                       ) : (
-                        <button className="ld-btn-primary" onClick={() => handleStatusUpdate(p._id, "Accepted")}>Accept</button>
+                        <button className="ld-btn-primary" onClick={() => handleStatusUpdate(p._id, "Accepted", p.itemType)}>Accept</button>
                       )}
                       <button className="ld-btn-icon" onClick={() => p.caseId && navigate(`/case/${p.caseId._id}`)} title="View Brief">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
