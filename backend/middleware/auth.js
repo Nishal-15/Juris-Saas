@@ -12,7 +12,7 @@ module.exports = function (roles = []) {
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
 
       // ✅ FIXED: correct structure
-      req.user = decoded.user;
+      req.user = decoded;
 
       if (roles.length && !roles.includes(req.user.role)) {
         return res.status(403).json({ message: "Access denied (role)" });

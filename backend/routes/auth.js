@@ -132,7 +132,7 @@ router.post("/register", async (req, res) => {
 
     // ✅ GENERATE TOKEN DIRECTLY
     const token = jwt.sign(
-      { user: { id: user._id, role: user.role } },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
@@ -176,7 +176,7 @@ router.post("/login", async (req, res) => {
 
     console.log("Generating JWT...");
     const token = jwt.sign(
-      { user: { id: user._id, role: user.role } },
+      { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
