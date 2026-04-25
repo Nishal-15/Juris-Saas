@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
+import BottomNav from "../components/layout/BottomNav";
+import MobileHeader from "../components/layout/MobileHeader";
 import axios from "../api/axios";
 import socket from "../api/socket";
 import "./consult.css";
@@ -49,6 +51,7 @@ export default function ConsultLawyer() {
 
   return (
     <div className="cl-page">
+      <MobileHeader />
       <Sidebar />
       <div className="cl-body">
         <div className="cl-header">
@@ -136,6 +139,7 @@ export default function ConsultLawyer() {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }

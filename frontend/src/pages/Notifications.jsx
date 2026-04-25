@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/layout/Sidebar";
+import BottomNav from "../components/layout/BottomNav";
+import MobileHeader from "../components/layout/MobileHeader";
 import axios from "../api/axios";
 import "./notifications.css";
 
@@ -39,6 +41,7 @@ export default function Notifications() {
 
   return (
     <div className="np-page">
+      <MobileHeader />
       <Sidebar />
       <div className="np-body">
         <div className="np-header">
@@ -101,6 +104,7 @@ export default function Notifications() {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }

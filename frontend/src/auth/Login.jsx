@@ -77,41 +77,28 @@ export default function Login() {
         </div>
       </div>
 
-      {/* RIGHT (Main Form on Mobile) */}
+      {/* RIGHT */}
       <div className="login-right">
-        {/* 📱 Mobile-Only Hero Section (Matches Prototype) */}
-        <div className="login-mobile-hero">
-          <div className="login-logo-icon mini">
-            <img src="/logo.png" alt="Logo" />
-          </div>
-          <h1 className="login-mobile-title">Justice,<br />intelligently<br />delivered.</h1>
-          <p className="login-mobile-sub">India's most trusted AI-powered legal assistant.</p>
-        </div>
-
         <h2 className="login-form-title">login</h2>
         <p className="login-form-sub">Enter your credentials to access your legal workspace.</p>
 
         <div className="form-field">
           <label className="form-label">EMAIL ADDRESS</label>
-          <div className="input-with-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="field-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
-            <input
-              className="form-input"
-              placeholder="professional@firm.com"
-              value={email}
-              onChange={e => setEmail(e.target.value)}
-            />
-          </div>
+          <input
+            className="form-input"
+            placeholder="e.g. advocate@jurisbot.com"
+            value={email}
+            onChange={e => setEmail(e.target.value)}
+          />
         </div>
 
         <div className="form-field">
           <label className="form-label">PASSWORD</label>
           <div className="password-box">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="field-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
             <input
               type={showPassword ? "text" : "password"}
               className="form-input"
-              placeholder="••••••••"
+              placeholder="Enter your password"
               value={password}
               onChange={e => setPassword(e.target.value)}
               onKeyDown={e => e.key === "Enter" && submit()}
@@ -131,7 +118,7 @@ export default function Login() {
           onClick={submit}
           disabled={loading}
         >
-          {loading ? "signing in..." : "Login to Dashboard →"}
+          {loading ? "signing in..." : "login to dashboard"}
         </button>
 
         <div className="form-divider">OR</div>
@@ -139,14 +126,6 @@ export default function Login() {
         <p className="form-link" onClick={() => navigate("/register")}>
           Don't have an account? <span>Create one for free →</span>
         </p>
-
-        <div className="login-footer-trust">
-          <span>🛡️ SECURED BY INDUSTRY STANDARDS</span>
-          <div className="trust-badges">
-            <span>256-BIT AES</span>
-            <span>ISO 27001</span>
-          </div>
-        </div>
       </div>
     </div>
   );

@@ -75,73 +75,59 @@ export default function Sidebar() {
   };
 
   return (
-    <>
-      {/* Mobile Toggle Button */}
-      <button className="cs-mobile-toggle" onClick={() => setMobileOpen(!mobileOpen)}>
-        {mobileOpen ? (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>
-        ) : (
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-        )}
+    <div className={`cs-sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
+      {/* Desktop Toggle */}
+      <button className="cs-toggle" onClick={() => setCollapsed(!collapsed)}>
+        <span style={{ transform: collapsed ? "rotate(180deg)" : "none", display: "inline-flex" }}>
+          {Icons.chevron}
+        </span>
       </button>
 
-      {/* Mobile Backdrop */}
-      {mobileOpen && <div className="cs-mobile-overlay" onClick={() => setMobileOpen(false)} />}
-
-      <div className={`cs-sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
-        {/* Desktop Toggle */}
-        <button className="cs-toggle" onClick={() => setCollapsed(!collapsed)}>
-          <span style={{ transform: collapsed ? "rotate(180deg)" : "none", display: "inline-flex" }}>
-            {Icons.chevron}
-          </span>
-        </button>
-
-        <div className="cs-logo">
-          <div className="cs-logo-icon" style={{ background: '#fff', padding: '2px' }}>
-            <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid #c9a84c' }} />
+      <div className="cs-logo">
+        <div className="cs-logo-icon" style={{ background: '#fff', padding: '2px' }}>
+          <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid #c9a84c' }} />
+        </div>
+        {!collapsed && (
+          <div className="fade-in">
+            <span className="cs-logo-name">JurisBot</span>
+            <span className="cs-logo-tag">Legal Awareness AI</span>
           </div>
+        )}
+      </div>
+
+      {user.role !== "admin" && (
+        <div className="cs-cta-wrap">
+          <button className="cs-cta-btn" onClick={() => navigate("/create-case")}>
+            {Icons.plus} {!collapsed && "New Consultation"}
+          </button>
+        </div>
+      )}
+
+      <nav className="cs-nav">
+        <div className="cs-section-label">{collapsed ? "—" : "WORKSPACE"}</div>
+        {(user.role === "admin" ? ADMIN_NAV : CITIZEN_NAV).map(({ icon, label, path }) => (
+          <NavBtn key={path} iconKey={icon} label={label} path={path} />
+        ))}
+        <div className="cs-section-label" style={{ marginTop: "12px" }}>{collapsed ? "—" : "SYSTEM"}</div>
+        {(user.role === "admin" ? ADMIN_SYSTEM_NAV : SYSTEM_NAV).map(({ icon, label, path }) => (
+          <NavBtn key={path} iconKey={icon} label={label} path={path} />
+        ))}
+      </nav>
+
+      <div className="cs-footer">
+        <div className="cs-user-row" onClick={() => navigate("/settings")}>
+          <div className="cs-user-avatar">{Icons.user}</div>
           {!collapsed && (
             <div className="fade-in">
-              <span className="cs-logo-name">JurisBot</span>
-              <span className="cs-logo-tag">Legal Awareness AI</span>
+              <span className="cs-user-name">{user?.name || "User"}</span>
+              <span className="cs-user-role">{user?.role === "admin" ? "Administrator" : "Verified Citizen"}</span>
             </div>
           )}
         </div>
-
-        {user.role !== "admin" && (
-          <div className="cs-cta-wrap">
-            <button className="cs-cta-btn" onClick={() => navigate("/create-case")}>
-              {Icons.plus} {!collapsed && "New Consultation"}
-            </button>
-          </div>
-        )}
-
-        <nav className="cs-nav">
-          <div className="cs-section-label">{collapsed ? "—" : "WORKSPACE"}</div>
-          {(user.role === "admin" ? ADMIN_NAV : CITIZEN_NAV).map(({ icon, label, path }) => (
-            <NavBtn key={path} iconKey={icon} label={label} path={path} />
-          ))}
-          <div className="cs-section-label" style={{ marginTop: "12px" }}>{collapsed ? "—" : "SYSTEM"}</div>
-          {(user.role === "admin" ? ADMIN_SYSTEM_NAV : SYSTEM_NAV).map(({ icon, label, path }) => (
-            <NavBtn key={path} iconKey={icon} label={label} path={path} />
-          ))}
-        </nav>
-
-        <div className="cs-footer">
-          <div className="cs-user-row" onClick={() => navigate("/settings")}>
-            <div className="cs-user-avatar">{Icons.user}</div>
-            {!collapsed && (
-              <div className="fade-in">
-                <span className="cs-user-name">{user?.name || "User"}</span>
-                <span className="cs-user-role">{user?.role === "admin" ? "Administrator" : "Verified Citizen"}</span>
-              </div>
-            )}
-          </div>
-          <button className="cs-logout-btn" onClick={logout}>
-            {Icons.logout} {!collapsed && <span className="fade-in">Sign Out</span>}
-          </button>
-        </div>
+        <button className="cs-logout-btn" onClick={logout}>
+          {Icons.logout} {!collapsed && <span className="fade-in">Sign Out</span>}
+        </button>
       </div>
-    </>
+    </div>
   );
 }

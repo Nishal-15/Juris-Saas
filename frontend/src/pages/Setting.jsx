@@ -1,6 +1,8 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
+import BottomNav from "../components/layout/BottomNav";
+import MobileHeader from "../components/layout/MobileHeader";
 import axios from "../api/axios";
 import "./settings.css";
 
@@ -23,6 +25,7 @@ export default function Settings() {
 
   return (
     <div className="st-page">
+      <MobileHeader />
       <Sidebar />
       <div className="st-body">
         <h1 className="st-title">Settings</h1>
@@ -108,6 +111,7 @@ export default function Settings() {
           </div>
         </div>
       </div>
+      <BottomNav />
     </div>
   );
 }

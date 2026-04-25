@@ -5,95 +5,77 @@
 }
 
 @media (max-width: 850px) {
-  div.register-page { flex-direction: column !important; height: 100vh !important; overflow-y: auto !important; }
-  div.register-left, .register-left-grid, .register-left-glow, .register-brand { 
-    display: none !important; 
-    visibility: hidden !important; 
-    height: 0 !important; 
-    width: 0 !important; 
-    padding: 0 !important; 
-    margin: 0 !important; 
-    opacity: 0 !important;
+  .register-page { 
+    flex-direction: column; 
+    height: 100vh; 
+    overflow-y: auto; 
+    background: radial-gradient(circle at top, #1a1c24 0%, #08090d 100%);
   }
-  div.register-right { 
-    width: 100% !important; 
-    padding: 0 20px 100px !important; 
-    min-height: 100vh !important; 
+  
+  .register-left { 
     display: flex !important;
-    flex-direction: column !important;
-    justify-content: flex-start !important;
-  }
-  .register-form-title { font-size: 36px !important; margin-top: 0 !important; }
-
-  /* 📱 MOBILE HERO SPECIFIC (Matches Prototype) */
-  .register-mobile-hero {
-    display: block;
-    width: calc(100% + 40px);
-    margin-left: -20px;
-    position: relative;
-    height: 240px;
-    margin-bottom: 30px;
-    overflow: hidden;
-  }
-
-  .register-hero-img-wrap {
-    width: 100%;
-    height: 100%;
-    position: relative;
-  }
-
-  .register-hero-img {
-    width: 100%;
-    height: 100%;
-    object-fit: cover;
-  }
-
-  .register-hero-overlay {
-    position: absolute;
-    inset: 0;
-    background: linear-gradient(to top, #0d1117 10%, transparent 90%);
-  }
-
-  .register-mobile-title {
-    position: absolute;
-    bottom: 20px;
-    left: 20px;
-    right: 20px;
-    font-family: var(--font-display);
-    font-size: 28px;
-    font-weight: 700;
-    color: #fff;
-    line-height: 1.2;
-    z-index: 2;
-  }
-
-  /* Icon Inputs (Consolidated with Login) */
-  .input-with-icon, .password-box {
-    position: relative;
-    display: flex;
+    flex: none !important;
+    padding: 60px 30px 20px !important;
+    background: transparent !important;
     align-items: center;
+    justify-content: center;
+    text-align: center;
+  }
+  
+  .register-left-grid, .register-left-glow, .register-headline, .register-tagline, .register-steps { 
+    display: none !important; 
+  }
+  
+  .register-logo-wrap {
+    margin-bottom: 0 !important;
+    flex-direction: column;
+    gap: 12px;
   }
 
-  .field-icon {
-    display: block;
-    position: absolute;
-    left: 15px;
-    width: 18px;
-    height: 18px;
-    color: rgba(255,255,255,0.3);
-    z-index: 2;
+  .register-logo-icon {
+    width: 70px !important;
+    height: 70px !important;
+    margin-bottom: 10px;
+  }
+
+  .register-logo-name {
+    font-size: 38px !important;
+  }
+
+  .register-logo-sub {
+    font-size: 12px !important;
+    letter-spacing: 3px !important;
+  }
+
+  .register-right { 
+    width: 100% !important; 
+    padding: 20px 30px 100px !important; 
+    background: transparent !important;
+    border-left: none !important;
+    box-shadow: none !important;
+  }
+  
+  .register-form-title { 
+    font-size: 32px !important; 
+    text-align: center;
+    margin-bottom: 8px !important;
+  }
+  
+  .register-form-sub {
+    text-align: center;
+    margin-bottom: 30px !important;
   }
 
   .form-input {
-    padding-left: 45px !important;
-    background: rgba(255,255,255,0.04) !important;
+    background: rgba(255,255,255,0.05) !important;
     border: 1px solid rgba(255,255,255,0.1) !important;
+    backdrop-filter: blur(10px);
   }
 
-  .gold-link {
-    color: var(--gold);
-    text-decoration: underline;
-    font-weight: 600;
+  .btn-primary {
+    padding: 18px !important;
+    font-size: 17px !important;
+    box-shadow: 0 8px 25px rgba(201,168,76,0.3) !important;
   }
 }
 

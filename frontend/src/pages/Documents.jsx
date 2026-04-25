@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 import Sidebar from "../components/layout/Sidebar";
+import BottomNav from "../components/layout/BottomNav";
+import MobileHeader from "../components/layout/MobileHeader";
 import axios from "../api/axios";
 import "./documents.css";
 
@@ -53,6 +55,7 @@ export default function Documents() {
 
   return (
     <div className="dv-page">
+      <MobileHeader />
       <Sidebar />
       <div className="dv-body">
         <div className="dv-header">
@@ -123,6 +126,7 @@ export default function Documents() {
           </div>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }
