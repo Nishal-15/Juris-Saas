@@ -6,7 +6,16 @@ import BottomNav from "../components/layout/BottomNav";
 import MobileHeader from "../components/layout/MobileHeader";
 import "./cases.css";
 
-// ... statusConfig and urgencyColor ...
+const statusConfig = {
+  "Open":              { color: "#6b7280", bg: "rgba(107,114,128,0.1)", label: "Open" },
+  "In Progress":       { color: "#3b82f6", bg: "rgba(59,130,246,0.1)", label: "In Progress" },
+  "Hearing Scheduled": { color: "#c9a84c", bg: "rgba(201,168,76,0.1)", label: "Hearing" },
+  "Verdict Pending":   { color: "#f59e0b", bg: "rgba(245,158,11,0.1)", label: "Verdict Pending" },
+  "Closed":            { color: "#10b981", bg: "rgba(16,185,129,0.1)", label: "Closed" },
+};
+
+const urgencyColor = (u) =>
+  u === "Emergency" ? "#ef4444" : u === "Urgent" ? "#f59e0b" : "#10b981";
 
 export default function RecentCases() {
   const [cases, setCases] = useState([]);
