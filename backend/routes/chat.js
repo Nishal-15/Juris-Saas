@@ -11,13 +11,19 @@ router.post("/", auth(), async (req, res) => {
       const response = await axios.post(
         `${aiUrl}/chat`,
         { ...req.body, lang: req.user.preferredLanguage || "en" },
-        { timeout: 10000 } // Increased timeout for Mistral
+        { timeout: 30000 } // Increased timeout for heavy LLM tasks
       );
+
+      // ✅ Check if Python returned an error
+      if (response.data.error) {
+        return res.json({ answer: `AI Service Error: ${response.data.error}` });
+      }
+
       res.json(response.data);
     } catch (aiErr) {
       console.error("Mistral Service Connection Failed:", aiErr.message);
       res.json({ 
-        answer: "I'm sorry, I'm having trouble connecting to the legal database. Please ensure the AI service is active or consult a lawyer below." 
+        answer: `Connection Error: Could not reach the AI Service at ${aiUrl}. Make sure app.py is running.` 
       });
     }
   } catch (err) {
