@@ -8,12 +8,14 @@ router.post("/", auth(), async (req, res) => {
     const aiUrl = process.env.AI_SERVICE_URL || "http://127.0.0.1:8080";
     console.log(`📡 AI Bridge: Sending request to ${aiUrl}/chat...`);
     
+    const userLang = (req.user.preferredLanguage || "en").split('-')[0].toLowerCase();
+    
     try {
       const response = await axios.post(
         `${aiUrl}/chat`,
-        { ...req.body, lang: req.user.preferredLanguage || "en" },
+        { ...req.body, lang: userLang },
         { 
-          timeout: 300000, // 👈 5 Minutes (Mistral on CPU is slow)
+          timeout: 600000, // 👈 10 Minutes (Mistral on CPU is very slow)
           family: 4
         }
       );
@@ -30,9 +32,16 @@ router.post("/", auth(), async (req, res) => {
       // ✅ If the server responded with an error (e.g. 500)
       if (aiErr.response) {
         const errorData = aiErr.response.data;
-        const errorMessage = (typeof errorData === 'string') 
-          ? "The AI service is currently unavailable (502/503)." 
-          : (errorData.error || "Internal AI Processing Error");
+        let errorMessage = "Internal AI Processing Error";
+        
+        if (typeof errorData === 'string') {
+          // If it's HTML, take the title or first bit
+          errorMessage = errorData.includes("<title>") 
+            ? errorData.split("<title>")[1].split("</title>")[0]
+            : "AI Service Unavailable (502/503 Proxy Error)";
+        } else {
+          errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
+        }
 
         return res.json({ 
           answer: `AI Service Error: ${errorMessage}` 
