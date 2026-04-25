@@ -57,16 +57,21 @@ html, body, #root {
 
   .layout-center {
     width: 100% !important;
-    height: calc(100dvh - 120px); 
-    padding-bottom: 80px !important; 
+    height: calc(100dvh - 120px) !important; 
+    padding-bottom: 20px !important; 
     overflow-y: auto !important;
     -webkit-overflow-scrolling: touch;
+    flex: 1;
   }
 
-  .chat-window {
-    border-radius: 0 !important;
-    border: none !important;
+  .chat-window, .chat-wrap {
     height: 100% !important;
+    max-height: 100% !important;
+  }
+
+  .mobile-top-header {
+    display: flex !important;
+    flex-shrink: 0;
   }
 
   .alerts-container {
