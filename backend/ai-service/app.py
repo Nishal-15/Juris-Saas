@@ -3,9 +3,8 @@ from flask_cors import CORS
 from deep_translator import GoogleTranslator
 from pinecone import Pinecone
 from dotenv import load_dotenv
-import os, re
+import os, re, requests
 import ollama
-import google.generativeai as genai
 
 # Load environment
 load_dotenv(os.path.join(os.path.dirname(__file__), "../.env"))
@@ -19,24 +18,12 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 LLM_MODEL = os.getenv("LLM_MODEL", "mistral")
 
 # =========================
-# INIT (Ultra Stable)
+# INIT (Ultra Stable v4.0)
 # =========================
 app = Flask(__name__)
 CORS(app)
 
-print("🔄 Starting AI Service [VERSION 3.0 - ULTRA STABLE]...")
-
-# Configure Gemini with a safer initialization
-if GEMINI_API_KEY:
-    try:
-        genai.configure(api_key=GEMINI_API_KEY)
-        # Using 1.5-flash which is the current stable standard
-        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-        print("✨ Gemini Cloud: ENABLED")
-    except Exception as e:
-        print(f"⚠️ Gemini Init Error: {e}")
-else:
-    print("⚠️ No Gemini Key found.")
+print("🔄 Starting AI Service [VERSION 4.0 - DIRECT CONNECT]...")
 
 # Connect to Pinecone
 try:
@@ -48,22 +35,38 @@ except Exception as e:
     print(f"⚠️ Pinecone Warning: {str(e)}")
 
 # =========================
-# HELPERS
+# DIRECT API HELPERS
 # =========================
 
-def get_embedding(text):
-    """Generate embedding (Uses Gemini Cloud for zero RAM usage)"""
+def get_embedding_direct(text):
+    """Direct HTTP call to Gemini Embedding API"""
     if not GEMINI_API_KEY: return None
+    url = f"https://generativelanguage.googleapis.com/v1/models/embedding-001:embedContent?key={GEMINI_API_KEY}"
+    payload = {
+        "model": "models/embedding-001",
+        "content": {"parts": [{"text": text}]}
+    }
     try:
-        # Note: If this fails, you might need to re-upload your data to Pinecone
-        result = genai.embed_content(
-            model="models/embedding-001",
-            content=text,
-            task_type="retrieval_query"
-        )
-        return result['embedding']
+        response = requests.post(url, json=payload, timeout=10)
+        res_json = response.json()
+        return res_json['embedding']['values']
     except Exception as e:
-        print(f"❌ Embedding Error: {e}")
+        print(f"❌ Direct Embedding Error: {e}")
+        return None
+
+def generate_answer_direct(prompt):
+    """Direct HTTP call to Gemini GenerateContent API"""
+    if not GEMINI_API_KEY: return None
+    url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
+    payload = {
+        "contents": [{"parts": [{"text": prompt}]}]
+    }
+    try:
+        response = requests.post(url, json=payload, timeout=60)
+        res_json = response.json()
+        return res_json['candidates'][0]['content']['parts'][0]['text']
+    except Exception as e:
+        print(f"❌ Direct Gemini Error: {e}")
         return None
 
 # =========================
@@ -103,23 +106,19 @@ STRICT CONTENT RULES:
 def generate_answer(question, context, lang):
     prompt = f"{SYSTEM_PROMPT.replace('{LANG}', lang)}\n\nUser Question: {question}\n\nLegal Context: {context}"
     
-    # 1. TRY GEMINI (Cloud)
-    if GEMINI_API_KEY:
-        try:
-            print("✨ AI Thinking (Gemini)...")
-            response = gemini_model.generate_content(prompt)
-            return response.text
-        except Exception as ge:
-            print(f"⚠️ Gemini Request Failed: {ge}")
+    # 1. TRY DIRECT CLOUD FIRST
+    print("✨ AI Thinking (Gemini Cloud Direct)...")
+    answer = generate_answer_direct(prompt)
+    if answer: return answer
 
-    # 2. FALLBACK TO MISTRAL (Local)
-    print(f"🤖 AI Thinking (Mistral Fallback)...")
+    # 2. FALLBACK TO MISTRAL
+    print("🤖 AI Thinking (Mistral Fallback)...")
     try:
         res = ollama.chat(model=LLM_MODEL, messages=[{"role":"user","content":prompt}])
         return res["message"]["content"]
     except Exception as e:
-        print(f"❌ Local AI Error: {str(e)}")
-        return "I'm sorry, I'm having trouble connecting to my AI core. Please ensure your internet is connected or Ollama is running."
+        print(f"❌ AI Error: {e}")
+        return "I'm sorry, I'm having trouble connecting to my AI core."
 
 # =========================
 # CHAT API
@@ -127,7 +126,7 @@ def generate_answer(question, context, lang):
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "alive", "port": 8080})
+    return jsonify({"status": "alive", "version": "4.0"})
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -154,16 +153,14 @@ def chat():
         # 2. Search Database
         context = ""
         try:
-            query_vec = get_embedding(query_en)
+            query_vec = get_embedding_direct(query_en)
             if query_vec:
-                # If Pinecone throws a dimension error, we will know why
                 results = index.query(vector=query_vec, top_k=1, include_metadata=True)
                 if results['matches']:
                     context = results['matches'][0]['metadata']['content']
                     print(f"📖 Context Found.")
         except Exception as pe:
             print(f"⚠️ Database Error: {pe}")
-            context = "Note: Using general knowledge (Database dimensions might need reset)."
 
         # 3. Generate Answer
         final_answer = generate_answer(query_en, context, lang)
