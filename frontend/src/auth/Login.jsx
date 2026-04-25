@@ -86,7 +86,7 @@ export default function Login() {
           <label className="form-label">EMAIL ADDRESS</label>
           <input
             className="form-input"
-            placeholder="e.g. advocate@jurisbot.com"
+            placeholder="example@gmail.com"
             value={email}
             onChange={e => setEmail(e.target.value)}
           />

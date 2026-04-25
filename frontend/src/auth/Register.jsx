@@ -166,7 +166,7 @@ export default function Register() {
           <input
             type="email"
             className="form-input"
-            placeholder="you@example.com"
+            placeholder="example@gmail.com"
             onChange={e => setForm({ ...form, email: e.target.value })}
           />
         </div>
