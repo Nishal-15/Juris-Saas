@@ -83,8 +83,7 @@ export default function FilingConsole() {
         ...prev, 
         title: res.data.title || prev.title,
         category: res.data.category || prev.category,
-        legalType: res.data.legalType || prev.legalType,
-        incidentDate: res.data.incidentDate || prev.incidentDate
+        legalType: res.data.legalType || prev.legalType
       }));
       setAiMessage("✨ Magic! I've suggested a Title and Category for you based on your story.");
     } catch (err) {
@@ -95,8 +94,8 @@ export default function FilingConsole() {
   };
 
   const handleSubmit = async () => {
-    if (!formData.title.trim() || !formData.description.trim() || !formData.category) {
-      return alert("Incomplete Details: Please provide a meaningful Title and Story before finalizing.");
+    if (!formData.title.trim() || !formData.description.trim() || !formData.category || !formData.incidentDate) {
+      return alert("Incomplete Details: Please provide Title, Description, Category, and Date of Incident before finalizing.");
     }
     setLoading(true);
     try {
@@ -221,7 +220,7 @@ export default function FilingConsole() {
                 </div>
 
                 <div className="form-group">
-                  <label>Date of Incident</label>
+                  <label>Date of Incident <span className="req">*</span></label>
                   <div className="material-date-trigger" onClick={() => setShowDatePicker(true)}>
                     {formData.incidentDate || "Select Date"}
                     <span className="cal-icon">📅</span>
