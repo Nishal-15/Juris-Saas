@@ -16,34 +16,69 @@ html, body, #root {
   height: 100vh;
   overflow: hidden;
   background: #0d1117;
+  overscroll-behavior: contain;
 }
 
 .layout-center {
   flex: 1;
   overflow-y: auto;
   min-width: 0;
+  overscroll-behavior: contain;
 }
 .layout-center::-webkit-scrollbar { width: 4px; }
 .layout-center::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+.mobile-actions-top {
+  display: flex;
+  gap: 8px;
+}
 /* -- Mobile Chat Padding -- */
 /* -- Mobile Optimization (Zero Impact on Desktop) -- */
+/* -- Mobile Optimization -- */
 @media (max-width: 768px) {
   .layout {
     flex-direction: column;
+    height: 100%; /* Better for mobile */
+    overflow: hidden;
   }
   
-  .right-panel {
+  .right-panel, .rp-shell {
     display: none !important;
+  }
+
+  /* Show RightPanel ONLY in Alerts Page */
+  .alerts-page-scroll .rp-shell {
+    display: block !important;
+    width: 100%;
+    background: transparent;
+    border: none;
+    padding: 0;
   }
 
   .layout-center {
     width: 100% !important;
-    padding-bottom: 70px !important; /* Bottom Nav Space */
+    height: calc(100vh - 120px); /* Adjust for header + nav */
+    padding-bottom: 80px !important; 
+    overflow-y: auto !important;
+    -webkit-overflow-scrolling: touch;
   }
 
   .chat-window {
     border-radius: 0 !important;
     border: none !important;
-    height: 100vh !important;
+    height: 100% !important;
+  }
+
+  .alerts-container {
+    padding: 20px;
+    padding-bottom: 100px;
+  }
+
+  .alerts-header-title {
+    font-size: 24px;
+    font-weight: 700;
+    margin-bottom: 20px;
+    color: #c9a84c;
+    text-align: center;
   }
 }

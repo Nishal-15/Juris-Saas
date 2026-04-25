@@ -20,6 +20,7 @@ import VideoCall from "./pages/VideoCall";
 import GlobalCallNotification from "./components/layout/GlobalCallNotification";
 import Terms from "./pages/Terms";
 import CaseDetails from "./pages/CaseDetails";
+import Alerts from "./pages/Alerts";
 
 // ✅ AUTO TOKEN LOAD
 if (localStorage.token) {
@@ -95,6 +96,10 @@ return (
 
       <Route path="/settings" element={
         <ProtectedRoute allowedRoles={["user", "lawyer", "admin"]}><Settings /></ProtectedRoute>
+      }/>
+
+      <Route path="/alerts" element={
+        <ProtectedRoute allowedRoles={["user", "lawyer", "admin"]}><Alerts /></ProtectedRoute>
       }/>
     </Routes>
   </>

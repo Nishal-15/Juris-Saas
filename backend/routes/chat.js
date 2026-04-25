@@ -29,8 +29,13 @@ router.post("/", auth(), async (req, res) => {
       
       // ✅ If the server responded with an error (e.g. 500)
       if (aiErr.response) {
+        const errorData = aiErr.response.data;
+        const errorMessage = (typeof errorData === 'string') 
+          ? "The AI service is currently unavailable (502/503)." 
+          : (errorData.error || "Internal AI Processing Error");
+
         return res.json({ 
-          answer: `AI Service Crashed: The Python service is running but returned an error: ${JSON.stringify(aiErr.response.data)}` 
+          answer: `AI Service Error: ${errorMessage}` 
         });
       }
 

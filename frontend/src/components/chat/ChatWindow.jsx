@@ -48,7 +48,14 @@ export default function ChatWindow() {
       
       setMessages(prev => {
         const updated = [...prev];
-        updated[updated.length - 1] = { role: "ai", text: res.data.answer || "I'm sorry, I couldn't process that legal query." };
+        let answer = res.data.answer || "I'm sorry, I couldn't process that legal query.";
+        
+        // 🛡️ Safety Check: If AI returns raw SVG/HTML code (hallucination or crash)
+        if (answer.includes("<svg") || answer.includes("<!DOCTYPE") || answer.startsWith("d=\"M")) {
+          answer = "JurisBot encountered a processing error while generating the legal response. Please try rephrasing your question.";
+        }
+
+        updated[updated.length - 1] = { role: "ai", text: answer };
         return updated;
       });
 
