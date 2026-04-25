@@ -142,7 +142,7 @@ option {
     padding-bottom: 90px !important; /* Space for bottom nav */
   }
 
-  .db-layout, .cl-page, .dv-page, .np-page, .st-page, .wizard-page, .layout, .rc-page {
+  .db-layout, .cl-page, .dv-page, .np-page, .st-page, .wizard-page, .layout, .rc-page, .whatsapp-chat-page, .ct-page {
     flex-direction: column !important;
   }
 

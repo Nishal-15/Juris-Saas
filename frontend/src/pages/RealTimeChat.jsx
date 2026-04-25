@@ -1,6 +1,8 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
+import MobileHeader from "../components/layout/MobileHeader";
+import BottomNav from "../components/layout/BottomNav";
 import socket from "../api/socket";
 import axios from "../api/axios";
 import "./chat.css";
@@ -86,6 +88,7 @@ export default function RealTimeChat() {
 
   return (
     <div className="whatsapp-chat-page">
+      <MobileHeader />
       <Sidebar />
       <main className="chat-viewport">
         <input 
@@ -167,6 +170,7 @@ export default function RealTimeChat() {
         </footer>
 
       </main>
+      <BottomNav />
     </div>
   );
 }

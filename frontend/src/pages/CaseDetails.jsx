@@ -2,6 +2,8 @@ import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import Sidebar from "../components/layout/Sidebar";
+import MobileHeader from "../components/layout/MobileHeader";
+import BottomNav from "../components/layout/BottomNav";
 import "./citizen_case_tracking.css";
 
 export default function CaseDetails() {
@@ -43,6 +45,7 @@ export default function CaseDetails() {
 
   return (
     <div className="ct-page">
+      <MobileHeader />
       <Sidebar />
       <div className="ct-body">
         {loading ? (
@@ -237,6 +240,7 @@ export default function CaseDetails() {
           </>
         )}
       </div>
+      <BottomNav />
     </div>
   );
 }
