@@ -30,9 +30,6 @@ const INDIAN_LANGUAGES = [
   { code: "ur-IN", name: "Urdu (اردو)", flag: "🇮🇳" }
 ];
 
-const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-const recognition = SpeechRecognition ? new SpeechRecognition() : null;
-
 export default function FilingConsole() {
   const [step, setStep] = useState(1);
   const [selectedLang, setSelectedLang] = useState(INDIAN_LANGUAGES[0]);
@@ -43,8 +40,7 @@ export default function FilingConsole() {
     oppositeParty: "",
     urgency: "Normal"
   });
-  const [isListening, setIsListening] = useState(false);
-  const [aiMessage, setAiMessage] = useState("Ready to help. I can understand any of the 22 Indian languages!");
+  const [aiMessage, setAiMessage] = useState("Ready to help. I can assist you with your legal case filing!");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -57,40 +53,9 @@ export default function FilingConsole() {
     { id: "other",    label: "Something Else",   icon: "⚖️", desc: "Any other legal problem" }
   ];
 
-  // 🎙️ Setup Recognition Language
-  useEffect(() => {
-    if (recognition) {
-      recognition.lang = selectedLang.code;
-      recognition.continuous = true;
-      recognition.interimResults = true;
-    }
-  }, [selectedLang]);
 
-  const toggleListening = () => {
-    if (!recognition) return alert("Browser not supported.");
-    if (isListening) {
-      recognition.stop();
-      setIsListening(false);
-      handleAIAutoFill(); // Analyze when stopped
-    } else {
-      recognition.start();
-      setIsListening(true);
-      setAiMessage(`Listening in ${selectedLang.name}...`);
-    }
-  };
 
-  if (recognition) {
-    recognition.onresult = (event) => {
-      let finalTranscript = "";
-      for (let i = event.resultIndex; i < event.results.length; ++i) {
-        if (event.results[i].isFinal) finalTranscript += event.results[i][0].transcript;
-      }
-      if (finalTranscript) {
-        setFormData(prev => ({ ...prev, description: prev.description + " " + finalTranscript }));
-      }
-    };
-    recognition.onerror = () => setIsListening(false);
-  }
+
 
   // ✨ MAGIC AUTO-FILL: AI Analyze the story
   const handleAIAutoFill = async () => {
@@ -142,17 +107,7 @@ export default function FilingConsole() {
               <p className="ai-dock-msg">{aiMessage}</p>
             </div>
           </div>
-          <div className="language-selector-dock">
-            <span className="lang-icon-global">🌐</span>
-            <select 
-              value={selectedLang.code} 
-              onChange={(e) => setSelectedLang(INDIAN_LANGUAGES.find(l => l.code === e.target.value))}
-            >
-              {INDIAN_LANGUAGES.map(l => (
-                <option key={l.code} value={l.code}>{l.name.replace(/\(.*\)/, '')}</option>
-              ))}
-            </select>
-          </div>
+
         </div>
 
         {/* Progress Bar */}
@@ -203,17 +158,11 @@ export default function FilingConsole() {
           {step === 2 && (
             <div className="wizard-slide fade-in">
               <h1 className="wizard-title">Incident Narration <span className="req">*</span></h1>
-              <p className="wizard-subtitle">Provide a detailed account. Use voice for natural expression.</p>
+              <p className="wizard-subtitle">Provide a detailed account of the incident for legal analysis.</p>
               
               <div className="wizard-form-box">
                 <div className="form-group">
-                  <div className="label-with-action">
                     <label>Statement of Facts</label>
-                    <button className={`voice-btn-large ${isListening ? 'recording' : ''}`} onClick={toggleListening}>
-                      <span className="pulse-dot"></span>
-                      {isListening ? "Finalize Narration" : `Narrate in ${selectedLang.name.split(' ')[0]}`}
-                    </button>
-                  </div>
                   <textarea 
                     className="wizard-textarea"
                     value={formData.description}
