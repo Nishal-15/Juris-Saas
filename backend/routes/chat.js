@@ -35,16 +35,16 @@ router.post("/", auth(), async (req, res) => {
   try {
     console.log(`🤖 AI Query: ${message} (${lang})`);
 
-    // 1. Get Embedding
+    // 1 & 2. Get Embedding + Pinecone (RAG)
     let context = "";
     try {
+      console.log("🔍 Fetching Context...");
       const embedRes = await axios.post(
         `https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key=${GEMINI_KEY}`,
         { model: "models/text-embedding-004", content: { parts: [{ text: message }] } }
       );
       const vector = embedRes.data.embedding.values;
 
-      // 2. Query Pinecone (REST API)
       const pcRes = await axios.post(
         `https://${PC_INDEX}-emneh3v.svc.gcp-starter.pinecone.io/query`,
         { vector, topK: 1, includeMetadata: true },
@@ -53,25 +53,33 @@ router.post("/", auth(), async (req, res) => {
 
       if (pcRes.data.matches?.length > 0) {
         context = pcRes.data.matches[0].metadata.content;
+        console.log("📖 Context Loaded.");
       }
     } catch (ragErr) {
-      console.error("RAG Error:", ragErr.message);
+      console.error("⚠️ RAG Suppressed (Continuing without context):", ragErr.response?.data || ragErr.message);
+      // We don't throw here so the chat still works!
     }
 
     // 3. Generate Answer
+    console.log("✨ Generating Response...");
     const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nContext: ${context}\n\nQuestion: ${message}`;
     const genRes = await axios.post(
       `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] }
     );
 
-    const answer = genRes.data.candidates[0].content.parts[0].text;
-    res.json({ answer });
+    if (genRes.data.candidates && genRes.data.candidates[0].content) {
+       const answer = genRes.data.candidates[0].content.parts[0].text;
+       res.json({ answer });
+    } else {
+       throw new Error("Empty Gemini Response");
+    }
 
   } catch (err) {
-    console.error("AI Core Error:", err.message);
+    console.error("❌ AI CORE CRITICAL:", err.response?.data || err.message);
+    const errorDetail = err.response?.data?.error?.message || err.message;
     res.json({ 
-      answer: "I'm sorry, I encountered a connection error with my legal core. Please verify your internet connection or try again in a few moments." 
+      answer: `JurisBot is currently reconnecting its legal core. (Error: ${errorDetail.substring(0, 50)}...). Please try once more.` 
     });
   }
 });
