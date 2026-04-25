@@ -67,6 +67,7 @@ router.post("/", auth(), async (req, res) => {
     const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nContext: ${context}\n\nQuestion: ${message}`;
     
     if (GROQ_KEY) {
+      console.log("🚀🚀🚀 [AI CORE] ACTIVATING GROQ (LLAMA 3.3) 🚀🚀🚀");
       try {
         const groqRes = await axios.post(
           "https://api.groq.com/openai/v1/chat/completions",
