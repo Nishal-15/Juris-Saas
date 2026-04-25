@@ -21,6 +21,10 @@ router.post("/", auth(), async (req, res) => {
         answer: "Our specialized legal AI is currently syncronizing with the latest Indian Statutes. In the meantime, I can still help you with case tracking or connecting you with a verified advocate. How would you like to proceed?" 
       });
     }
+  } catch (err) {
+    console.error("Chat Controller Error:", err.message);
+    res.status(500).json({ error: "System encountered an error processing your request." });
+  }
 });
 
 // 👥 HUMAN-TO-HUMAN HISTORY
