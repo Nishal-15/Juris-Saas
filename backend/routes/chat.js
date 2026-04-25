@@ -5,7 +5,7 @@ const auth = require("../middleware/auth");
 // 🤖 MISTRAL AI CHAT (Secured)
 router.post("/", auth(), async (req, res) => {
   try {
-    const aiUrl = process.env.AI_SERVICE_URL || "http://127.0.0.1:8000";
+    const aiUrl = process.env.AI_SERVICE_URL || "http://127.0.0.1:8080";
     console.log(`📡 AI Bridge: Sending request to ${aiUrl}/chat...`);
     
     try {
