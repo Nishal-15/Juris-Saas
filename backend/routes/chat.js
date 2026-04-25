@@ -13,8 +13,8 @@ router.post("/", auth(), async (req, res) => {
         `${aiUrl}/chat`,
         { ...req.body, lang: req.user.preferredLanguage || "en" },
         { 
-          timeout: 60000,
-          family: 4 // 👈 Force IPv4 to avoid Windows ::1 vs 127.0.0.1 confusion
+          timeout: 120000, // 👈 2 Minutes (Mistral on CPU is slow)
+          family: 4
         }
       );
 
