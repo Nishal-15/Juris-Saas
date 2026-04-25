@@ -2,6 +2,7 @@ import { useState, useEffect } from "react";
 import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
+import MaterialDatePicker from "../components/chat/MaterialDatePicker";
 import "./createcase.css";
 
 // 🌍 22 Scheduled Languages of India
@@ -45,6 +46,7 @@ export default function FilingConsole() {
   const [aiMessage, setAiMessage] = useState("Ready to help. I can assist you with your legal case filing!");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showDatePicker, setShowDatePicker] = useState(false);
   const navigate = useNavigate();
 
   const categories = [
@@ -209,12 +211,17 @@ export default function FilingConsole() {
 
                 <div className="form-group">
                   <label>Date of Incident</label>
-                  <input 
-                    type="date"
-                    className="wizard-input material-date"
-                    value={formData.incidentDate}
-                    onChange={e => setFormData({...formData, incidentDate: e.target.value})}
-                  />
+                  <div className="material-date-trigger" onClick={() => setShowDatePicker(true)}>
+                    {formData.incidentDate || "Select Date"}
+                    <span className="cal-icon">📅</span>
+                  </div>
+                  {showDatePicker && (
+                    <MaterialDatePicker 
+                      value={formData.incidentDate} 
+                      onChange={(date) => setFormData({...formData, incidentDate: date})}
+                      onClose={() => setShowDatePicker(false)}
+                    />
+                  )}
                 </div>
 
                 <div className="form-group">
