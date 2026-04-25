@@ -40,8 +40,8 @@ router.post("/", auth(), async (req, res) => {
     try {
       console.log("🔍 Fetching Context...");
       const embedRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1/models/text-embedding-004:embedContent?key=${GEMINI_KEY}`,
-        { model: "models/text-embedding-004", content: { parts: [{ text: message }] } }
+        `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${GEMINI_KEY}`,
+        { model: "models/embedding-001", content: { parts: [{ text: message }] } }
       );
       const vector = embedRes.data.embedding.values;
 
@@ -57,14 +57,13 @@ router.post("/", auth(), async (req, res) => {
       }
     } catch (ragErr) {
       console.error("⚠️ RAG Suppressed (Continuing without context):", ragErr.response?.data || ragErr.message);
-      // We don't throw here so the chat still works!
     }
 
     // 3. Generate Answer
     console.log("✨ Generating Response...");
     const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nContext: ${context}\n\nQuestion: ${message}`;
     const genRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] }
     );
 
