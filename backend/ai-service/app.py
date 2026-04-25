@@ -49,9 +49,12 @@ def get_embedding_direct(text):
     try:
         response = requests.post(url, json=payload, timeout=10)
         res_json = response.json()
+        if response.status_code != 200:
+            print(f"❌ Gemini Embed Error ({response.status_code}): {res_json}")
+            return None
         return res_json['embedding']['values']
     except Exception as e:
-        print(f"❌ Direct Embedding Error: {e}")
+        print(f"❌ Direct Embedding Exception: {e}")
         return None
 
 def generate_answer_direct(prompt):
@@ -64,9 +67,12 @@ def generate_answer_direct(prompt):
     try:
         response = requests.post(url, json=payload, timeout=60)
         res_json = response.json()
+        if response.status_code != 200:
+            print(f"❌ Gemini Chat Error ({response.status_code}): {res_json}")
+            return None
         return res_json['candidates'][0]['content']['parts'][0]['text']
     except Exception as e:
-        print(f"❌ Direct Gemini Error: {e}")
+        print(f"❌ Direct Gemini Exception: {e}")
         return None
 
 # =========================
