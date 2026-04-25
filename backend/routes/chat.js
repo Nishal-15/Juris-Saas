@@ -12,7 +12,10 @@ router.post("/", auth(), async (req, res) => {
       const response = await axios.post(
         `${aiUrl}/chat`,
         { ...req.body, lang: req.user.preferredLanguage || "en" },
-        { timeout: 60000 } // Increased to 60s for local Mistral/CPU
+        { 
+          timeout: 60000,
+          family: 4 // 👈 Force IPv4 to avoid Windows ::1 vs 127.0.0.1 confusion
+        }
       );
 
       // ✅ Check if Python returned an error
