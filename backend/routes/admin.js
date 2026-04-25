@@ -24,7 +24,7 @@ router.get("/pending-lawyers", auth(["admin"]), async (req, res) => {
 // 👥 GET ALL CITIZENS
 router.get("/citizens", auth(["admin"]), async (req, res) => {
   try {
-    const citizens = await User.find({ role: { $in: ["user", "admin"] } }).sort({ createdAt: -1 });
+    const citizens = await User.find({ role: "user" }).sort({ createdAt: -1 });
     res.json(citizens);
   } catch (err) {
     res.status(500).json({ message: err.message });
