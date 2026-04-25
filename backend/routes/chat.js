@@ -6,6 +6,7 @@ const auth = require("../middleware/auth");
 router.post("/", auth(), async (req, res) => {
   try {
     const aiUrl = process.env.AI_SERVICE_URL || "http://127.0.0.1:8000";
+    console.log(`📡 AI Bridge: Sending request to ${aiUrl}/chat...`);
     
     try {
       const response = await axios.post(
