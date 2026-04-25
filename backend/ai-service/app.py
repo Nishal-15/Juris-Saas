@@ -19,19 +19,24 @@ MODEL_NAME = "all-MiniLM-L6-v2"
 LLM_MODEL = os.getenv("LLM_MODEL", "mistral")
 
 # =========================
-# INIT
+# INIT (Robust Startup)
 # =========================
 app = Flask(__name__)
 CORS(app)
 
-print(f"🔄 Connecting to Pinecone: {PINECONE_INDEX_NAME}...")
-pc = Pinecone(api_key=PINECONE_API_KEY)
-index = pc.Index(PINECONE_INDEX_NAME)
+print("🔄 Starting AI Service Overhaul...")
 
-print(f"🔄 Loading Embedding Model: {MODEL_NAME}...")
-model = SentenceTransformer(MODEL_NAME)
-
-print("✅ AI Service: FULL INFRASTRUCTURE READY")
+try:
+    print(f"🔄 Connecting to Pinecone: {PINECONE_INDEX_NAME}...")
+    pc = Pinecone(api_key=PINECONE_API_KEY)
+    index = pc.Index(PINECONE_INDEX_NAME)
+    
+    print(f"🔄 Loading Embedding Model: {MODEL_NAME}...")
+    model = SentenceTransformer(MODEL_NAME)
+    print("✅ Infrastructure: READY")
+except Exception as e:
+    print(f"⚠️ Startup Warning: {str(e)}")
+    print("AI will attempt to run in fallback mode.")
 
 # =========================
 # LLM GENERATOR
@@ -62,8 +67,8 @@ What is [Topic]? In simple terms:
 - Punishment under the new law: BNS (Bharatiya Nyaya Sanhita).
 
 STRICT CONTENT RULES:
-1. NO filenames. NEVER mention filenames, PDF extensions, or case names from the dataset.
-2. NO EMOJIS. Do NOT use emojis anymore. Keep the tone formal and professional.
+1. NO filenames. NEVER mention filenames, PDF extensions, or case names.
+2. NO EMOJIS. Do NOT use emojis. Keep the tone formal.
 3. Answer in the requested language: {LANG}.
 """
 
@@ -71,68 +76,87 @@ def generate_answer(question, context, lang):
     print(f"🤖 AI Thinking (Mistral)...")
     prompt = f"{SYSTEM_PROMPT.replace('{LANG}', lang)}\n\nUser Question: {question}\n\nLegal Context: {context}"
     try:
+        # Check if ollama is reachable and model is pulled
         res = ollama.chat(model=LLM_MODEL, messages=[{"role":"user","content":prompt}])
         return res["message"]["content"]
     except Exception as e:
-        print(f"❌ Mistral Error: {str(e)}")
-        return f"I'm sorry, I encountered an issue with my AI core. Error: {str(e)}"
+        print(f"❌ LLM Error: {str(e)}")
+        return f"I'm sorry, I couldn't generate a response using the local model. Please ensure Ollama is running and '{LLM_MODEL}' is pulled."
 
 # =========================
 # CHAT API
 # =========================
+
+@app.route("/health", methods=["GET"])
+def health():
+    return jsonify({"status": "alive", "port": 8080})
 
 @app.route("/chat", methods=["POST"])
 def chat():
     print("\n📩 New Request Received!")
     try:
         data = request.get_json()
-        message = data.get("message")
+        if not data:
+            return jsonify({"error": "Missing JSON body"}), 400
+            
+        message = data.get("message", "").strip()
         lang = data.get("lang", "en")
         
+        if not message:
+            return jsonify({"error": "Empty message"}), 400
+
         print(f"👤 User: {message} ({lang})")
 
-        # 🚀 GREETING DETECTION (Instant Response)
-        greetings = ["hi", "hello", "hey", "namaste"]
-        if any(g == message.lower().strip() for g in greetings):
-            print("👋 Sending instant greeting.")
+        # 🚀 SMART GREETING DETECTION (Regex)
+        if re.match(r"^(hi|hello|hey|namaste|greetings|hi there|hello there)(\s|$|!|\.)", message.lower()):
+            print("👋 Instant greeting sent.")
             return jsonify({"answer": "Hello! I am JurisBot, your AI Legal Assistant. How can I help you today?"})
 
         # 1. Translate Incoming
         query_en = message
         if lang != "en":
-            print("🌍 Translating query to English...")
             try:
+                print("🌍 Translating query...")
                 query_en = GoogleTranslator(source="auto", target="en").translate(message)
-            except: pass
+            except Exception as te:
+                print(f"⚠️ Translation Error: {te}")
 
         # 2. Search Legal Database (Pinecone)
-        print("🔍 Searching Legal Database...")
-        query_vec = model.encode([query_en])[0].tolist()
-        results = index.query(vector=query_vec, top_k=2, include_metadata=True)
-
         context = ""
-        if results['matches']:
-            context = "\n\n".join([m['metadata']['content'] for m in results['matches']])
-            print(f"📖 Context Found ({len(results['matches'])} matches)")
-        else:
-            print("⚠️ No context found in database.")
+        try:
+            print("🔍 Searching Legal Database...")
+            query_vec = model.encode([query_en])[0].tolist()
+            results = index.query(vector=query_vec, top_k=2, include_metadata=True)
+            if results['matches']:
+                context = "\n\n".join([m['metadata']['content'] for m in results['matches']])
+                print(f"📖 Context Found.")
+        except Exception as pe:
+            print(f"⚠️ Database Error: {pe}")
+            context = "Note: Legal database search unavailable. Providing general information."
 
         # 3. Generate Answer
         final_answer = generate_answer(query_en, context, lang)
 
-        # 4. Translate back
+        # 4. Translate back (Safely)
         if lang != "en" and not final_answer.startswith("I'm sorry"):
-            print(f"🌍 Translating response back to {lang}...")
             try:
-                final_answer = GoogleTranslator(source="en", target=lang).translate(final_answer)
-            except: pass
+                print(f"🌍 Translating response back to {lang}...")
+                # Split translation into smaller chunks if it's too long (over 4500 chars)
+                if len(final_answer) > 4500:
+                    parts = [final_answer[i:i+4500] for i in range(0, len(final_answer), 4500)]
+                    translated_parts = [GoogleTranslator(source="en", target=lang).translate(p) for p in parts]
+                    final_answer = "".join(translated_parts)
+                else:
+                    final_answer = GoogleTranslator(source="en", target=lang).translate(final_answer)
+            except Exception as te:
+                print(f"⚠️ Final Translation Error: {te}")
 
         print("✅ Response Sent!")
         return jsonify({"answer": final_answer})
 
     except Exception as e:
-        print(f"❌ Server Error: {str(e)}")
-        return jsonify({"error": str(e)}), 500
+        print(f"❌ CRITICAL CRASH: {str(e)}")
+        return jsonify({"error": "Internal AI server error"}), 500
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8080)
