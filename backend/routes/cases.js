@@ -258,14 +258,29 @@ router.post("/analyze-story", auth(), async (req, res) => {
       return res.status(400).json({ message: "Description too short to analyze." });
     }
 
-    // 🚀 DIRECT AI ANALYSIS (Groq Llama 3.3)
+    // 🚀 ADVANCED LEGAL TRIAGE (Groq Llama 3.3 with Strict Taxonomy)
     const GROQ_KEY = process.env.GROQ_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     
-    const analysisPrompt = `Analyze this legal incident and provide a JSON response with:
-    1. "title": A professional, high-impact legal title (e.g., "Recovery of Unpaid Salary under Labour Laws").
-    2. "category": The high-level matter (e.g., "Job & Salary", "Home & Property", "Money & Loans").
-    3. "legalType": The legal classification. ONLY choose from: "Civil", "Criminal", "Corporate", "Family", "Labor", "Taxation", "Cyber".
+    const TAXONOMY = {
+      "Civil": ["property dispute", "land ownership dispute", "partition suit", "breach of contract", "agreement violation", "money recovery", "loan recovery", "consumer complaint", "defective product", "deficient service", "injunction case", "defamation (civil)", "tenant dispute", "rent dispute", "easement rights", "right of way dispute", "specific performance of contract", "negligence claim", "damage compensation"],
+      "Criminal": ["theft", "robbery", "burglary", "assault", "hurt case", "attempt to murder", "murder", "culpable homicide", "cheating", "fraud", "domestic violence (criminal)", "sexual harassment", "rape", "kidnapping", "abduction", "drug offense", "cybercrime (criminal)", "rioting", "public nuisance"],
+      "Corporate": ["company law violation", "shareholder dispute", "insolvency case", "bankruptcy case", "merger dispute", "acquisition dispute", "corporate fraud", "mismanagement", "director liability", "sebi violation", "compliance issue", "intellectual property dispute", "partnership dispute"],
+      "Family": ["divorce", "mutual divorce", "child custody", "maintenance", "alimony", "domestic violence (family)", "adoption dispute", "guardianship", "dowry harassment", "conjugal rights"],
+      "Labor": ["unpaid salary", "salary not paid", "pending wages", "wrongful termination", "employee harassment", "workplace harassment", "employment contract dispute", "pf issue", "gratuity issue", "bonus dispute", "overtime not paid", "illegal deduction", "industrial dispute", "layoff issue", "workplace discrimination"],
+      "Taxation": ["income tax dispute", "gst dispute", "tax evasion", "customs duty issue", "corporate tax issue", "tax penalty", "assessment dispute", "tax refund issue"],
+      "Cyber": ["online fraud", "internet scam", "hacking", "unauthorized access", "identity theft", "phishing", "cyber stalking", "online harassment", "data breach", "privacy violation", "social media defamation", "otp fraud", "banking fraud", "upi fraud", "credit card fraud"]
+    };
+
+    const analysisPrompt = `You are a Senior Legal Expert. Analyze this legal incident (which might be in any of 22 Indian languages) and provide a JSON response.
+    
+    STRICT TAXONOMY MAPPING:
+    ${JSON.stringify(TAXONOMY, null, 2)}
+    
+    YOUR GOAL:
+    1. "title": Create a high-impact, professional legal title.
+    2. "category": The high-level matter (e.g., "Job & Salary", "Home & Property").
+    3. "legalType": Select EXACTLY one from: "Civil", "Criminal", "Corporate", "Family", "Labor", "Taxation", "Cyber" based on the mapping above.
     
     STORY: ${description}
     
@@ -273,7 +288,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     try {
       if (GROQ_KEY) {
-        console.log("⚡ Analyzing Story with Groq...");
+        console.log("⚡ [AI TRIAGE] Analyzing Multilingual Story with Groq...");
         const groqRes = await axios.post(
           "https://api.groq.com/openai/v1/chat/completions",
           {
