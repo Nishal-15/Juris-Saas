@@ -1,4 +1,4 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, memo, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import socket from "../../api/socket";
 import "./sidebar.css";
@@ -38,13 +38,13 @@ const SYSTEM_NAV = [
   { icon: "settings", label: "Settings",      path: "/settings" },
 ];
 
-export default function Sidebar() {
+const Sidebar = memo(() => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hasNewMsg, setHasNewMsg] = useState(false);
-  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const user = useMemo(() => JSON.parse(localStorage.getItem("user") || "{}"), []);
 
   useEffect(() => {
     socket.on("receive-message", () => {
@@ -130,4 +130,6 @@ export default function Sidebar() {
       </div>
     </div>
   );
-}
+});
+
+export default Sidebar;
