@@ -126,7 +126,7 @@ def chat():
         try:
             print("🔍 Searching Legal Database...")
             query_vec = model.encode([query_en])[0].tolist()
-            results = index.query(vector=query_vec, top_k=2, include_metadata=True)
+            results = index.query(vector=query_vec, top_k=1, include_metadata=True)
             if results['matches']:
                 context = "\n\n".join([m['metadata']['content'] for m in results['matches']])
                 print(f"📖 Context Found.")

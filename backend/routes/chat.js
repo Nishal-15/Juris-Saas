@@ -13,7 +13,7 @@ router.post("/", auth(), async (req, res) => {
         `${aiUrl}/chat`,
         { ...req.body, lang: req.user.preferredLanguage || "en" },
         { 
-          timeout: 120000, // 👈 2 Minutes (Mistral on CPU is slow)
+          timeout: 300000, // 👈 5 Minutes (Mistral on CPU is slow)
           family: 4
         }
       );
