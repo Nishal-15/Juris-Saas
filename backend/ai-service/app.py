@@ -19,18 +19,22 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 LLM_MODEL = os.getenv("LLM_MODEL", "mistral")
 
 # =========================
-# INIT (Memory Efficient)
+# INIT (Ultra Stable)
 # =========================
 app = Flask(__name__)
 CORS(app)
 
-print("🔄 Starting AI Service Memory-Efficient Mode...")
+print("🔄 Starting AI Service [VERSION 3.0 - ULTRA STABLE]...")
 
-# Configure Gemini
+# Configure Gemini with a safer initialization
 if GEMINI_API_KEY:
-    genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
-    print("✨ Gemini Cloud Mode: Enabled")
+    try:
+        genai.configure(api_key=GEMINI_API_KEY)
+        # Using 1.5-flash which is the current stable standard
+        gemini_model = genai.GenerativeModel('gemini-1.5-flash')
+        print("✨ Gemini Cloud: ENABLED")
+    except Exception as e:
+        print(f"⚠️ Gemini Init Error: {e}")
 else:
     print("⚠️ No Gemini Key found.")
 
@@ -48,8 +52,10 @@ except Exception as e:
 # =========================
 
 def get_embedding(text):
-    """Generate embedding using Gemini API (Very low memory)"""
+    """Generate embedding (Uses Gemini Cloud for zero RAM usage)"""
+    if not GEMINI_API_KEY: return None
     try:
+        # Note: If this fails, you might need to re-upload your data to Pinecone
         result = genai.embed_content(
             model="models/embedding-001",
             content=text,
@@ -97,18 +103,23 @@ STRICT CONTENT RULES:
 def generate_answer(question, context, lang):
     prompt = f"{SYSTEM_PROMPT.replace('{LANG}', lang)}\n\nUser Question: {question}\n\nLegal Context: {context}"
     
-    try:
-        print("✨ AI Thinking (Gemini)...")
-        response = gemini_model.generate_content(prompt)
-        return response.text
-    except Exception as ge:
-        print(f"⚠️ Gemini Failed: {ge}")
-        # Local fallback (Ollama) if available
+    # 1. TRY GEMINI (Cloud)
+    if GEMINI_API_KEY:
         try:
-            res = ollama.chat(model=LLM_MODEL, messages=[{"role":"user","content":prompt}])
-            return res["message"]["content"]
-        except:
-            return "I'm sorry, I'm having trouble connecting to my AI core."
+            print("✨ AI Thinking (Gemini)...")
+            response = gemini_model.generate_content(prompt)
+            return response.text
+        except Exception as ge:
+            print(f"⚠️ Gemini Request Failed: {ge}")
+
+    # 2. FALLBACK TO MISTRAL (Local)
+    print(f"🤖 AI Thinking (Mistral Fallback)...")
+    try:
+        res = ollama.chat(model=LLM_MODEL, messages=[{"role":"user","content":prompt}])
+        return res["message"]["content"]
+    except Exception as e:
+        print(f"❌ Local AI Error: {str(e)}")
+        return "I'm sorry, I'm having trouble connecting to my AI core. Please ensure your internet is connected or Ollama is running."
 
 # =========================
 # CHAT API
@@ -116,7 +127,7 @@ def generate_answer(question, context, lang):
 
 @app.route("/health", methods=["GET"])
 def health():
-    return jsonify({"status": "alive", "port": 8080, "memory": "optimized"})
+    return jsonify({"status": "alive", "port": 8080})
 
 @app.route("/chat", methods=["POST"])
 def chat():
@@ -145,12 +156,14 @@ def chat():
         try:
             query_vec = get_embedding(query_en)
             if query_vec:
+                # If Pinecone throws a dimension error, we will know why
                 results = index.query(vector=query_vec, top_k=1, include_metadata=True)
                 if results['matches']:
                     context = results['matches'][0]['metadata']['content']
                     print(f"📖 Context Found.")
         except Exception as pe:
             print(f"⚠️ Database Error: {pe}")
+            context = "Note: Using general knowledge (Database dimensions might need reset)."
 
         # 3. Generate Answer
         final_answer = generate_answer(query_en, context, lang)
@@ -169,7 +182,7 @@ def chat():
         return jsonify({"answer": final_answer})
 
     except Exception as e:
-        print(f"❌ ERROR: {str(e)}")
+        print(f"❌ CRITICAL ERROR: {str(e)}")
         return jsonify({"error": "Internal AI server error"}), 500
 
 if __name__ == "__main__":
