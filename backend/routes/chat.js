@@ -25,83 +25,40 @@ RULES:
 2. NO EMOJIS.
 3. Answer in the requested language: {LANG}.`;
 
-// 🧠 AI ENGINE (Direct Gemini + Pinecone)
+// 🧠 PURE GROQ ENGINE
 router.post("/", auth(), async (req, res) => {
   const { message, lang = "en" } = req.body;
-  const GEMINI_KEY = process.env.GEMINI_API_KEY;
-  const PC_KEY = process.env.PINECONE_API_KEY;
-  const PC_INDEX = process.env.PINECONE_INDEX_NAME || "jurisbot-index";
+  const GROQ_KEY = process.env.GROQ_API_KEY;
 
   try {
-    console.log(`🤖 AI Query: ${message} (${lang})`);
+    console.log(`⚡ Groq Query: ${message} (${lang})`);
 
-    // 1 & 2. Get Embedding + Pinecone (RAG)
-    let context = "";
-    try {
-      if (GEMINI_KEY && !GEMINI_KEY.includes("AIzaSyA_placeholder")) {
-        console.log("🔍 Fetching Context...");
-        const embedRes = await axios.post(
-          `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${GEMINI_KEY}`,
-          { model: "models/embedding-001", content: { parts: [{ text: message }] } }
-        );
-        const vector = embedRes.data.embedding.values;
-
-        const pcRes = await axios.post(
-          `https://${PC_INDEX}-emneh3v.svc.gcp-starter.pinecone.io/query`,
-          { vector, topK: 1, includeMetadata: true },
-          { headers: { "Api-Key": PC_KEY } }
-        );
-
-        if (pcRes.data.matches?.length > 0) {
-          context = pcRes.data.matches[0].metadata.content;
-          console.log("📖 Context Loaded.");
-        }
-      }
-    } catch (ragErr) {
-      console.warn("⚠️ RAG Bypassed (Key Invalid or Connection Error)");
+    if (!GROQ_KEY) {
+      throw new Error("GROQ_API_KEY is missing in production environment.");
     }
 
-    // 3. Generate Answer (Groq - Llama 3.1)
-    console.log("⚡ Generating Response with Groq...");
-    const GROQ_KEY = process.env.GROQ_API_KEY;
-    const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nContext: ${context}\n\nQuestion: ${message}`;
+    // Generate Answer (Groq - Llama 3.1)
+    const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nQuestion: ${message}`;
     
-    if (GROQ_KEY) {
-      try {
-        const groqRes = await axios.post(
-          "https://api.groq.com/openai/v1/chat/completions",
-          {
-            model: "llama-3.1-70b-versatile",
-            messages: [{ role: "user", content: prompt }],
-            temperature: 0.2
-          },
-          { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
-        );
-        const answer = groqRes.data.choices[0].message.content;
-        return res.json({ answer });
-      } catch (groqErr) {
-        console.error("Groq Fail, falling back to Gemini:", groqErr.message);
-      }
-    }
-
-    // 4. Fallback to Gemini if Groq fails or no key
-    const genRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
-      { contents: [{ parts: [{ text: prompt }] }] }
+    const groqRes = await axios.post(
+      "https://api.groq.com/openai/v1/chat/completions",
+      {
+        model: "llama-3.1-70b-versatile",
+        messages: [{ role: "user", content: prompt }],
+        temperature: 0.2
+      },
+      { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
     );
 
-    if (genRes.data.candidates && genRes.data.candidates[0].content) {
-       const answer = genRes.data.candidates[0].content.parts[0].text;
-       res.json({ answer });
-    } else {
-       throw new Error("Empty Gemini Response");
-    }
+    const answer = groqRes.data.choices[0].message.content;
+    res.json({ answer });
 
   } catch (err) {
-    console.error("❌ AI CORE CRITICAL:", err.response?.data || err.message);
-    const errorDetail = err.response?.data?.error?.message || err.message;
+    console.error("AI Core Error:", err.message);
+    const errorMsg = err.response?.data?.error?.message || err.message;
+    
     res.json({ 
-      answer: `JurisBot is currently reconnecting its legal core. (Error: ${errorDetail.substring(0, 50)}...). Please try once more.` 
+      answer: `JurisBot is currently optimizing its legal core. (Internal Detail: ${errorMsg.substring(0, 50)}). Please check your internet or try again in 10 seconds.` 
     });
   }
 });
