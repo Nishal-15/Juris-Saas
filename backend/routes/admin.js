@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Lawyer = require("../models/Lawyer"); // 👈 Added
 const Case = require("../models/Case");
 const bcrypt = require("bcryptjs");
 const router = require("express").Router();
@@ -11,8 +12,7 @@ const auth = require("../middleware/auth");
 // 🏛️ GET PENDING LAWYERS
 router.get("/pending-lawyers", auth(["admin"]), async (req, res) => {
   try {
-    const pending = await User.find({ 
-      role: "lawyer", 
+    const pending = await Lawyer.find({ 
       verificationStatus: "pending" 
     }).sort({ createdAt: -1 });
     res.json(pending);
@@ -34,7 +34,7 @@ router.get("/citizens", auth(["admin"]), async (req, res) => {
 // 👨‍⚖️ GET ALL VERIFIED LAWYERS (WITH CASE COUNTS)
 router.get("/lawyers", auth(["admin"]), async (req, res) => {
   try {
-    const lawyers = await User.find({ role: "lawyer", isVerified: true }).sort({ createdAt: -1 });
+    const lawyers = await Lawyer.find({ isVerified: true }).sort({ createdAt: -1 });
     
     // Manually count cases for each lawyer to ensure absolute accuracy
     const lawyersWithStats = await Promise.all(lawyers.map(async (l) => {
@@ -60,7 +60,7 @@ router.get("/lawyers", auth(["admin"]), async (req, res) => {
 router.patch("/verify-lawyer/:id", auth(["admin"]), async (req, res) => {
   try {
     const { status } = req.body; // "verified" or "rejected"
-    const lawyer = await User.findById(req.params.id);
+    const lawyer = await Lawyer.findById(req.params.id);
     if (!lawyer) return res.status(404).json({ message: "Lawyer not found" });
 
     lawyer.verificationStatus = status;
