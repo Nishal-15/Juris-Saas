@@ -1,42 +1,71 @@
 .mobile-top-header {
   display: none;
-  background: #1a1c24;
-  padding: 15px 20px;
+  background: #0d0f14; /* Deep dark matching the theme */
+  padding: 12px 20px;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.05);
+  border-bottom: 1px solid rgba(201, 168, 76, 0.15); /* Subtle gold border */
   position: sticky;
   top: 0;
-  z-index: 1000;
+  z-index: 2000; /* High z-index to stay above all */
   color: #fff;
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
 }
 
-.mobile-logo {
-  font-size: 18px;
-  font-weight: 800;
-  color: #c9a84c;
+.mobile-logo-wrap-top {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  cursor: pointer;
+}
+
+.mobile-logo-icon-top {
+  font-size: 20px;
+  filter: drop-shadow(0 0 5px rgba(201, 168, 76, 0.4));
+}
+
+.mobile-logo-text-top {
+  font-family: 'Outfit', sans-serif;
+  font-size: 20px;
+  font-weight: 700;
+  color: #c9a84c; /* Gold color from design */
+  letter-spacing: -0.5px;
 }
 
 .mobile-icon-btn {
   background: transparent;
   border: none;
-  color: rgba(255,255,255,0.6);
+  color: rgba(255, 255, 255, 0.8);
   cursor: pointer;
   position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  transition: background 0.2s;
+}
+
+.mobile-icon-btn:active {
+  background: rgba(255, 255, 255, 0.05);
 }
 
 .mobile-icon-btn svg {
-  width: 22px;
-  height: 22px;
+  width: 24px;
+  height: 24px;
 }
 
 .notif-dot {
   position: absolute;
-  top: 0; right: 0;
-  width: 8px; height: 8px;
+  top: 8px;
+  right: 8px;
+  width: 10px;
+  height: 10px;
   background: #ff4444;
   border-radius: 50%;
-  border: 2px solid #1a1c24;
+  border: 2px solid #0d0f14;
 }
 
 @media (max-width: 768px) {

@@ -125,75 +125,30 @@ option {
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
-/* ── Mobile/* 📱 GLOBAL MOBILE REVOLUTION (768px and below) */
+/* 📱 GLOBAL MOBILE REVOLUTION (768px and below) */
 @media (max-width: 768px) {
-  /* ── Hide Desktop Sidebar ── */
-  .sidebar {
+  /* 🚫 COMPLETELY HIDE SIDEBAR ON MOBILE */
+  .cs-sidebar, .sidebar {
     display: none !important;
+    visibility: hidden !important;
+    width: 0 !important;
   }
 
-  /* ── Expand Main Content ── */
-  main, .user-dashboard, .cases-page, .lawyers-page, .case-main {
+  /* ── Expand Main Content to Full Width ── */
+  main, .db-main, .cl-body, .dv-body, .np-body, .st-body, .wizard-main, .layout-center {
     margin-left: 0 !important;
-    padding: 15px !important;
     width: 100% !important;
+    max-width: 100vw !important;
+    padding-bottom: 90px !important; /* Space for bottom nav */
+  }
+
+  .db-layout, .cl-page, .dv-page, .np-page, .st-page, .wizard-page, .layout {
+    flex-direction: column !important;
   }
 
   /* ── Force Bottom Nav Visibility ── */
-  .bottom-nav {
+  .mobile-bottom-nav, .bottom-nav {
     display: flex !important;
-  }
-
-  /* ── Global Typography Fixes ── */
-  h1 { font-size: 24px !important; }
-  h2 { font-size: 20px !important; }
-  
-  .card, .dashboard-card {
-    margin-bottom: 15px !important;
-    padding: 15px !important;
-    border-radius: 12px !important;
-  }
-
-  /* ── Hide Web-Only Elements ── */
-  .desktop-only {
-    display: none !important;
-  }
-}
-
-/* ── Mobile Optimization Overlay ── */
-@media (max-width: 768px) {
-  .layout {
-    flex-direction: column;
-  }
-  
-  .sidebar {
-    width: 100% !important;
-    height: auto !important;
-    position: fixed;
-    bottom: 0;
-    left: 0;
-    z-index: 1000;
-  }
-  
-  .layout-center {
-    width: 100%;
-    margin-bottom: 70px;
-    padding: 0 16px;
-    overflow-y: auto;
-    -webkit-overflow-scrolling: touch;
-  }
-
-  .mobile-hide { display: none !important; }
-
-  .mobile-stack {
-    flex-direction: column !important;
-    gap: 16px !important;
-  }
-
-  .mobile-card-grid {
-    display: grid !important;
-    grid-template-columns: 1fr !important;
-    gap: 16px !important;
   }
 
   /* Prevent text selection and unwanted zoom */

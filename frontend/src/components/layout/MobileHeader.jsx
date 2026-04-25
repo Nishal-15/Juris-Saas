@@ -1,12 +1,16 @@
 import { useNavigate } from "react-router-dom";
 import "./mobileheader.css";
 
-export default function MobileHeader({ title }) {
+export default function MobileHeader() {
   const navigate = useNavigate();
 
   return (
     <header className="mobile-top-header">
-      <div className="mobile-logo">⚖️ JurisBot</div>
+      <div className="mobile-logo-wrap-top" onClick={() => navigate("/user")}>
+        <span className="mobile-logo-icon-top">⚖️</span>
+        <span className="mobile-logo-text-top">JurisBot</span>
+      </div>
+      
       <div className="mobile-actions-top">
         <button className="mobile-icon-btn" onClick={() => navigate("/notifications")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
