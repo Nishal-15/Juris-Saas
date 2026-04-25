@@ -84,17 +84,32 @@ router.post("/", auth(), async (req, res) => {
       }
     }
 
-    // 4. Fallback to Gemini if Groq fails or no key
-    const genRes = await axios.post(
-      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
-      { contents: [{ parts: [{ text: prompt }] }] }
-    );
-
-    if (genRes.data.candidates && genRes.data.candidates[0].content) {
-       const answer = genRes.data.candidates[0].content.parts[0].text;
-       res.json({ answer });
-    } else {
-       throw new Error("Empty Gemini Response");
+    // 4. Fallback to Local Mistral (Ollama) if Groq fails
+    console.log("🔄 Groq failed or missing, falling back to Local Mistral...");
+    try {
+      const ollamaRes = await axios.post(
+        "http://localhost:11434/api/generate",
+        {
+          model: "mistral",
+          prompt: prompt,
+          stream: false
+        },
+        { timeout: 300000 }
+      );
+      return res.json({ answer: ollamaRes.data.response });
+    } catch (ollamaErr) {
+      console.error("Local Mistral Fail:", ollamaErr.message);
+      
+      // Final Emergency Fallback to Gemini (only if local Mistral is also dead)
+      const genRes = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+        { contents: [{ parts: [{ text: prompt }] }] }
+      );
+      if (genRes.data.candidates && genRes.data.candidates[0].content) {
+         return res.json({ answer: genRes.data.candidates[0].content.parts[0].text });
+      }
+      
+      throw new Error("All AI Engines failed (Groq, Mistral, Gemini)");
     }
 
   } catch (err) {
