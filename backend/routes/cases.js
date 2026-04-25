@@ -502,15 +502,34 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   }
 });
 
-/* Lawyer: List PENDING REQUESTS (Assigned but not accepted) */
+/* Lawyer: List PENDING REQUESTS (Filter by Specialization) */
 router.get("/requested", auth(["lawyer"]), async (req, res) => {
   try {
-    const requestedCases = await Case.find({
+    const lawyer = await Lawyer.findById(req.user.id);
+    if (!lawyer) return res.status(404).json({ message: "Lawyer profile not found" });
+
+    // Extract keywords from specialization (e.g., "Criminal, Civil" -> ["Criminal", "Civil"])
+    const keywords = lawyer.specialization?.split(/[&,]/).map(k => k.trim()) || [];
+
+    const query = {
       assignedLawyer: req.user.id,
       status: "Pending Expert Acceptance"
-    }).populate("user", "name");
+    };
 
-    console.log(`🔍 Found ${requestedCases.length} pending requests for Lawyer ${req.user.id}`);
+    // ONLY filter if they have specific specializations set
+    if (keywords.length > 0 && keywords[0] !== "") {
+      query.$or = keywords.map(kw => ({
+        $or: [
+          { legalType: { $regex: kw, $options: "i" } },
+          { category: { $regex: kw, $options: "i" } },
+          { type: { $regex: kw, $options: "i" } }
+        ]
+      }));
+    }
+
+    const requestedCases = await Case.find(query).populate("user", "name");
+
+    console.log(`🔍 Found ${requestedCases.length} matching requests for Lawyer ${req.user.id} (Keywords: ${keywords.join(", ")})`);
     res.json(requestedCases);
 
   } catch (err) {
