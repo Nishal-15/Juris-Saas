@@ -264,11 +264,12 @@ router.post("/analyze-story", auth(), async (req, res) => {
     
     const analysisPrompt = `Analyze this legal incident and provide a JSON response with:
     1. "title": A professional, high-impact legal title (e.g., "Recovery of Unpaid Salary under Labour Laws").
-    2. "category": The most appropriate category (e.g., "Job & Salary", "Home & Property", "Money & Loans").
+    2. "category": The high-level matter (e.g., "Job & Salary", "Home & Property", "Money & Loans").
+    3. "legalType": The legal classification. ONLY choose from: "Civil", "Criminal", "Corporate", "Family", "Labor", "Taxation", "Cyber".
     
     STORY: ${description}
     
-    RESPONSE FORMAT: {"title": "...", "category": "..."}`;
+    RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "..."}`;
 
     try {
       if (GROQ_KEY) {
@@ -284,7 +285,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
           { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
         );
         const data = JSON.parse(groqRes.data.choices[0].message.content);
-        return res.json({ title: data.title, category: data.category });
+        return res.json({ title: data.title, category: data.category, legalType: data.legalType });
       }
 
       // Fallback to Gemini if no Groq
@@ -295,13 +296,13 @@ router.post("/analyze-story", auth(), async (req, res) => {
       );
       const rawText = genRes.data.candidates[0].content.parts[0].text;
       const data = JSON.parse(rawText.replace(/```json|```/g, ""));
-      return res.json({ title: data.title, category: data.category });
+      return res.json({ title: data.title, category: data.category, legalType: data.legalType });
 
     } catch (aiErr) {
       console.warn("AI Analysis Service down, using fallback heuristic.");
       const words = description.split(" ");
       const fallbackTitle = words.slice(0, 5).join(" ") + "...";
-      res.json({ title: fallbackTitle, category: "General Legal" });
+      res.json({ title: fallbackTitle, category: "General Legal", legalType: "Civil" });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });

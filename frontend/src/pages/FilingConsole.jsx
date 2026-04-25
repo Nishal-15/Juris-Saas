@@ -37,6 +37,7 @@ export default function FilingConsole() {
     title: "",
     description: "",
     category: "",
+    legalType: "Civil",
     oppositeParty: "",
     urgency: "Normal"
   });
@@ -67,7 +68,8 @@ export default function FilingConsole() {
       setFormData(prev => ({ 
         ...prev, 
         title: res.data.title || prev.title,
-        category: res.data.category || prev.category
+        category: res.data.category || prev.category,
+        legalType: res.data.legalType || prev.legalType
       }));
       setAiMessage("✨ Magic! I've suggested a Title and Category for you based on your story.");
     } catch (err) {
@@ -184,6 +186,23 @@ export default function FilingConsole() {
                     />
                     {formData.title && !isAnalyzing && <span className="ai-tag">SMART GEN</span>}
                   </div>
+                </div>
+
+                <div className="form-group">
+                  <label>Legal Classification</label>
+                  <select 
+                    className="wizard-input"
+                    value={formData.legalType}
+                    onChange={e => setFormData({...formData, legalType: e.target.value})}
+                  >
+                    <option value="Civil">Civil</option>
+                    <option value="Criminal">Criminal</option>
+                    <option value="Corporate">Corporate</option>
+                    <option value="Family">Family</option>
+                    <option value="Labor">Labor</option>
+                    <option value="Taxation">Taxation</option>
+                    <option value="Cyber">Cyber</option>
+                  </select>
                 </div>
 
                 <div className="form-group">
