@@ -11,7 +11,7 @@ router.post("/", auth(), async (req, res) => {
       const response = await axios.post(
         `${aiUrl}/chat`,
         { ...req.body, lang: req.user.preferredLanguage || "en" },
-        { timeout: 30000 } // Increased timeout for heavy LLM tasks
+        { timeout: 60000 } // Increased to 60s for local Mistral/CPU
       );
 
       // ✅ Check if Python returned an error

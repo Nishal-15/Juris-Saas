@@ -110,7 +110,7 @@ def chat():
         
         results = index.query(
             vector=query_vec,
-            top_k=3,
+            top_k=2,
             include_metadata=True
         )
 
