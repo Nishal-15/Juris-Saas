@@ -115,6 +115,8 @@ export default function FilingConsole() {
     } finally {
       setLoading(false);
     }
+  };
+
   const handleConnect = async (lawyerId) => {
     setIsConnecting(true);
     try {
