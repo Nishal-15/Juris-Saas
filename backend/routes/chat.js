@@ -21,7 +21,15 @@ router.post("/", auth(), async (req, res) => {
 
       res.json(response.data);
     } catch (aiErr) {
-      console.error("Mistral Service Connection Failed:", aiErr.message);
+      console.error("Mistral Service Error:", aiErr.message);
+      
+      // ✅ If the server responded with an error (e.g. 500)
+      if (aiErr.response) {
+        return res.json({ 
+          answer: `AI Service Crashed: The Python service is running but returned an error: ${JSON.stringify(aiErr.response.data)}` 
+        });
+      }
+
       res.json({ 
         answer: `Connection Error: Could not reach the AI Service at ${aiUrl}. Make sure app.py is running.` 
       });
