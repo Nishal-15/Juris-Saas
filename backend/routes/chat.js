@@ -38,25 +38,27 @@ router.post("/", auth(), async (req, res) => {
     // 1 & 2. Get Embedding + Pinecone (RAG)
     let context = "";
     try {
-      console.log("🔍 Fetching Context...");
-      const embedRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${GEMINI_KEY}`,
-        { model: "models/embedding-001", content: { parts: [{ text: message }] } }
-      );
-      const vector = embedRes.data.embedding.values;
+      if (GEMINI_KEY && !GEMINI_KEY.includes("AIzaSyA_placeholder")) {
+        console.log("🔍 Fetching Context...");
+        const embedRes = await axios.post(
+          `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${GEMINI_KEY}`,
+          { model: "models/embedding-001", content: { parts: [{ text: message }] } }
+        );
+        const vector = embedRes.data.embedding.values;
 
-      const pcRes = await axios.post(
-        `https://${PC_INDEX}-emneh3v.svc.gcp-starter.pinecone.io/query`,
-        { vector, topK: 1, includeMetadata: true },
-        { headers: { "Api-Key": PC_KEY } }
-      );
+        const pcRes = await axios.post(
+          `https://${PC_INDEX}-emneh3v.svc.gcp-starter.pinecone.io/query`,
+          { vector, topK: 1, includeMetadata: true },
+          { headers: { "Api-Key": PC_KEY } }
+        );
 
-      if (pcRes.data.matches?.length > 0) {
-        context = pcRes.data.matches[0].metadata.content;
-        console.log("📖 Context Loaded.");
+        if (pcRes.data.matches?.length > 0) {
+          context = pcRes.data.matches[0].metadata.content;
+          console.log("📖 Context Loaded.");
+        }
       }
     } catch (ragErr) {
-      console.error("⚠️ RAG Suppressed (Continuing without context):", ragErr.response?.data || ragErr.message);
+      console.warn("⚠️ RAG Bypassed (Key Invalid or Connection Error)");
     }
 
     // 3. Generate Answer (Groq - Llama 3.1)
