@@ -96,15 +96,83 @@ export default function Register() {
         </div>
       </div>
 
-      {/* RIGHT */}
+      {/* RIGHT (Main Form on Mobile) */}
       <div className="register-right">
+        {/* 📱 Mobile-Only Hero Section (Matches Prototype) */}
+        <div className="register-mobile-hero">
+          <div className="register-hero-img-wrap">
+            <img src="/src/assets/gavel_hero.png" alt="Legal Hero" className="register-hero-img" />
+            <div className="register-hero-overlay" />
+            <h1 className="register-mobile-title">Your legal journey starts here.</h1>
+          </div>
+        </div>
 
         <div className="form-field">
-          <label className="form-label">CHOOSE YOUR LANGUAGE AND GET THE ANSWERS FROM CHATBOT IN YOUR OWN LANGUAGE</label>
+          <label className="form-label">FULL NAME</label>
+          <div className="input-with-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="field-icon"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+            <input
+              type="text"
+              className="form-input"
+              placeholder="John Doe"
+              onChange={e => setForm({ ...form, name: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">PHONE NUMBER</label>
+          <div className="input-with-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="field-icon"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7A2 2 0 0 1 22 16.92z"/></svg>
+            <input
+              type="tel"
+              className="form-input"
+              placeholder="+91 000-0000"
+              onChange={e => setForm({ ...form, phone: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">EMAIL ADDRESS</label>
+          <div className="input-with-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="field-icon"><path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"/><polyline points="22,6 12,13 2,6"/></svg>
+            <input
+              type="email"
+              className="form-input"
+              placeholder="john@example.com"
+              onChange={e => setForm({ ...form, email: e.target.value })}
+            />
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">PASSWORD</label>
+          <div className="password-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="field-icon"><rect x="3" y="11" width="18" height="11" rx="2" ry="2"/><path d="M7 11V7a5 5 0 0 1 10 0v4"/></svg>
+            <input
+              type={showPassword ? "text" : "password"}
+              className="form-input"
+              placeholder="••••••••"
+              onChange={e => setForm({ ...form, password: e.target.value })}
+            />
+            <button 
+              type="button" 
+              className="password-toggle"
+              onClick={() => setShowPassword(!showPassword)}
+            >
+              {showPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
+            </button>
+          </div>
+        </div>
+
+        <div className="form-field">
+          <label className="form-label">PREFERRED LANGUAGE</label>
           <select 
             className="form-input"
             value={form.preferredLanguage}
             onChange={e => setForm({ ...form, preferredLanguage: e.target.value })}
+            style={{ paddingLeft: '18px' }}
           >
             {[
               { name: "English", code: "en" },
@@ -119,93 +187,23 @@ export default function Register() {
               { name: "ਪੰਜਾਬੀ (Punjabi)", code: "pa" },
               { name: "ଓଡ଼ିଆ (Odia)", code: "or" },
               { name: "অসমীয়া (Assamese)", code: "as" },
-              { name: "اردو (Urdu)", code: "ur" },
-              { name: "संस्कृतम् (Sanskrit)", code: "sa" },
-              { name: "मैथिली (Maithili)", code: "mai" },
-              { name: "कोंಕಣಿ (Konkani)", code: "kok" },
-              { name: "डोगरी (Dogri)", code: "doi" },
-              { name: "नेपाली (Nepali)", code: "ne" },
-              { name: "सिंधी (Sindhi)", code: "sd" },
-              { name: "संताली (Santali)", code: "sat" },
-              { name: "मणिपुरी (Manipuri)", code: "mni" },
-              { name: "বোডো (Bodo)", code: "brx" },
-              { name: "कश्मीरी (Kashmiri)", code: "ks" }
+              { name: "اردو (Urdu)", code: "ur" }
             ].map(l => (
-              <option key={l.code} value={l.code}>
-                {l.name}
-              </option>
+              <option key={l.code} value={l.code}>{l.name}</option>
             ))}
           </select>
         </div>
 
-        <div className="form-field">
-          <label className="form-label">PHONE NUMBER</label>
-          <input
-            type="tel"
-            className="form-input"
-            placeholder="+91 98765 43210"
-            onChange={e => setForm({ ...form, phone: e.target.value })}
-          />
-        </div>
-
-        <h2 className="register-form-title">register</h2>
-        <p className="register-form-sub">Free forever. No credit card required.</p>
-
-        <div className="form-field">
-          <label className="form-label">NAME</label>
-          <input
-            type="text"
-            className="form-input"
-            placeholder="Your full name"
-            onChange={e => setForm({ ...form, name: e.target.value })}
-          />
-        </div>
-
-        <div className="form-field">
-          <label className="form-label">EMAIL</label>
-          <input
-            type="email"
-            className="form-input"
-            placeholder="you@example.com"
-            onChange={e => setForm({ ...form, email: e.target.value })}
-          />
-        </div>
-
-        <div className="form-field">
-          <label className="form-label">PASSWORD</label>
-          <div className="password-box">
-            <input
-              type={showPassword ? "text" : "password"}
-              className="form-input"
-              placeholder="Create a strong password"
-              onChange={e => setForm({ ...form, password: e.target.value })}
-            />
-            <button 
-              type="button" 
-              className="password-toggle"
-              onClick={() => setShowPassword(!showPassword)}
-            >
-              {showPassword ? <VisibilityOff sx={{ fontSize: 20 }} /> : <Visibility sx={{ fontSize: 20 }} />}
-            </button>
-          </div>
-        </div>
-
         <div className="form-field-check">
-          <input 
-            type="checkbox" 
-            id="terms" 
-            onChange={e => setForm({ ...form, agreed: e.target.checked })} 
-          />
+          <input type="checkbox" id="terms" onChange={e => setForm({ ...form, agreed: e.target.checked })} />
           <label htmlFor="terms">
-            I agree to the <span onClick={() => navigate("/terms")} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and acknowledge that JurisBot is an AI assistant, not a substitute for legal advice.
+            I agree to the <span onClick={() => navigate("/terms")} className="gold-link">Terms of Service</span>.
           </label>
         </div>
 
         <button className="btn-primary" onClick={submit} disabled={loading || !form.agreed}>
-          {loading ? "creating account…" : "create"}
+          {loading ? "creating account…" : "Register to Dashboard →"}
         </button>
-
-        <div className="form-divider">or</div>
 
         <p className="register-login-link" onClick={() => navigate("/")}>
           Already have an account? <span>Sign in →</span>

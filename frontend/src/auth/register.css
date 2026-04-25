@@ -17,13 +17,84 @@
   }
   div.register-right { 
     width: 100% !important; 
-    padding: 40px 20px 100px !important; 
+    padding: 0 20px 100px !important; 
     min-height: 100vh !important; 
     display: flex !important;
     flex-direction: column !important;
     justify-content: flex-start !important;
   }
   .register-form-title { font-size: 36px !important; margin-top: 0 !important; }
+
+  /* 📱 MOBILE HERO SPECIFIC (Matches Prototype) */
+  .register-mobile-hero {
+    display: block;
+    width: calc(100% + 40px);
+    margin-left: -20px;
+    position: relative;
+    height: 240px;
+    margin-bottom: 30px;
+    overflow: hidden;
+  }
+
+  .register-hero-img-wrap {
+    width: 100%;
+    height: 100%;
+    position: relative;
+  }
+
+  .register-hero-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+  }
+
+  .register-hero-overlay {
+    position: absolute;
+    inset: 0;
+    background: linear-gradient(to top, #0d1117 10%, transparent 90%);
+  }
+
+  .register-mobile-title {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    right: 20px;
+    font-family: var(--font-display);
+    font-size: 28px;
+    font-weight: 700;
+    color: #fff;
+    line-height: 1.2;
+    z-index: 2;
+  }
+
+  /* Icon Inputs (Consolidated with Login) */
+  .input-with-icon, .password-box {
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+
+  .field-icon {
+    display: block;
+    position: absolute;
+    left: 15px;
+    width: 18px;
+    height: 18px;
+    color: rgba(255,255,255,0.3);
+    z-index: 2;
+  }
+
+  .form-input {
+    padding-left: 45px !important;
+    background: rgba(255,255,255,0.04) !important;
+    border: 1px solid rgba(255,255,255,0.1) !important;
+  }
+
+  .gold-link {
+    color: var(--gold);
+    text-decoration: underline;
+    font-weight: 600;
+  }
 }
 
 /* LEFT */
