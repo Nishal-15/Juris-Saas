@@ -61,6 +61,17 @@ export default function FilingConsole() {
 
 
 
+  // 🕒 PROACTIVE AUTO-FILL: Detect stops in typing
+  useEffect(() => {
+    if (formData.description.length < 20) return;
+    
+    const timer = setTimeout(() => {
+      handleAIAutoFill();
+    }, 2500); // 2.5s delay after typing stops
+
+    return () => clearTimeout(timer);
+  }, [formData.description]);
+
   // ✨ MAGIC AUTO-FILL: AI Analyze the story
   const handleAIAutoFill = async () => {
     if (formData.description.length < 20) return;

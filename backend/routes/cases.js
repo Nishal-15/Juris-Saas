@@ -258,30 +258,136 @@ router.post("/analyze-story", auth(), async (req, res) => {
       return res.status(400).json({ message: "Description too short to analyze." });
     }
 
-    // 🚀 ADVANCED LEGAL TRIAGE (Groq Llama 3.3 with Strict Taxonomy)
+    // 🚀 COURTROOM-READY LEGAL TRIAGE (Groq Llama 3.3 with Detailed Taxonomy)
     const GROQ_KEY = process.env.GROQ_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     
-    const TAXONOMY = {
-      "Civil": ["property dispute", "land ownership dispute", "partition suit", "breach of contract", "agreement violation", "money recovery", "loan recovery", "consumer complaint", "defective product", "deficient service", "injunction case", "defamation (civil)", "tenant dispute", "rent dispute", "easement rights", "right of way dispute", "specific performance of contract", "negligence claim", "damage compensation"],
-      "Criminal": ["theft", "robbery", "burglary", "assault", "hurt case", "attempt to murder", "murder", "culpable homicide", "cheating", "fraud", "domestic violence (criminal)", "sexual harassment", "rape", "kidnapping", "abduction", "drug offense", "cybercrime (criminal)", "rioting", "public nuisance"],
-      "Corporate": ["company law violation", "shareholder dispute", "insolvency case", "bankruptcy case", "merger dispute", "acquisition dispute", "corporate fraud", "mismanagement", "director liability", "sebi violation", "compliance issue", "intellectual property dispute", "partnership dispute"],
-      "Family": ["divorce", "mutual divorce", "child custody", "maintenance", "alimony", "domestic violence (family)", "adoption dispute", "guardianship", "dowry harassment", "conjugal rights"],
-      "Labor": ["unpaid salary", "salary not paid", "pending wages", "wrongful termination", "employee harassment", "workplace harassment", "employment contract dispute", "pf issue", "gratuity issue", "bonus dispute", "overtime not paid", "illegal deduction", "industrial dispute", "layoff issue", "workplace discrimination"],
-      "Taxation": ["income tax dispute", "gst dispute", "tax evasion", "customs duty issue", "corporate tax issue", "tax penalty", "assessment dispute", "tax refund issue"],
-      "Cyber": ["online fraud", "internet scam", "hacking", "unauthorized access", "identity theft", "phishing", "cyber stalking", "online harassment", "data breach", "privacy violation", "social media defamation", "otp fraud", "banking fraud", "upi fraud", "credit card fraud"]
+    const TAXONOMY_TITLES = {
+      "Civil": {
+        "property dispute": "Suit for Declaration and Permanent Injunction in Property Dispute",
+        "land ownership dispute": "Suit for Declaration of Title and Ownership of Land",
+        "partition suit": "Suit for Partition and Separate Possession",
+        "breach of contract": "Suit for Damages for Breach of Contract",
+        "agreement violation": "Suit for Enforcement of Agreement and Damages",
+        "money recovery": "Suit for Recovery of Money",
+        "loan recovery": "Suit for Recovery of Loan Amount",
+        "consumer complaint": "Complaint for Deficiency in Service under Consumer Protection Law",
+        "defective product": "Complaint for Defective Product and Compensation",
+        "deficient service": "Complaint for Deficiency in Service",
+        "injunction case": "Suit for Permanent and Mandatory Injunction",
+        "defamation (civil)": "Suit for Damages for Defamation",
+        "tenant dispute": "Suit for Eviction and Tenant Dispute Resolution",
+        "rent dispute": "Suit for Recovery of Rent and Eviction",
+        "easement rights": "Suit for Enforcement of Easement Rights",
+        "right of way dispute": "Suit for Declaration of Right of Way and Injunction",
+        "specific performance of contract": "Suit for Specific Performance of Contract",
+        "negligence claim": "Suit for Compensation for Negligence",
+        "damage compensation": "Suit for Recovery of Damages and Compensation"
+      },
+      "Criminal": {
+        "theft": "Complaint for Theft under Criminal Law",
+        "robbery": "Complaint for Robbery under Criminal Law",
+        "burglary": "Complaint for Burglary and House Trespass",
+        "assault": "Complaint for Assault and Criminal Force",
+        "hurt case": "Complaint for Causing Hurt",
+        "attempt to murder": "Complaint for Attempt to Murder",
+        "murder": "Complaint for Murder",
+        "culpable homicide": "Complaint for Culpable Homicide",
+        "cheating": "Complaint for Cheating and Dishonest Inducement",
+        "fraud": "Complaint for Fraud and Criminal Misrepresentation",
+        "domestic violence (criminal)": "Complaint for Domestic Violence under Criminal Law",
+        "sexual harassment": "Complaint for Sexual Harassment",
+        "rape": "Complaint for Rape",
+        "kidnapping": "Complaint for Kidnapping",
+        "abduction": "Complaint for Abduction",
+        "drug offense": "Complaint for Drug Offense under NDPS Act",
+        "cybercrime (criminal)": "Complaint for Cybercrime under IT Act",
+        "rioting": "Complaint for Rioting and Unlawful Assembly",
+        "public nuisance": "Complaint for Public Nuisance"
+      },
+      "Corporate": {
+        "company law violation": "Petition for Violation of Company Law",
+        "shareholder dispute": "Petition for Resolution of Shareholder Dispute",
+        "insolvency case": "Application for Initiation of Insolvency Proceedings",
+        "bankruptcy case": "Petition for Bankruptcy Proceedings",
+        "merger dispute": "Petition for Dispute in Merger Proceedings",
+        "acquisition dispute": "Petition for Dispute in Acquisition Transaction",
+        "corporate fraud": "Complaint for Corporate Fraud",
+        "mismanagement": "Petition for Oppression and Mismanagement",
+        "director liability": "Petition for Fixing Director Liability",
+        "sebi violation": "Complaint for SEBI Regulation Violation",
+        "compliance issue": "Petition for Non-Compliance of Regulatory Requirements",
+        "intellectual property dispute": "Suit for Intellectual Property Rights Infringement",
+        "partnership dispute": "Suit for Resolution of Partnership Dispute"
+      },
+      "Family": {
+        "divorce": "Petition for Divorce",
+        "mutual divorce": "Petition for Mutual Consent Divorce",
+        "child custody": "Petition for Child Custody",
+        "maintenance": "Petition for Maintenance",
+        "alimony": "Petition for Grant of Alimony",
+        "domestic violence (family)": "Complaint under Domestic Violence Act",
+        "adoption dispute": "Petition for Adoption Dispute Resolution",
+        "guardianship": "Petition for Guardianship",
+        "dowry harassment": "Complaint for Dowry Harassment",
+        "conjugal rights": "Petition for Restitution of Conjugal Rights"
+      },
+      "Labor": {
+        "unpaid salary": "Claim for Recovery of Unpaid Salary",
+        "salary not paid": "Claim for Non-Payment of Salary",
+        "pending wages": "Claim for Recovery of Pending Wages",
+        "wrongful termination": "Claim for Wrongful Termination",
+        "employee harassment": "Complaint for Employee Harassment at Workplace",
+        "workplace harassment": "Complaint for Workplace Harassment",
+        "employment contract dispute": "Claim for Breach of Employment Contract",
+        "pf issue": "Complaint for Non-Payment of Provident Fund",
+        "gratuity issue": "Claim for Non-Payment of Gratuity",
+        "bonus dispute": "Claim for Non-Payment of Bonus",
+        "overtime not paid": "Claim for Non-Payment of Overtime Wages",
+        "illegal deduction": "Complaint for Illegal Salary Deduction",
+        "industrial dispute": "Industrial Dispute Petition",
+        "layoff issue": "Complaint for Illegal Layoff",
+        "workplace discrimination": "Complaint for Workplace Discrimination"
+      },
+      "Taxation": {
+        "income tax dispute": "Appeal for Income Tax Dispute",
+        "gst dispute": "Appeal for GST Dispute",
+        "tax evasion": "Complaint for Tax Evasion",
+        "customs duty issue": "Appeal for Customs Duty Dispute",
+        "corporate tax issue": "Appeal for Corporate Tax Dispute",
+        "tax penalty": "Appeal against Tax Penalty",
+        "assessment dispute": "Appeal against Tax Assessment Order",
+        "tax refund issue": "Application for Tax Refund Claim"
+      },
+      "Cyber": {
+        "online fraud": "Complaint for Online Fraud",
+        "internet scam": "Complaint for Internet Scam",
+        "hacking": "Complaint for Hacking and Unauthorized Access",
+        "unauthorized access": "Complaint for Unauthorized Access to System",
+        "identity theft": "Complaint for Identity Theft",
+        "phishing": "Complaint for Phishing Fraud",
+        "cyber stalking": "Complaint for Cyber Stalking",
+        "online harassment": "Complaint for Online Harassment",
+        "data breach": "Complaint for Data Breach",
+        "privacy violation": "Complaint for Violation of Data Privacy",
+        "social media defamation": "Complaint for Defamation on Social Media",
+        "otp fraud": "Complaint for OTP Fraud",
+        "banking fraud": "Complaint for Online Banking Fraud",
+        "upi fraud": "Complaint for UPI Fraud",
+        "credit card fraud": "Complaint for Credit Card Fraud"
+      }
     };
 
-    const analysisPrompt = `You are a Senior Legal Expert. Analyze this legal incident (which might be in any of 22 Indian languages) and provide a JSON response.
+    const analysisPrompt = `You are a Senior Legal Expert. Analyze this incident and provide a JSON response.
     
-    STRICT TAXONOMY MAPPING:
-    ${JSON.stringify(TAXONOMY, null, 2)}
+    COURTROOM-READY MAPPING:
+    ${JSON.stringify(TAXONOMY_TITLES, null, 2)}
     
     YOUR GOAL:
-    1. "title": Create a high-impact, professional legal title.
-    2. "category": The high-level matter (e.g., "Job & Salary", "Home & Property").
-    3. "legalType": Select EXACTLY one from: "Civil", "Criminal", "Corporate", "Family", "Labor", "Taxation", "Cyber".
-    4. "incidentDate": Extract the date of occurrence if mentioned (YYYY-MM-DD). If not clear, return null.
+    1. "title": You MUST use the EXACT formal title from the mapping above if the story matches a sub-topic. If no match, create a similar formal title.
+    2. "category": The high-level matter (e.g., "Job & Salary").
+    3. "legalType": Select the parent category from the mapping (Civil, Criminal, etc.).
+    4. "incidentDate": Extract date (YYYY-MM-DD) if mentioned.
     
     STORY: ${description}
     
@@ -289,7 +395,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     try {
       if (GROQ_KEY) {
-        console.log("⚡ [AI TRIAGE] Analyzing Multilingual Story with Groq...");
+        console.log("⚡ [SENIOR ADVOCATE ENGINE] Mapping incident to formal title...");
         const groqRes = await axios.post(
           "https://api.groq.com/openai/v1/chat/completions",
           {
