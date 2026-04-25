@@ -280,11 +280,12 @@ router.post("/analyze-story", auth(), async (req, res) => {
     YOUR GOAL:
     1. "title": Create a high-impact, professional legal title.
     2. "category": The high-level matter (e.g., "Job & Salary", "Home & Property").
-    3. "legalType": Select EXACTLY one from: "Civil", "Criminal", "Corporate", "Family", "Labor", "Taxation", "Cyber" based on the mapping above.
+    3. "legalType": Select EXACTLY one from: "Civil", "Criminal", "Corporate", "Family", "Labor", "Taxation", "Cyber".
+    4. "incidentDate": Extract the date of occurrence if mentioned (YYYY-MM-DD). If not clear, return null.
     
     STORY: ${description}
     
-    RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "..."}`;
+    RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "...", "incidentDate": "..."}`;
 
     try {
       if (GROQ_KEY) {
@@ -300,7 +301,12 @@ router.post("/analyze-story", auth(), async (req, res) => {
           { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
         );
         const data = JSON.parse(groqRes.data.choices[0].message.content);
-        return res.json({ title: data.title, category: data.category, legalType: data.legalType });
+        return res.json({ 
+          title: data.title, 
+          category: data.category, 
+          legalType: data.legalType,
+          incidentDate: data.incidentDate
+        });
       }
 
       // Fallback to Gemini if no Groq
@@ -311,13 +317,18 @@ router.post("/analyze-story", auth(), async (req, res) => {
       );
       const rawText = genRes.data.candidates[0].content.parts[0].text;
       const data = JSON.parse(rawText.replace(/```json|```/g, ""));
-      return res.json({ title: data.title, category: data.category, legalType: data.legalType });
+      return res.json({ 
+        title: data.title, 
+        category: data.category, 
+        legalType: data.legalType,
+        incidentDate: data.incidentDate
+      });
 
     } catch (aiErr) {
       console.warn("AI Analysis Service down, using fallback heuristic.");
       const words = description.split(" ");
       const fallbackTitle = words.slice(0, 5).join(" ") + "...";
-      res.json({ title: fallbackTitle, category: "General Legal", legalType: "Civil" });
+      res.json({ title: fallbackTitle, category: "General Legal", legalType: "Civil", incidentDate: null });
     }
   } catch (err) {
     res.status(500).json({ message: err.message });

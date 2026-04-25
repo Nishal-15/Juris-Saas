@@ -38,6 +38,7 @@ export default function FilingConsole() {
     description: "",
     category: "",
     legalType: "Civil",
+    incidentDate: "",
     oppositeParty: "",
     urgency: "Normal"
   });
@@ -69,7 +70,8 @@ export default function FilingConsole() {
         ...prev, 
         title: res.data.title || prev.title,
         category: res.data.category || prev.category,
-        legalType: res.data.legalType || prev.legalType
+        legalType: res.data.legalType || prev.legalType,
+        incidentDate: res.data.incidentDate || prev.incidentDate
       }));
       setAiMessage("✨ Magic! I've suggested a Title and Category for you based on your story.");
     } catch (err) {
@@ -206,6 +208,16 @@ export default function FilingConsole() {
                 </div>
 
                 <div className="form-group">
+                  <label>Date of Incident</label>
+                  <input 
+                    type="date"
+                    className="wizard-input material-date"
+                    value={formData.incidentDate}
+                    onChange={e => setFormData({...formData, incidentDate: e.target.value})}
+                  />
+                </div>
+
+                <div className="form-group">
                   <label>Adversary Details</label>
                   <input 
                     className="wizard-input"
@@ -252,6 +264,7 @@ export default function FilingConsole() {
               <div className="review-card">
                 <div className="review-item"><strong>CATEGORY:</strong> {formData.category}</div>
                 <div className="review-item"><strong>SUBJECT:</strong> {formData.title}</div>
+                <div className="review-item"><strong>DATE:</strong> {formData.incidentDate || "N/A"}</div>
                 <div className="review-item"><strong>OPPONENT:</strong> {formData.oppositeParty || "N/A"}</div>
                 <div className="review-item"><strong>DESCRIPTION:</strong> {formData.description}</div>
               </div>
