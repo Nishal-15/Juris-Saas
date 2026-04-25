@@ -96,11 +96,13 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 12px;
+  font-size: 14px;
   cursor: pointer;
   border-radius: 50%;
   margin: 2px;
   transition: all 0.2s;
+  position: relative;
+  z-index: 1;
 }
 
 .md-date-cell:hover {
@@ -109,7 +111,9 @@
 
 .md-date-cell.selected {
   background: #6200ee !important;
-  color: #fff;
+  color: #ffffff !important;
+  font-weight: 700;
+  z-index: 2;
 }
 
 .md-date-cell.today {
