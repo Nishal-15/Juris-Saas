@@ -37,11 +37,11 @@ return (
 
 
       <Route path="/user" element={
-        <ProtectedRoute allowedRoles={["user", "admin"]}><DashboardHome /></ProtectedRoute>
+        <ProtectedRoute allowedRoles={["user", "admin"]}><UserDashboard /></ProtectedRoute>
       }/>
 
-      <Route path="/ai-chat" element={
-        <ProtectedRoute allowedRoles={["user", "admin"]}><UserDashboard /></ProtectedRoute>
+      <Route path="/dashboard" element={
+        <ProtectedRoute allowedRoles={["user", "admin"]}><DashboardHome /></ProtectedRoute>
       }/>
 
     <Route path="/create-case" element={
