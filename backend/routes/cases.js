@@ -258,16 +258,46 @@ router.post("/analyze-story", auth(), async (req, res) => {
       return res.status(400).json({ message: "Description too short to analyze." });
     }
 
-    // Call Python AI Service
-    const axios = require("axios");
+    // 🚀 DIRECT AI ANALYSIS (Groq Llama 3.3)
+    const GROQ_KEY = process.env.GROQ_API_KEY;
+    const GEMINI_KEY = process.env.GEMINI_API_KEY;
+    
+    const analysisPrompt = `Analyze this legal incident and provide a JSON response with:
+    1. "title": A professional, high-impact legal title (e.g., "Recovery of Unpaid Salary under Labour Laws").
+    2. "category": The most appropriate category (e.g., "Job & Salary", "Home & Property", "Money & Loans").
+    
+    STORY: ${description}
+    
+    RESPONSE FORMAT: {"title": "...", "category": "..."}`;
+
     try {
-      const aiRes = await axios.post("http://127.0.0.1:8000/analyze", { description }, { timeout: 5000 });
-      return res.json({ 
-        title: aiRes.data.title, 
-        category: aiRes.data.category || "General Legal" 
-      });
+      if (GROQ_KEY) {
+        console.log("⚡ Analyzing Story with Groq...");
+        const groqRes = await axios.post(
+          "https://api.groq.com/openai/v1/chat/completions",
+          {
+            model: "llama-3.3-70b-versatile",
+            messages: [{ role: "user", content: analysisPrompt }],
+            response_format: { type: "json_object" },
+            temperature: 0.1
+          },
+          { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
+        );
+        const data = JSON.parse(groqRes.data.choices[0].message.content);
+        return res.json({ title: data.title, category: data.category });
+      }
+
+      // Fallback to Gemini if no Groq
+      console.log("✨ Analyzing Story with Gemini Fallback...");
+      const genRes = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+        { contents: [{ parts: [{ text: analysisPrompt + "\n\nOutput only raw JSON." }] }] }
+      );
+      const rawText = genRes.data.candidates[0].content.parts[0].text;
+      const data = JSON.parse(rawText.replace(/```json|```/g, ""));
+      return res.json({ title: data.title, category: data.category });
+
     } catch (aiErr) {
-      // Fallback: If AI Service is down, provide a smart regex/heuristic summary
       console.warn("AI Analysis Service down, using fallback heuristic.");
       const words = description.split(" ");
       const fallbackTitle = words.slice(0, 5).join(" ") + "...";
