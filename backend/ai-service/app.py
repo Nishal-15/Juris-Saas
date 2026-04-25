@@ -32,7 +32,7 @@ print("🔄 Starting AI Service Lightning Mode...")
 if GEMINI_API_KEY:
     print("✨ Gemini API Key Found. Enabling Cloud Acceleration.")
     genai.configure(api_key=GEMINI_API_KEY)
-    gemini_model = genai.GenerativeModel('gemini-pro')
+    gemini_model = genai.GenerativeModel('gemini-1.5-flash')
 else:
     print("⚠️ No Gemini Key found. Running in Local-Only mode.")
 
