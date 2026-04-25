@@ -72,8 +72,9 @@ export default function RecentCases() {
           <div className="rc-list">
             {cases.map(c => {
               const sc = statusConfig[c.status] || statusConfig["Open"];
-              const chatTargetId = user.role === "lawyer" ? c.user?._id : c.assignedLawyer?._id;
-              const isAssigned = !!c.assignedLawyer;
+              const isPendingAcceptance = c.status === "Pending Expert Acceptance";
+              const chatTargetId = (user.role === "lawyer" ? c.user?._id : c.assignedLawyer?._id) && !isPendingAcceptance ? (user.role === "lawyer" ? c.user?._id : c.assignedLawyer?._id) : null;
+              const isAssigned = !!c.assignedLawyer && !isPendingAcceptance;
 
               return (
                 <div key={c._id} className="rc-card">
@@ -90,7 +91,7 @@ export default function RecentCases() {
                         </span>
                         <span className="rc-tag rc-tag-blue">{c.type || "General"}</span>
                         <span className="rc-tag" style={{ color: sc.color, background: sc.bg }}>
-                          {sc.label}
+                          {isPendingAcceptance ? "Awaiting Approval" : sc.label}
                         </span>
                       </div>
                       <span className="rc-file-id">#{c._id.slice(-6).toUpperCase()}</span>
@@ -118,7 +119,7 @@ export default function RecentCases() {
                           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                             <circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/>
                           </svg>
-                          Awaiting expert assignment
+                          {isPendingAcceptance ? "Awaiting expert approval" : "Awaiting expert assignment"}
                         </span>
                       )}
 
