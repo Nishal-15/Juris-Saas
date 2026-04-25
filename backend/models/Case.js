@@ -3,6 +3,9 @@ const mongoose = require("mongoose");
 const CaseSchema = new mongoose.Schema({
   title: String,
   type: String,
+  category: String,
+  legalType: String,
+  incidentDate: String,
   description: String,
   urgency: {
     type: String,

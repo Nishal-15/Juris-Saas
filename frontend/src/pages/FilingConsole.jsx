@@ -47,6 +47,8 @@ export default function FilingConsole() {
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showDatePicker, setShowDatePicker] = useState(false);
+  const [showSuccessModal, setShowSuccessModal] = useState(false);
+  const [matchedLawyers, setMatchedLawyers] = useState([]);
   const navigate = useNavigate();
 
   const categories = [
@@ -99,9 +101,10 @@ export default function FilingConsole() {
     }
     setLoading(true);
     try {
-      await axios.post("/cases", formData);
-      alert("✅ Your case has been successfully filed!");
-      navigate("/cases");
+      const res = await axios.post("/cases", formData);
+      setMatchedLawyers(res.data.suggestedLawyers || []);
+      setShowSuccessModal(true);
+      // alert("✅ Your case has been successfully filed!"); // Removed plain alert
     } catch (err) {
       alert("Failed to file case.");
     } finally {
@@ -294,6 +297,38 @@ export default function FilingConsole() {
             </div>
           )}
         </div>
+
+        {/* 🏆 EXPERT MATCHING SUCCESS MODAL */}
+        {showSuccessModal && (
+          <div className="expert-modal-overlay">
+            <div className="expert-modal-card">
+              <div className="modal-confetti">🎉</div>
+              <h2 className="modal-title">Case Filed Successfully!</h2>
+              <p className="modal-subtitle">We've found {matchedLawyers.length} expert advocates specializing in {formData.legalType}.</p>
+              
+              <div className="matched-lawyers-list">
+                {matchedLawyers.map(lawyer => (
+                  <div key={lawyer._id} className="matched-lawyer-item">
+                    <div className="lawyer-avatar">👨‍⚖️</div>
+                    <div className="lawyer-details">
+                      <h4>{lawyer.name}</h4>
+                      <p>{lawyer.specialization}</p>
+                      <div className="lawyer-meta">
+                        <span>⭐ {lawyer.rating || "5.0"}</span>
+                        <span>💼 {lawyer.experience || "5+"} yrs</span>
+                      </div>
+                    </div>
+                    <button className="connect-btn" onClick={() => navigate("/chat")}>Connect</button>
+                  </div>
+                ))}
+              </div>
+
+              <div className="modal-footer">
+                <button className="view-cases-btn" onClick={() => navigate("/cases")}>Go to Dashboard</button>
+              </div>
+            </div>
+          </div>
+        )}
       </main>
     </div>
   );

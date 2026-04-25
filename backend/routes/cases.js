@@ -9,12 +9,15 @@ const checkSub = require("../middleware/checkSubscription");
 /* Create Case */
 router.post("/", auth(), async (req, res) => {
   try {
-    const { title, description, type, urgency } = req.body;
+    const { title, description, type, urgency, category, legalType, incidentDate } = req.body;
 
     const newCase = new Case({
       title,
       description,
-      type,
+      type: type || legalType,
+      category,
+      legalType,
+      incidentDate,
       urgency: urgency || "Normal",
       user: req.user.id,
       assignedLawyer: null
@@ -22,11 +25,21 @@ router.post("/", auth(), async (req, res) => {
 
     await newCase.save();
 
-    // 🔬 BROADCAST: Marketplace Update for matching experts
+    // 🕵️‍♂️ EXPERT MATCHING
+    let matchedLawyers = [];
+    try {
+      matchedLawyers = await Lawyer.find({
+        specialization: { $regex: legalType || "", $options: "i" }
+      }).limit(3).select("name specialization rating experience photo");
+    } catch (e) {}
+
     const io = req.app.get("io");
     if (io) io.emit("marketplace-needs-refresh");
 
-    res.json(newCase);
+    res.json({ 
+      case: newCase, 
+      suggestedLawyers: matchedLawyers 
+    });
 
   } catch (err) {
     res.status(500).json({ message: err.message });
