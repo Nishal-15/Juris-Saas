@@ -1,5 +1,6 @@
 const router=require("express").Router();
 const User=require("../models/User");
+const Lawyer=require("../models/Lawyer");
 const Case=require("../models/Case");
 
 const auth = require("../middleware/auth");
@@ -21,7 +22,7 @@ router.get("/lawyer", auth(["lawyer"]), async (req, res) => {
     });
     const activeClients = await Case.distinct("user", { assignedLawyer: req.user.id });
 
-    const lawyer = await User.findById(req.user.id, "name subscriptionTier casesClaimedCount subscriptionExpiresAt isBlocked");
+    const lawyer = await Lawyer.findById(req.user.id, "name subscriptionTier casesClaimedCount subscriptionExpiresAt isBlocked");
 
     res.json({
       expertName: lawyer?.name || "Expert Advocate",
@@ -43,7 +44,7 @@ router.get("/lawyer", auth(["lawyer"]), async (req, res) => {
 router.get("/admin", auth(["admin"]), async (req, res) => {
   try {
     const totalUsers = await User.countDocuments({ role: { $in: ["user", "admin"] } });
-    const totalLawyers = await User.countDocuments({ role: "lawyer", isVerified: true });
+    const totalLawyers = await Lawyer.countDocuments({ isVerified: true });
     const totalCases = await Case.countDocuments();
     const emergencyCases = await Case.countDocuments({ urgency: "Emergency" });
 

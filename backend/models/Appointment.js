@@ -2,7 +2,7 @@ const mongoose = require("mongoose");
 
 const AppointmentSchema = new mongoose.Schema({
   userId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-  lawyerId: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+  lawyerId: { type: mongoose.Schema.Types.ObjectId, ref: "Lawyer" },
   caseId: { type: mongoose.Schema.Types.ObjectId, ref: "Case" }, // 🔥 Link to Case
   date: String,
   time: String,
