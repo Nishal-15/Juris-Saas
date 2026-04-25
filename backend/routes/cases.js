@@ -502,6 +502,22 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   }
 });
 
+/* Lawyer: List PENDING REQUESTS (Assigned but not accepted) */
+router.get("/requested", auth(["lawyer"]), async (req, res) => {
+  try {
+    const requestedCases = await Case.find({
+      assignedLawyer: req.user.id,
+      status: "Pending Expert Acceptance"
+    }).populate("user", "name");
+
+    console.log(`🔍 Found ${requestedCases.length} pending requests for Lawyer ${req.user.id}`);
+    res.json(requestedCases);
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 /* ✅ ACCEPT: Lawyer accepts the client request */
 router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
   try {
