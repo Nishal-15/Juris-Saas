@@ -59,9 +59,30 @@ router.post("/", auth(), async (req, res) => {
       console.error("⚠️ RAG Suppressed (Continuing without context):", ragErr.response?.data || ragErr.message);
     }
 
-    // 3. Generate Answer
-    console.log("✨ Generating Response...");
+    // 3. Generate Answer (Groq - Llama 3.1)
+    console.log("⚡ Generating Response with Groq...");
+    const GROQ_KEY = process.env.GROQ_API_KEY;
     const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nContext: ${context}\n\nQuestion: ${message}`;
+    
+    if (GROQ_KEY) {
+      try {
+        const groqRes = await axios.post(
+          "https://api.groq.com/openai/v1/chat/completions",
+          {
+            model: "llama-3.1-70b-versatile",
+            messages: [{ role: "user", content: prompt }],
+            temperature: 0.2
+          },
+          { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
+        );
+        const answer = groqRes.data.choices[0].message.content;
+        return res.json({ answer });
+      } catch (groqErr) {
+        console.error("Groq Fail, falling back to Gemini:", groqErr.message);
+      }
+    }
+
+    // 4. Fallback to Gemini if Groq fails or no key
     const genRes = await axios.post(
       `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
       { contents: [{ parts: [{ text: prompt }] }] }
