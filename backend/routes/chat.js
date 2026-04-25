@@ -2,66 +2,77 @@ const router = require("express").Router();
 const axios = require("axios");
 const auth = require("../middleware/auth");
 
-// 🤖 MISTRAL AI CHAT (Secured)
+const SYSTEM_PROMPT = `Your goal is to provide a COMPREHENSIVE, EASY-TO-READ legal guide to every query. 
+STRICT FORMATTING:
+**Punishment under Indian Law: [Topic]**
+Under Section [Number] of the [Act], [Action] is punishable with [Punishment].
+- Detail 1
+- Detail 2
+
+**DEFINITION: [Topic]**
+What is [Topic]? In simple terms:
+- Explanation 1
+
+**IMPORTANT**
+- Key factors/facts.
+
+**FOLLOW UP**
+- Bailable/Non-bailable nature.
+- Punishment under the new law: BNS (Bharatiya Nyaya Sanhita).
+
+RULES:
+1. NO filenames or PDF names.
+2. NO EMOJIS.
+3. Answer in the requested language: {LANG}.`;
+
+// 🧠 AI ENGINE (Direct Gemini + Pinecone)
 router.post("/", auth(), async (req, res) => {
+  const { message, lang = "en" } = req.body;
+  const GEMINI_KEY = process.env.GEMINI_API_KEY;
+  const PC_KEY = process.env.PINECONE_API_KEY;
+  const PC_INDEX = process.env.PINECONE_INDEX_NAME || "jurisbot-index";
+
   try {
-    const aiUrl = (process.env.AI_SERVICE_URL || "http://127.0.0.1:8080").trim();
-    console.log(`📡 [AI BRIDGE] Target: ${aiUrl}/chat`);
-    console.log(`📩 [AI BRIDGE] Payload:`, req.body);
-    
-    const userLang = (req.user.preferredLanguage || "en").split('-')[0].toLowerCase();
-    
+    console.log(`🤖 AI Query: ${message} (${lang})`);
+
+    // 1. Get Embedding
+    let context = "";
     try {
-      const response = await axios.post(
-        `${aiUrl}/chat`,
-        { ...req.body, lang: userLang },
-        { 
-          timeout: 600000, 
-          family: 4
-        }
+      const embedRes = await axios.post(
+        `https://generativelanguage.googleapis.com/v1beta/models/embedding-001:embedContent?key=${GEMINI_KEY}`,
+        { model: "models/embedding-001", content: { parts: [{ text: message }] } }
+      );
+      const vector = embedRes.data.embedding.values;
+
+      // 2. Query Pinecone (REST API)
+      const pcRes = await axios.post(
+        `https://${PC_INDEX}-emneh3v.svc.gcp-starter.pinecone.io/query`,
+        { vector, topK: 1, includeMetadata: true },
+        { headers: { "Api-Key": PC_KEY } }
       );
 
-      console.log(`✅ [AI BRIDGE] Success:`, response.status);
-      
-      // ✅ Check if Python returned an error
-      if (response.data.error) {
-        console.error(`❌ [AI BRIDGE] Python Error:`, response.data.error);
-        return res.json({ answer: `AI Service Error: ${response.data.error}` });
+      if (pcRes.data.matches?.length > 0) {
+        context = pcRes.data.matches[0].metadata.content;
       }
-
-      res.json(response.data);
-    } catch (aiErr) {
-      console.error("❌ [AI BRIDGE] CRASH:", aiErr.message);
-      if (aiErr.code === 'ECONNREFUSED') {
-         console.error("🚫 Connection Refused. Is app.py running on 8080?");
-      }
-      
-      // ✅ If the server responded with an error (e.g. 500)
-      if (aiErr.response) {
-        const errorData = aiErr.response.data;
-        let errorMessage = "Internal AI Processing Error";
-        
-        if (typeof errorData === 'string') {
-          // If it's HTML, take the title or first bit
-          errorMessage = errorData.includes("<title>") 
-            ? errorData.split("<title>")[1].split("</title>")[0]
-            : "AI Service Unavailable (502/503 Proxy Error)";
-        } else {
-          errorMessage = errorData.error || errorData.message || JSON.stringify(errorData);
-        }
-
-        return res.json({ 
-          answer: `AI Service Error: ${errorMessage}` 
-        });
-      }
-
-      res.json({ 
-        answer: `Connection Error: Could not reach the AI Service at ${aiUrl}. Make sure app.py is running.` 
-      });
+    } catch (ragErr) {
+      console.error("RAG Error:", ragErr.message);
     }
+
+    // 3. Generate Answer
+    const prompt = `${SYSTEM_PROMPT.replace("{LANG}", lang)}\n\nContext: ${context}\n\nQuestion: ${message}`;
+    const genRes = await axios.post(
+      `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+      { contents: [{ parts: [{ text: prompt }] }] }
+    );
+
+    const answer = genRes.data.candidates[0].content.parts[0].text;
+    res.json({ answer });
+
   } catch (err) {
-    console.error("Chat Controller Error:", err.message);
-    res.status(500).json({ error: "System encountered an error processing your request." });
+    console.error("AI Core Error:", err.message);
+    res.json({ 
+      answer: "I'm sorry, I encountered a connection error with my legal core. Please verify your internet connection or try again in a few moments." 
+    });
   }
 });
 
