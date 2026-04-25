@@ -20,7 +20,7 @@ const CaseSchema = new mongoose.Schema({
   },
   assignedLawyer: {
     type: mongoose.Schema.Types.ObjectId,
-    ref: "User",
+    ref: "Lawyer",
     default: null
   },
   trackingHistory: [{

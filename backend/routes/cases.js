@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const Case = require("../models/Case");
 const User = require("../models/User");
+const Lawyer = require("../models/Lawyer"); // 👈 Added
 const auth = require("../middleware/auth");
 const checkSub = require("../middleware/checkSubscription");
 
@@ -75,8 +76,8 @@ router.get("/lawyer", auth(["lawyer"]), async (req, res) => {
 /* Lawyer: List ALL OPEN (Unassigned) Cases (Expert-Specific Filter) */
 router.get("/open", auth(["lawyer"]), async (req, res) => {
   try {
-    const lawyer = await User.findById(req.user.id);
-    const keywords = lawyer.specialization?.split(/[&,]/).map(k => k.trim()) || [];
+    const lawyer = await Lawyer.findById(req.user.id);
+    const keywords = lawyer?.specialization?.split(/[&,]/).map(k => k.trim()) || [];
 
     // 🔬 LASER-FOCUS: Only check 'Type' and 'Title' — avoid Description bleed
     const matchCriteria = keywords.map(kw => ({
@@ -133,8 +134,8 @@ router.post("/:id/assign", auth(["lawyer"]), async (req, res) => {
     targetCase.status = "In Progress";
     await targetCase.save();
 
-    // ✅ Update User Case Count Metrics
-    await User.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
+    // ✅ Update Lawyer Case Count Metrics
+    await Lawyer.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
 
     // 🔬 BROADCAST: Case Claimed! Refresh other marketplaces
     const io = req.app.get("io");
@@ -153,8 +154,8 @@ router.patch("/:id/accept", [auth(["lawyer"]), checkSub], async (req, res) => {
     if (!targetCase) return res.status(404).json({ message: "Case not found" });
     if (targetCase.assignedLawyer) return res.status(400).json({ message: "Already assigned." });
 
-    // ✅ Update User Case Count
-    await User.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
+    // ✅ Update Lawyer Case Count
+    await Lawyer.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
 
     targetCase.assignedLawyer = req.user.id;
     targetCase.status = "In Progress";
