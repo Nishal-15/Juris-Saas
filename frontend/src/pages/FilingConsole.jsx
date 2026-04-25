@@ -101,11 +101,13 @@ export default function FilingConsole() {
     }
     setLoading(true);
     try {
+      console.log("🚀 Submitting Case Data:", formData);
       const res = await axios.post("/cases", formData);
+      console.log("✅ Server Response:", res.data);
       setMatchedLawyers(res.data.suggestedLawyers || []);
       setShowSuccessModal(true);
-      // alert("✅ Your case has been successfully filed!"); // Removed plain alert
     } catch (err) {
+      console.error("❌ Submission Failed:", err);
       alert("Failed to file case.");
     } finally {
       setLoading(false);
@@ -307,20 +309,26 @@ export default function FilingConsole() {
               <p className="modal-subtitle">We've found {matchedLawyers.length} expert advocates specializing in {formData.legalType}.</p>
               
               <div className="matched-lawyers-list">
-                {matchedLawyers.map(lawyer => (
-                  <div key={lawyer._id} className="matched-lawyer-item">
-                    <div className="lawyer-avatar">👨‍⚖️</div>
-                    <div className="lawyer-details">
-                      <h4>{lawyer.name}</h4>
-                      <p>{lawyer.specialization}</p>
-                      <div className="lawyer-meta">
-                        <span>⭐ {lawyer.rating || "5.0"}</span>
-                        <span>💼 {lawyer.experience || "5+"} yrs</span>
+                {matchedLawyers.length > 0 ? (
+                  matchedLawyers.map(lawyer => (
+                    <div key={lawyer._id} className="matched-lawyer-item">
+                      <div className="lawyer-avatar">👨‍⚖️</div>
+                      <div className="lawyer-details">
+                        <h4>{lawyer.name}</h4>
+                        <p>{lawyer.specialization}</p>
+                        <div className="lawyer-meta">
+                          <span>⭐ {lawyer.rating || "5.0"}</span>
+                          <span>💼 {lawyer.experience || "5+"} yrs</span>
+                        </div>
                       </div>
+                      <button className="connect-btn" onClick={() => navigate("/chat")}>Connect</button>
                     </div>
-                    <button className="connect-btn" onClick={() => navigate("/chat")}>Connect</button>
+                  ))
+                ) : (
+                  <div className="no-experts-fallback">
+                    <p>No immediate matches found. Our legal team is reviewing your case and will connect with you shortly.</p>
                   </div>
-                ))}
+                )}
               </div>
 
               <div className="modal-footer">
