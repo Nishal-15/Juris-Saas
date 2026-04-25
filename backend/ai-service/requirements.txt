@@ -1,9 +1,9 @@
 flask
 flask-cors
-PyMuPDF
-pymongo
-python-dotenv
-pinecone
 sentence-transformers
 deep-translator
+pinecone-client
+python-dotenv
 ollama
+google-generativeai
+gunicorn
