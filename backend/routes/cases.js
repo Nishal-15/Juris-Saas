@@ -395,45 +395,62 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     try {
       if (GROQ_KEY) {
-        console.log("⚡ [SENIOR ADVOCATE ENGINE] Mapping incident to formal title...");
-        const groqRes = await axios.post(
-          "https://api.groq.com/openai/v1/chat/completions",
-          {
-            model: "llama-3.3-70b-versatile",
-            messages: [{ role: "user", content: analysisPrompt }],
-            response_format: { type: "json_object" },
-            temperature: 0.1
-          },
-          { headers: { Authorization: `Bearer ${GROQ_KEY}` } }
-        );
-        const data = JSON.parse(groqRes.data.choices[0].message.content);
-        return res.json({ 
-          title: data.title, 
-          category: data.category, 
-          legalType: data.legalType,
-          incidentDate: data.incidentDate
-        });
+        console.log("⚡ [AI TRIAGE] Attempting Groq Analysis...");
+        try {
+          const groqRes = await axios.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+              model: "llama-3.3-70b-versatile",
+              messages: [{ role: "user", content: analysisPrompt }],
+              response_format: { type: "json_object" },
+              temperature: 0.1
+            },
+            { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 10000 }
+          );
+          const data = JSON.parse(groqRes.data.choices[0].message.content);
+          console.log("✅ [AI TRIAGE] Groq Success:", data.title);
+          return res.json({ 
+            title: data.title, 
+            category: data.category, 
+            legalType: data.legalType,
+            incidentDate: data.incidentDate
+          });
+        } catch (err) {
+          console.error("❌ [AI TRIAGE] Groq Failed:", err.response?.data || err.message);
+        }
       }
 
-      // Fallback to Gemini if no Groq
-      console.log("✨ Analyzing Story with Gemini Fallback...");
-      const genRes = await axios.post(
-        `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
-        { contents: [{ parts: [{ text: analysisPrompt + "\n\nOutput only raw JSON." }] }] }
-      );
-      const rawText = genRes.data.candidates[0].content.parts[0].text;
-      const data = JSON.parse(rawText.replace(/```json|```/g, ""));
-      return res.json({ 
-        title: data.title, 
-        category: data.category, 
-        legalType: data.legalType,
-        incidentDate: data.incidentDate
-      });
+      // Fallback to Gemini if no Groq or Groq fails
+      if (GEMINI_KEY) {
+        console.log("✨ [AI TRIAGE] Attempting Gemini Fallback...");
+        try {
+          const genRes = await axios.post(
+            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
+            { contents: [{ parts: [{ text: analysisPrompt + "\n\nOutput only raw JSON." }] }] },
+            { timeout: 15000 }
+          );
+          let rawText = genRes.data.candidates[0].content.parts[0].text;
+          // Clean markdown JSON if present
+          rawText = rawText.replace(/```json|```/g, "").trim();
+          const data = JSON.parse(rawText);
+          console.log("✅ [AI TRIAGE] Gemini Success:", data.title);
+          return res.json({ 
+            title: data.title, 
+            category: data.category, 
+            legalType: data.legalType,
+            incidentDate: data.incidentDate
+          });
+        } catch (err) {
+          console.error("❌ [AI TRIAGE] Gemini Failed:", err.response?.data || err.message);
+        }
+      }
+
+      throw new Error("All AI Engines failed to respond.");
 
     } catch (aiErr) {
-      console.warn("AI Analysis Service down, using fallback heuristic.");
-      const words = description.split(" ");
-      const fallbackTitle = words.slice(0, 5).join(" ") + "...";
+      console.warn("⚠️ [AI TRIAGE] CRITICAL: Using heuristic fallback due to AI failure.");
+      const words = description.split(" ").filter(w => w.length > 0);
+      const fallbackTitle = words.slice(0, 7).join(" ") + "...";
       res.json({ title: fallbackTitle, category: "General Legal", legalType: "Civil", incidentDate: null });
     }
   } catch (err) {
