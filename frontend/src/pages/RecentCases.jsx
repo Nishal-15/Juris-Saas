@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import socket from "../socket";
 import Sidebar from "../components/layout/Sidebar";
 import BottomNav from "../components/layout/BottomNav";
 import MobileHeader from "../components/layout/MobileHeader";
@@ -23,12 +24,35 @@ export default function RecentCases() {
   const navigate = useNavigate();
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
-  useEffect(() => {
+  const fetchCases = async () => {
     const endpoint = user.role === "lawyer" ? "/cases/lawyer" : "/cases";
-    axios.get(endpoint)
-      .then(res => { setCases(res.data); setLoading(false); })
-      .catch(() => setLoading(false));
-  }, [user.role]);
+    try {
+      const res = await axios.get(endpoint);
+      setCases(res.data);
+    } catch (err) {
+      console.error(err);
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  useEffect(() => {
+    if (user?._id) {
+      socket.emit("join", user._id);
+      console.log("📡 Citizen joined real-time room:", user._id);
+    }
+
+    fetchCases();
+
+    socket.on("notification", () => {
+      console.log("🔔 Status update received, refreshing...");
+      fetchCases();
+    });
+
+    return () => {
+      socket.off("notification");
+    };
+  }, [user._id]);
 
   return (
     <div className="rc-page">
