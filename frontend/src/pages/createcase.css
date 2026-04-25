@@ -218,7 +218,110 @@
 .fade-in { animation: fadeIn 0.4s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
 
+/* ── MOBILE OPTIMIZATION OVERRIDES (No effect on Desktop) ── */
 @media (max-width: 768px) {
-  .wizard-ai-dock { padding: 15px 20px; }
-  .wizard-header { margin: 20px auto; }
+  .wizard-page {
+    background: #ffffff;
+    flex-direction: column;
+  }
+
+  .wizard-main {
+    padding: 0;
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+  }
+
+  /* 🤖 Mobile AI Dock (Floating Top) */
+  .wizard-ai-dock {
+    padding: 15px 20px;
+    background: #1a1c24;
+    position: sticky;
+    top: 0;
+    box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+  }
+
+  .ai-dock-msg {
+    font-size: 11px;
+    max-width: 180px;
+  }
+
+  .language-selector-dock select {
+    font-size: 12px;
+  }
+
+  /* ── Mobile Progress ── */
+  .wizard-header {
+    margin: 20px 20px 10px;
+    border: none;
+    padding: 0;
+  }
+
+  .node-label { display: none; } /* Hide labels to save space */
+  .node-circle { width: 30px; height: 30px; font-size: 12px; }
+
+  /* ── Mobile Content ── */
+  .wizard-content {
+    flex: 1;
+    padding: 0 20px 100px; /* Space for bottom actions */
+    margin: 0;
+  }
+
+  .wizard-title { font-size: 24px; margin-top: 10px; }
+  .wizard-subtitle { font-size: 14px; margin-bottom: 20px; }
+
+  .category-grid {
+    grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .category-card {
+    padding: 16px;
+    border-radius: 14px;
+  }
+
+  .cat-icon { font-size: 24px; padding: 0; background: none; }
+  .cat-info h3 { font-size: 16px; }
+
+  /* ── Mobile Form ── */
+  .wizard-form-box {
+    padding: 20px;
+    border-radius: 16px;
+    margin-bottom: 20px;
+  }
+
+  .wizard-input, .wizard-textarea {
+    font-size: 16px; /* Prevents auto-zoom on iOS */
+    padding: 12px;
+  }
+
+  .voice-btn-large {
+    width: 100%;
+    justify-content: center;
+    padding: 14px;
+    font-size: 14px;
+  }
+
+  /* ── Mobile Actions (Sticky Bottom) ── */
+  .wizard-actions {
+    position: fixed;
+    bottom: 0; left: 0; right: 0;
+    background: #fff;
+    padding: 20px;
+    box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
+    z-index: 1000;
+    display: flex;
+    gap: 12px;
+  }
+
+  .wizard-btn-back { flex: 1; padding: 16px; }
+  .wizard-btn-next, .wizard-btn-submit { flex: 2; padding: 16px; }
+
+  /* ── Evidence Hub ── */
+  .upload-zone {
+    padding: 40px 20px;
+    border-radius: 16px;
+  }
+
+  .upload-icon { font-size: 32px; }
 }

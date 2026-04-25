@@ -125,6 +125,41 @@ option {
   background: linear-gradient(90deg, transparent, var(--gold), transparent);
 }
 
+/* ── Mobile/* 📱 GLOBAL MOBILE REVOLUTION (768px and below) */
+@media (max-width: 768px) {
+  /* ── Hide Desktop Sidebar ── */
+  .sidebar {
+    display: none !important;
+  }
+
+  /* ── Expand Main Content ── */
+  main, .user-dashboard, .cases-page, .lawyers-page, .case-main {
+    margin-left: 0 !important;
+    padding: 15px !important;
+    width: 100% !important;
+  }
+
+  /* ── Force Bottom Nav Visibility ── */
+  .bottom-nav {
+    display: flex !important;
+  }
+
+  /* ── Global Typography Fixes ── */
+  h1 { font-size: 24px !important; }
+  h2 { font-size: 20px !important; }
+  
+  .card, .dashboard-card {
+    margin-bottom: 15px !important;
+    padding: 15px !important;
+    border-radius: 12px !important;
+  }
+
+  /* ── Hide Web-Only Elements ── */
+  .desktop-only {
+    display: none !important;
+  }
+}
+
 /* ── Mobile Optimization Overlay ── */
 @media (max-width: 768px) {
   .layout {

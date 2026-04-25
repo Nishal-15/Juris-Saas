@@ -26,6 +26,24 @@ html, body, #root {
 .layout-center::-webkit-scrollbar { width: 4px; }
 .layout-center::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
 /* -- Mobile Chat Padding -- */
+/* -- Mobile Optimization (Zero Impact on Desktop) -- */
 @media (max-width: 768px) {
-  .layout-center { padding-bottom: 80px !important; }
+  .layout {
+    flex-direction: column;
+  }
+  
+  .right-panel {
+    display: none !important;
+  }
+
+  .layout-center {
+    width: 100% !important;
+    padding-bottom: 70px !important; /* Bottom Nav Space */
+  }
+
+  .chat-window {
+    border-radius: 0 !important;
+    border: none !important;
+    height: 100vh !important;
+  }
 }

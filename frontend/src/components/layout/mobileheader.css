@@ -1,0 +1,46 @@
+.mobile-top-header {
+  display: none;
+  background: #1a1c24;
+  padding: 15px 20px;
+  justify-content: space-between;
+  align-items: center;
+  border-bottom: 1px solid rgba(255,255,255,0.05);
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  color: #fff;
+}
+
+.mobile-logo {
+  font-size: 18px;
+  font-weight: 800;
+  color: #c9a84c;
+}
+
+.mobile-icon-btn {
+  background: transparent;
+  border: none;
+  color: rgba(255,255,255,0.6);
+  cursor: pointer;
+  position: relative;
+}
+
+.mobile-icon-btn svg {
+  width: 22px;
+  height: 22px;
+}
+
+.notif-dot {
+  position: absolute;
+  top: 0; right: 0;
+  width: 8px; height: 8px;
+  background: #ff4444;
+  border-radius: 50%;
+  border: 2px solid #1a1c24;
+}
+
+@media (max-width: 768px) {
+  .mobile-top-header {
+    display: flex;
+  }
+}
