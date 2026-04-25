@@ -49,6 +49,8 @@ export default function FilingConsole() {
   const [showDatePicker, setShowDatePicker] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
   const [matchedLawyers, setMatchedLawyers] = useState([]);
+  const [currentCaseId, setCurrentCaseId] = useState(null);
+  const [isConnecting, setIsConnecting] = useState(false);
   const navigate = useNavigate();
 
   const categories = [
@@ -104,6 +106,7 @@ export default function FilingConsole() {
       console.log("🚀 Submitting Case Data:", formData);
       const res = await axios.post("/cases", formData);
       console.log("✅ Server Response:", res.data);
+      setCurrentCaseId(res.data.case?._id);
       setMatchedLawyers(res.data.suggestedLawyers || []);
       setShowSuccessModal(true);
     } catch (err) {
@@ -111,6 +114,17 @@ export default function FilingConsole() {
       alert("Failed to file case.");
     } finally {
       setLoading(false);
+    }
+  const handleConnect = async (lawyerId) => {
+    setIsConnecting(true);
+    try {
+      await axios.post(`/cases/connect/${currentCaseId}/${lawyerId}`);
+      setTimeout(() => {
+        navigate("/cases");
+      }, 2000);
+    } catch (err) {
+      alert("Connection failed.");
+      setIsConnecting(false);
     }
   };
 
@@ -304,36 +318,46 @@ export default function FilingConsole() {
         {showSuccessModal && (
           <div className="expert-modal-overlay">
             <div className="expert-modal-card">
-              <div className="modal-confetti">🎉</div>
-              <h2 className="modal-title">Case Filed Successfully!</h2>
-              <p className="modal-subtitle">We've found {matchedLawyers.length} expert advocates specializing in {formData.legalType}.</p>
-              
-              <div className="matched-lawyers-list">
-                {matchedLawyers.length > 0 ? (
-                  matchedLawyers.map(lawyer => (
-                    <div key={lawyer._id} className="matched-lawyer-item">
-                      <div className="lawyer-avatar">👨‍⚖️</div>
-                      <div className="lawyer-details">
-                        <h4>{lawyer.name}</h4>
-                        <p>{lawyer.specialization}</p>
-                        <div className="lawyer-meta">
-                          <span>⭐ {lawyer.rating || "5.0"}</span>
-                          <span>💼 {lawyer.experience || "5+"} yrs</span>
+              {isConnecting ? (
+                <div className="connecting-view">
+                  <div className="pulse-loader">⚖️</div>
+                  <h2 className="modal-title">Connecting to Advocate...</h2>
+                  <p className="modal-subtitle">Your case details are being shared with the expert. Please wait.</p>
+                </div>
+              ) : (
+                <>
+                  <div className="modal-confetti">🏢</div>
+                  <h2 className="modal-title">Case Filed Successfully!</h2>
+                  <p className="modal-subtitle">We've found {matchedLawyers.length} expert advocates specializing in {formData.legalType}.</p>
+                  
+                  <div className="matched-lawyers-list">
+                    {matchedLawyers.length > 0 ? (
+                      matchedLawyers.map(lawyer => (
+                        <div key={lawyer._id} className="matched-lawyer-item">
+                          <div className="lawyer-avatar">⚖️</div>
+                          <div className="lawyer-details">
+                            <h4>{lawyer.name}</h4>
+                            <p>{lawyer.specialization}</p>
+                            <div className="lawyer-meta">
+                              <span>⭐ {lawyer.rating || "5.0"}</span>
+                              <span>💼 {lawyer.experience || "5+"} yrs</span>
+                            </div>
+                          </div>
+                          <button className="connect-btn" onClick={() => handleConnect(lawyer._id)}>Connect</button>
                         </div>
+                      ))
+                    ) : (
+                      <div className="no-experts-fallback">
+                        <p>No immediate matches found. Our legal team is reviewing your case and will connect with you shortly.</p>
                       </div>
-                      <button className="connect-btn" onClick={() => navigate("/chat")}>Connect</button>
-                    </div>
-                  ))
-                ) : (
-                  <div className="no-experts-fallback">
-                    <p>No immediate matches found. Our legal team is reviewing your case and will connect with you shortly.</p>
+                    )}
                   </div>
-                )}
-              </div>
 
-              <div className="modal-footer">
-                <button className="view-cases-btn" onClick={() => navigate("/cases")}>Go to Dashboard</button>
-              </div>
+                  <div className="modal-footer">
+                    <button className="view-cases-btn" onClick={() => navigate("/cases")}>Go to Dashboard</button>
+                  </div>
+                </>
+              )}
             </div>
           </div>
         )}

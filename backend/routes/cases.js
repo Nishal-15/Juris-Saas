@@ -469,4 +469,38 @@ router.post("/analyze-story", auth(), async (req, res) => {
   }
 });
 
+/* ⚖️ CONNECT: Link Case to Lawyer */
+router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
+  try {
+    const { caseId, lawyerId } = req.params;
+    
+    // Update Case with assigned lawyer and set status to 'In Progress'
+    const updatedCase = await Case.findByIdAndUpdate(
+      caseId,
+      { 
+        assignedLawyer: lawyerId,
+        status: "In Progress",
+        $push: { trackingHistory: { status: "Expert Connected", date: new Date() } }
+      },
+      { new: true }
+    ).populate("user", "name");
+
+    // 🔔 NOTIFY LAWYER: Send real-time alert to the lawyer's dashboard
+    const io = req.app.get("io");
+    if (io) {
+      io.emit(`new-request-${lawyerId}`, {
+        message: "New Case Request Received!",
+        case: updatedCase
+      });
+    }
+
+    console.log(`🤝 Connection established: Case ${caseId} -> Lawyer ${lawyerId}`);
+    res.json({ message: "Expert Connected Successfully", case: updatedCase });
+
+  } catch (err) {
+    console.error("Connection Error:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;
