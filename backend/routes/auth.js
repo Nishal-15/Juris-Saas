@@ -1,5 +1,6 @@
 const router = require("express").Router();
 const User = require("../models/User");
+const Lawyer = require("../models/Lawyer");
 const bcrypt = require("bcryptjs");
 const jwt = require("jsonwebtoken");
 const auth = require("../middleware/auth");
@@ -40,8 +41,14 @@ router.post("/register-lawyer", upload.fields([
     }
 
     const normalizedEmail = email.toLowerCase().trim();
-    const existing = await User.findOne({ email: normalizedEmail });
-    if (existing) return res.status(400).json({ message: "Account already exists." });
+    
+    // Check both collections
+    const existingUser = await User.findOne({ email: normalizedEmail });
+    const existingLawyer = await Lawyer.findOne({ email: normalizedEmail });
+    
+    if (existingUser || existingLawyer) {
+      return res.status(400).json({ message: "Account already exists with this email." });
+    }
 
     const salt = await bcrypt.genSalt(10);
     const hash = await bcrypt.hash(password, salt);
@@ -49,7 +56,7 @@ router.post("/register-lawyer", upload.fields([
     const certificateUrl = req.files["certificate"] ? req.files["certificate"][0].path : null;
     const avatarUrl = req.files["avatar"] ? req.files["avatar"][0].path : null;
 
-    const lawyer = await User.create({
+    const lawyer = await Lawyer.create({
       name,
       email: normalizedEmail,
       password: hash,
@@ -149,17 +156,15 @@ router.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
 
-    console.log(`Attempting login: ${normalizedEmail}`);
-    const user = await User.findOne({ email: normalizedEmail });
+    console.log(`Attempting login: ${normalizedEmail} as ${role || "user"}`);
+    
+    // 🛡️ DYNAMIC MODEL SELECTION
+    const Model = (role === "lawyer") ? Lawyer : User;
+    
+    const user = await Model.findOne({ email: normalizedEmail });
     if (!user) {
-      console.log(`❌ User not found: ${normalizedEmail}`);
+      console.log(`❌ Account not found in ${role || "user"} collection: ${normalizedEmail}`);
       return res.status(400).json({ message: "Invalid credentials" });
-    }
-
-    // 🛡️ ROLE VALIDATION
-    if (role && user.role !== role) {
-      console.log(`❌ Role mismatch: Expected ${role}, got ${user.role}`);
-      return res.status(403).json({ message: `Access denied: You are registered as a ${user.role}, not a ${role}.` });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
@@ -192,7 +197,11 @@ router.post("/login", async (req, res) => {
 /* GET USER INFO */
 router.get("/user/:id", async (req, res) => {
   try {
-    const user = await User.findById(req.params.id).select("name role");
+    let user = await User.findById(req.params.id).select("name role");
+    if (!user) {
+      user = await Lawyer.findById(req.params.id).select("name role");
+    }
+    
     if (!user) return res.status(404).json({ message: "User not found" });
     res.json(user);
   } catch (err) {
