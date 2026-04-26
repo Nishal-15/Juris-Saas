@@ -1,9 +1,9 @@
 import 'dart:convert';
-import 'http://http.dart' as http;
+import 'package:http/http.dart' as http;
 
 class ApiService {
-  // Use your ngrok URL or Localhost IP (10.0.2.2 for Android Emulator)
-  static const String baseUrl = "http://10.0.2.2:8088"; 
+  // Use your ngrok URL for remote access
+  static const String baseUrl = "https://armed-wavy-carwash.ngrok-free.dev"; 
 
   static Future<Map<String, dynamic>> fetchToken(String channelName, int uid) async {
     final response = await http.get(
