@@ -61,7 +61,7 @@ export default function VideoCall() {
       client.current.on("user-unpublished", () => setRemoteUser(null));
 
       // 🔥 2. FETCH SECURE TOKEN FROM BACKEND
-      const { data } = await axios.get(`/agora/token?channelName=${roomId}`);
+      const { data } = await axios.get(`/chat/token?channelName=${roomId}`);
       const { token, appId: remoteAppId } = data;
 
       await client.current.join(remoteAppId, roomId, token, null);

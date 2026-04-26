@@ -1,8 +1,37 @@
 const router = require("express").Router();
 const axios = require("axios");
 const auth = require("../middleware/auth");
+const { RtcTokenBuilder, RtcRole } = require("agora-access-token");
 
 const Message = require("../models/Message");
+
+// 📁 AGORA TOKEN GENERATION (Secure Mode)
+router.get("/token", auth(), (req, res) => {
+  const channelName = req.query.channelName;
+  if (!channelName) return res.status(400).json({ error: "channelName is required" });
+
+  const appId = process.env.AGORA_APP_ID;
+  const appCertificate = process.env.AGORA_APP_CERTIFICATE;
+  const uid = 0; 
+  const role = RtcRole.PUBLISHER;
+  const expirationTimeInSeconds = 3600;
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+  try {
+    const token = RtcTokenBuilder.buildTokenWithUid(
+      appId,
+      appCertificate,
+      channelName,
+      uid,
+      role,
+      privilegeExpiredTs
+    );
+    return res.json({ token, appId });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
 
 // 📁 FETCH CHAT HISTORY BETWEEN TWO USERS
 router.get("/:id", auth(), async (req, res) => {
