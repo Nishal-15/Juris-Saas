@@ -34,58 +34,62 @@ export default function VideoCall() {
       stream.getTracks().forEach((track) => pc.current.addTrack(track, stream));
 
       pc.current.ontrack = (event) => {
-        console.log("Remote Stream Event:", event.streams[0]);
+        console.log("WebRTC: Remote stream detected", event.streams[0]);
         if (remoteVideoRef.current) {
           remoteVideoRef.current.srcObject = event.streams[0];
+          console.log("WebRTC: Remote stream attached to video element");
           setStatus("Consultation Live");
         } else {
-          console.warn("Remote video ref not ready, retrying...");
-          setTimeout(() => {
-            if (remoteVideoRef.current) {
-              remoteVideoRef.current.srcObject = event.streams[0];
-              setStatus("Consultation Live");
-            }
-          }, 1500);
+          console.warn("WebRTC: Video ref missing during ontrack!");
         }
       };
 
       pc.current.onicecandidate = (event) => {
         if (event.candidate) {
+          console.log("WebRTC: Sending ICE candidate to peer");
           socket.emit("ice-candidate", { candidate: event.candidate, room: roomId });
         }
       };
 
       pc.current.oniceconnectionstatechange = () => {
         const state = pc.current.iceConnectionState;
-        console.log("ICE State Change:", state);
-        if (state === "connected" || state === "completed") setStatus("Consultation Live");
-        if (state === "failed" || state === "disconnected") {
-           setStatus("Reconnecting...");
-           pc.current.restartIce();
+        console.log("WebRTC ICE State:", state);
+        if (state === "connected" || state === "completed") {
+          setStatus("Consultation Live");
+          console.log("WebRTC: Peer Connection STABLE");
+        }
+        if (state === "failed") {
+           setStatus("Tunnel Failure");
+           console.error("WebRTC: ICE connection failed. Possible NAT/Firewall issue.");
         }
       };
 
       socket.on("user-joined", async () => {
-        console.log("Peer Joined: Initiating Handshake");
+        console.log("Signaling: Peer joined. Preparing Offer...");
         setTimeout(async () => {
           if (pc.current.signalingState === "stable") {
             const offer = await pc.current.createOffer();
             await pc.current.setLocalDescription(offer);
             socket.emit("offer", { offer, room: roomId });
-            setStatus("Handshaking...");
+            console.log("Signaling: Offer Sent");
           }
-        }, 500);
+        }, 1000);
       });
 
       socket.on("offer", async (data) => {
-        console.log("Offer Received");
-        if (pc.current.signalingState !== "stable") return;
+        console.log("Signaling: Offer Received");
+        if (pc.current.signalingState !== "stable") {
+           console.warn("Signaling: Offer received while state not stable", pc.current.signalingState);
+           return;
+        }
         await pc.current.setRemoteDescription(new RTCSessionDescription(data.offer));
         const answer = await pc.current.createAnswer();
         await pc.current.setLocalDescription(answer);
         socket.emit("answer", { answer, room: roomId });
+        console.log("Signaling: Answer Sent");
         
         while (iceQueue.current.length) {
+          console.log("Signaling: Processing queued ICE candidates");
           await pc.current.addIceCandidate(iceQueue.current.shift()).catch(e => {});
         }
       });

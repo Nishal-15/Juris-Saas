@@ -4,25 +4,28 @@ import socket from "../../api/socket";
 import "./notification.css";
 
 // 🔔 PREMIUM RINGTONE URL
-const RINGTONE_URL = "https://github.com/shubham-uttam/iPhone-Ringtone/raw/master/iPhone%20Ringtone.mp3";
+const RINGTONE_URL = "https://raw.githubusercontent.com/shubham-uttam/iPhone-Ringtone/master/iPhone%20Ringtone.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);
-  const ringtoneRef = useRef(new Audio(RINGTONE_URL));
+  const ringtoneRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    // Initialize audio object
+    ringtoneRef.current = new Audio(RINGTONE_URL);
     ringtoneRef.current.loop = true;
 
-    socket.off("incoming-video-call");
     socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
+       console.log("RECEIVING CALL FROM:", fromName);
        const user = JSON.parse(localStorage.getItem("user") || "{}");
        const myId = user._id || user.id;
 
        if (from !== myId) {
-         console.log("AUDIBLE ALERT: Incoming call from", fromName);
          setIncomingCall({ from, fromName, roomId });
-         ringtoneRef.current.play().catch(e => console.log("Audio awaiting interaction"));
+         ringtoneRef.current.play().catch(e => {
+           console.warn("Audio blocked! Click anywhere on the page to enable sound.", e);
+         });
        }
     });
 

@@ -3,24 +3,27 @@ import { useNavigate } from "react-router-dom";
 import socket from "../socket";
 import "./notification.css";
 
-const RINGTONE_URL = "https://github.com/shubham-uttam/iPhone-Ringtone/raw/master/iPhone%20Ringtone.mp3";
+const RINGTONE_URL = "https://raw.githubusercontent.com/shubham-uttam/iPhone-Ringtone/master/iPhone%20Ringtone.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);
-  const ringtoneRef = useRef(new Audio(RINGTONE_URL));
+  const ringtoneRef = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
+    ringtoneRef.current = new Audio(RINGTONE_URL);
     ringtoneRef.current.loop = true;
 
     socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
+       console.log("RECEIVING CALL FROM:", fromName);
        const user = JSON.parse(localStorage.getItem("user") || "{}");
        const myId = user._id || user.id;
        
-       // Only show if the call is NOT from me
        if (from !== myId) {
          setIncomingCall({ from, fromName, roomId });
-         ringtoneRef.current.play().catch(() => {});
+         ringtoneRef.current.play().catch(e => {
+            console.warn("Audio blocked by browser. Click to enable.", e);
+         });
        }
     });
 
