@@ -36,8 +36,11 @@ export default function DatePicker({ value, onChange, label = "Select Date" }) {
 
   const handleOk = () => {
     if (tempDate) {
-      const iso = tempDate.toISOString().slice(0, 10);
-      onChange(iso);
+      const year = tempDate.getFullYear();
+      const month = String(tempDate.getMonth() + 1).padStart(2, '0');
+      const day = String(tempDate.getDate()).padStart(2, '0');
+      const dateStr = `${year}-${month}-${day}`;
+      onChange(dateStr);
     }
     setOpen(false);
   };

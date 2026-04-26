@@ -153,7 +153,10 @@ export default function RecentCases() {
                             <rect x="3" y="4" width="18" height="18" rx="2"/><line x1="16" y1="2" x2="16" y2="6"/>
                             <line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/>
                           </svg>
-                          {new Date(c.hearingDate).toLocaleDateString("en-IN")}
+                          {(() => {
+                            const [y, m, d] = c.hearingDate.split('T')[0].split('-');
+                            return new Date(y, m - 1, d).toLocaleDateString("en-IN");
+                          })()}
                         </span>
                       )}
                     </div>

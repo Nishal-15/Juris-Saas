@@ -90,7 +90,10 @@ export default function CaseDetails() {
                   <strong>{countdown.label}</strong>
                   {caseData.hearingDate && (
                     <span className="ct-banner-date">
-                      {" — "}{new Date(caseData.hearingDate).toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" })}
+                      {" — "}{(() => {
+                        const [y, m, d] = caseData.hearingDate.split('T')[0].split('-');
+                        return new Date(y, m - 1, d).toLocaleDateString("en-IN", { weekday: "long", year: "numeric", month: "long", day: "numeric" });
+                      })()}
                     </span>
                   )}
                   {caseData.courtLocation && <span className="ct-banner-loc"> · {caseData.courtLocation}</span>}
@@ -189,7 +192,10 @@ export default function CaseDetails() {
                     { label: "Status", value: statusInfo.label, style: { color: statusInfo.color, fontWeight: 600 } },
                     { label: "Category", value: caseData.type || "—" },
                     { label: "Urgency", value: caseData.urgency, style: { color: urgencyColor(caseData.urgency), fontWeight: 600 } },
-                    { label: "Next Hearing", value: caseData.hearingDate ? new Date(caseData.hearingDate).toLocaleDateString("en-IN") : "TBD", style: { color: "#c9a84c" } },
+                    { label: "Next Hearing", value: caseData.hearingDate ? (() => {
+                      const [y, m, d] = caseData.hearingDate.split('T')[0].split('-');
+                      return new Date(y, m - 1, d).toLocaleDateString("en-IN");
+                    })() : "TBD", style: { color: "#c9a84c" } },
                     { label: "Court", value: caseData.courtLocation || "Not yet specified" },
                   ].map(({ label, value, style }) => (
                     <div key={label} className="ct-info-row">

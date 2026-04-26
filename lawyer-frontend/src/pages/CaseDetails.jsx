@@ -27,7 +27,7 @@ export default function CaseDetails() {
         setCaseData(c);
         setForm({
           status: c.status || "",
-          hearingDate: c.hearingDate ? new Date(c.hearingDate).toISOString().slice(0, 10) : "",
+          hearingDate: c.hearingDate ? c.hearingDate.split('T')[0] : "",
           courtLocation: c.courtLocation || "",
           updateNote: "",
           nextSteps: c.nextSteps || "",
