@@ -94,7 +94,7 @@ io.on("connection", (socket) => {
   // ✅ TARGETED USER ROOM (For Private Notifications)
   socket.on("join", (userId) => {
     socket.join(userId);
-    console.log(`User ${userId} joined their private notification secure-room`);
+    console.log(`📡 [SIGNAL] User ${userId} is now listening for private signals on ${socket.id}`);
   });
 
   // ✅ SHARED CHAT/VIDEO ROOM (For consultations)
@@ -124,7 +124,7 @@ io.on("connection", (socket) => {
 
   // ✅ VIDEO CALL SIGNALING REINFORCEMENT
   socket.on("video-call-request", ({ to, from, fromName, roomId }) => {
-    console.log(`Video-call request for ${to} from ${fromName}`);
+    console.log(`📞 [CALL] Request from ${fromName} (${from}) -> Target: ${to} | Room: ${roomId}`);
     io.to(to).emit("incoming-video-call", { from, fromName, roomId });
   });
 

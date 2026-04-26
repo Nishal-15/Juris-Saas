@@ -17,19 +17,25 @@ export default function App() {
   
   // ✅ GLOBAL JOIN & RECONNECT LAYER
   useEffect(() => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const uid = user._id || user.id;
-    if (uid) {
-      const onConnect = () => {
+    const syncSocket = () => {
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const uid = user._id || user.id;
+      if (uid) {
         socket.emit("join", uid);
-        console.log("Lawyer re-joined private console:", uid);
-      };
-      
-      if (socket.connected) onConnect();
-      socket.on("connect", onConnect);
+        console.log("Lawyer synchronized with notification bridge:", uid);
+      }
+    };
 
-      return () => socket.off("connect", onConnect);
-    }
+    if (socket.connected) syncSocket();
+    socket.on("connect", syncSocket);
+    
+    // Also sync on storage change (login/logout in other tabs)
+    window.addEventListener("storage", syncSocket);
+
+    return () => {
+      socket.off("connect", syncSocket);
+      window.removeEventListener("storage", syncSocket);
+    };
   }, []);
 
   return (
