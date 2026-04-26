@@ -12,10 +12,6 @@ export default function GlobalCallNotification() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    // Initialize audio object
-    ringtoneRef.current = new Audio(RINGTONE_URL);
-    ringtoneRef.current.loop = true;
-
     socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
        console.log("RECEIVING CALL FROM:", fromName);
        const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -23,6 +19,12 @@ export default function GlobalCallNotification() {
 
        if (from !== myId) {
          setIncomingCall({ from, fromName, roomId });
+         
+         // Initialize and Play Ringtone
+         if (!ringtoneRef.current) {
+           ringtoneRef.current = new Audio(RINGTONE_URL);
+           ringtoneRef.current.loop = true;
+         }
          ringtoneRef.current.play().catch(e => {
            console.warn("Audio blocked! Click anywhere on the page to enable sound.", e);
          });

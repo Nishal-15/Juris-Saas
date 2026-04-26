@@ -129,11 +129,17 @@ export default function VideoCall() {
   }, [roomId]);
 
   const cleanup = () => {
+    console.log("WebRTC: Performing full cleanup and terminating session...");
+    
+    // Notify peer that we are leaving
+    socket.emit("end-call", roomId);
+
     socket.off("offer");
     socket.off("answer");
     socket.off("ice-candidate");
     socket.off("user-joined");
     socket.off("end-call");
+    
     if (localVideoRef.current?.srcObject) {
        localVideoRef.current.srcObject.getTracks().forEach(t => t.stop());
     }
@@ -141,7 +147,6 @@ export default function VideoCall() {
   };
 
   const endCall = () => {
-    socket.emit("end-call", roomId);
     cleanup();
     navigate(-1);
   };

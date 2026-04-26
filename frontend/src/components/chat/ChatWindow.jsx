@@ -5,11 +5,11 @@ import "./chat.css";
 import { startListening } from "./VoiceControls";
 
 const CHIPS = [
-  { icon: "🏛️", label: "Fundamental Rights (Constitution of India)" },
-  { icon: "👨‍👩‍👧", label: "Family Law (Divorce, Child Custody & Alimony)" },
-  { icon: "🏠", label: "Property Law (Inheritance, Disputes & Gift Deeds)" },
-  { icon: "⚖️", label: "Criminal Justice (Bail, FIR & Rights of Accused)" },
-  { icon: "💰", label: "Consumer Protection (Deficiency in Service & Claims)" },
+  { icon: "", label: "Fundamental Rights (Constitution of India)" },
+  { icon: "", label: "Family Law (Divorce, Child Custody & Alimony)" },
+  { icon: "", label: "Property Law (Inheritance, Disputes & Gift Deeds)" },
+  { icon: "", label: "Criminal Justice (Bail, FIR & Rights of Accused)" },
+  { icon: "", label: "Consumer Protection (Deficiency in Service & Claims)" },
 ];
 
 export default function ChatWindow() {
@@ -128,8 +128,8 @@ export default function ChatWindow() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && send()}
           />
-          <button className="chat-btn-voice" onClick={() => startListening(setInput)}>🎤</button>
-          <button className="chat-btn-send" disabled={loading} onClick={() => send()}>➤</button>
+          <button className="chat-btn-voice" onClick={() => startListening(setInput)}>MIC</button>
+          <button className="chat-btn-send" disabled={loading} onClick={() => send()}>SEND</button>
         </div>
         <p className="chat-input-hint">JurisBot may make errors. Verify critical legal information with a qualified lawyer.</p>
       </div>

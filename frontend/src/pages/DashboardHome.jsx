@@ -46,7 +46,7 @@ export default function DashboardHome() {
         <section className="db-section">
           <h2 className="db-section-label">Legal Alarms</h2>
           <div className="db-alarm-card red">
-            <div className="db-alarm-icon">⏰</div>
+            <div className="db-alarm-icon">!</div>
             <div className="db-alarm-content">
               <h3>Court Hearing in 2 days</h3>
               <p>Case: State v. Miller (No. 4567)</p>
@@ -58,7 +58,7 @@ export default function DashboardHome() {
           </div>
 
           <div className="db-alarm-card orange">
-            <div className="db-alarm-icon">🔔</div>
+            <div className="db-alarm-icon">!</div>
             <div className="db-alarm-content">
               <h3>Deadline: Motion to Dismiss</h3>
               <p>Case: Johnson v. Apex Corp</p>
@@ -81,7 +81,7 @@ export default function DashboardHome() {
                 <p>Case #4567</p>
                 <div className="db-case-client">Client: James Miller</div>
               </div>
-              <div className="db-case-icon">⚖️</div>
+              <div className="db-case-icon">LAW</div>
             </div>
             
             <div className="db-progress-wrap">
@@ -107,7 +107,7 @@ export default function DashboardHome() {
                 <p>Business Litigation</p>
                 <div className="db-case-client">Felony Charge | Active: 14 Days</div>
               </div>
-              <div className="db-case-icon">🏛️</div>
+              <div className="db-case-icon">LAW</div>
             </div>
             
             <div className="db-progress-wrap">

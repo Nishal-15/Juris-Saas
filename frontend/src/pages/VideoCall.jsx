@@ -134,6 +134,7 @@ export default function VideoCall() {
   }, [roomId]);
 
   const cleanup = () => {
+    socket.emit("end-call", roomId);
     socket.off("offer");
     socket.off("answer");
     socket.off("ice-candidate");
