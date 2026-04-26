@@ -4,7 +4,7 @@ import socket from "../../api/socket";
 import "./notification.css";
 
 // 🔔 PREMIUM RINGTONE URL
-const RINGTONE_URL = "https://raw.githubusercontent.com/shubham-uttam/iPhone-Ringtone/master/iPhone%20Ringtone.mp3";
+const RINGTONE_URL = "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);
