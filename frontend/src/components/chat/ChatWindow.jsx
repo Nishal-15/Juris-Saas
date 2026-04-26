@@ -5,11 +5,11 @@ import "./chat.css";
 import { startListening } from "./VoiceControls";
 
 const CHIPS = [
-  { icon: "", label: "Fundamental Rights (Constitution of India)" },
-  { icon: "", label: "Family Law (Divorce, Child Custody & Alimony)" },
-  { icon: "", label: "Property Law (Inheritance, Disputes & Gift Deeds)" },
-  { icon: "", label: "Criminal Justice (Bail, FIR & Rights of Accused)" },
-  { icon: "", label: "Consumer Protection (Deficiency in Service & Claims)" },
+  { icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>, label: "Fundamental Rights (Constitution of India)" },
+  { icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M17 21v-2a4 4 0 0 0-4-4H5a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 0 0-3-3.87"/><path d="M16 3.13a4 4 0 0 1 0 7.75"/></svg>, label: "Family Law (Divorce, Child Custody & Alimony)" },
+  { icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="m3 9 9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z"/><polyline points="9 22 9 12 15 12 15 22"/></svg>, label: "Property Law (Inheritance, Disputes & Gift Deeds)" },
+  { icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/></svg>, label: "Criminal Justice (Bail, FIR & Rights of Accused)" },
+  { icon: <svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" strokeWidth="2"><path d="M20 7h-9"/><path d="M14 17H5"/><circle cx="17" cy="17" r="3"/><circle cx="7" cy="7" r="3"/></svg>, label: "Consumer Protection (Deficiency in Service & Claims)" },
 ];
 
 export default function ChatWindow() {
@@ -128,8 +128,12 @@ export default function ChatWindow() {
             onChange={e => setInput(e.target.value)}
             onKeyDown={e => e.key === "Enter" && send()}
           />
-          <button className="chat-btn-voice" onClick={() => startListening(setInput)}>MIC</button>
-          <button className="chat-btn-send" disabled={loading} onClick={() => send()}>SEND</button>
+          <button className="chat-btn-voice" onClick={() => startListening(setInput)}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><path d="M12 1a3 3 0 0 0-3 3v8a3 3 0 0 0 6 0V4a3 3 0 0 0-3-3z"/><path d="M19 10v2a7 7 0 0 1-14 0v-2"/><line x1="12" y1="19" x2="12" y2="23"/><line x1="8" y1="23" x2="16" y2="23"/></svg>
+          </button>
+          <button className="chat-btn-send" disabled={loading} onClick={() => send()}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2"/></svg>
+          </button>
         </div>
         <p className="chat-input-hint">JurisBot may make errors. Verify critical legal information with a qualified lawyer.</p>
       </div>
