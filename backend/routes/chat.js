@@ -2,6 +2,28 @@ const router = require("express").Router();
 const axios = require("axios");
 const auth = require("../middleware/auth");
 
+const Message = require("../models/Message");
+
+// 📁 FETCH CHAT HISTORY BETWEEN TWO USERS
+router.get("/:id", auth(), async (req, res) => {
+  try {
+    const targetId = req.params.id;
+    const myId = req.user.id;
+
+    const messages = await Message.find({
+      $or: [
+        { from: myId, to: targetId },
+        { from: targetId, to: myId }
+      ]
+    }).sort({ createdAt: 1 });
+
+    res.json(messages);
+  } catch (err) {
+    console.error("❌ History Retrieval Failure:", err.message);
+    res.status(500).json({ message: "Could not sync history." });
+  }
+});
+
 const SYSTEM_PROMPT = `Your goal is to provide a COMPREHENSIVE, EASY-TO-READ legal guide to every query. 
 STRICT FORMATTING:
 **Punishment under Indian Law: [Topic]**
