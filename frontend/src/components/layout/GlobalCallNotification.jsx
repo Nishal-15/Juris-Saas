@@ -3,51 +3,52 @@ import { useNavigate } from "react-router-dom";
 import socket from "../../api/socket";
 import "./notification.css";
 
-// 🔔 PREMIUM RINGTONE URL
-const RINGTONE_URL = "https://www.soundjay.com/phone/phone-calling-1.mp3";
+// 🔔 PREMIUM iPHONE RINGTONE
+const RINGTONE_URL = "https://raw.githubusercontent.com/shubham-uttam/iPhone-Ringtone/master/iPhone%20Ringtone.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);
-  const ringtoneRef = useRef(null);
+  const activeAudio = useRef(null);
   const navigate = useNavigate();
 
   useEffect(() => {
     socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
-       console.log("RECEIVING CALL FROM:", fromName);
        const user = JSON.parse(localStorage.getItem("user") || "{}");
        const myId = user._id || user.id;
 
        if (from !== myId) {
          setIncomingCall({ from, fromName, roomId });
          
-         // Initialize and Play Ringtone
-         if (!ringtoneRef.current) {
-           ringtoneRef.current = new Audio(RINGTONE_URL);
-           ringtoneRef.current.loop = true;
+         if (activeAudio.current) {
+            activeAudio.current.pause();
+            activeAudio.current.currentTime = 0;
          }
-         
-         const playAudio = () => {
-            ringtoneRef.current.play().catch(() => {
-               // FALLBACK: Use a generated beep if the URL is blocked
-               const beep = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTtvT18AZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==");
-               beep.loop = true;
-               beep.play().catch(e => console.error("Audio fully blocked", e));
-            });
-         };
-         
-         playAudio();
+
+         const audio = new Audio(RINGTONE_URL);
+         audio.loop = true;
+         activeAudio.current = audio;
+
+         audio.play().catch(() => {
+            const fallback = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTtvT18AZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==");
+            fallback.loop = true;
+            activeAudio.current = fallback;
+            fallback.play().catch(e => console.error("Sound blocked", e));
+         });
        }
     });
 
     return () => {
        socket.off("incoming-video-call");
-       ringtoneRef.current.pause();
+       if (activeAudio.current) activeAudio.current.pause();
     };
   }, []);
 
   const stopRingtone = () => {
-     ringtoneRef.current.pause();
-     ringtoneRef.current.currentTime = 0;
+     if (activeAudio.current) {
+       activeAudio.current.pause();
+       activeAudio.current.currentTime = 0;
+       activeAudio.current = null;
+     }
      setIncomingCall(null);
   };
 

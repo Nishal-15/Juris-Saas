@@ -32,6 +32,7 @@ export default function VideoCall() {
     }
 
     try {
+      console.log("Agora: Releasing hardware for lawyer tab...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       stream.getTracks().forEach(t => t.stop());
 
@@ -59,7 +60,7 @@ export default function VideoCall() {
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Camera/Mic not detected. Please ensure your camera is plugged in and permissions are granted.");
+      setError("Hardware Conflict: Close any other tabs using your camera (like the Citizen tab) and click 'Try Again'.");
       setLoading(false);
     }
   };

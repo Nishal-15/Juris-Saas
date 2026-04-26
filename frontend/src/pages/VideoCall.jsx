@@ -34,9 +34,10 @@ export default function VideoCall() {
     }
 
     try {
-      // 2. Request Permissions with retry logic
+      // 2. FORCE RELEASE & RE-ACQUIRE (Fixes 'Access Denied' when other tabs are open)
+      console.log("Agora: Requesting fresh hardware access...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      stream.getTracks().forEach(t => t.stop()); // Release temporary stream
+      stream.getTracks().forEach(t => t.stop()); // Immediately release to let Agora take over
       
       client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
@@ -63,7 +64,7 @@ export default function VideoCall() {
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Camera/Mic not detected. Please ensure your camera is plugged in and you have clicked 'Allow' in the browser popup.");
+      setError("Hardware Conflict: Please close any other browser tabs using your camera (like the Lawyer tab) and click 'Try Again'. Only one tab can use the camera at a time.");
       setLoading(false);
     }
   };
