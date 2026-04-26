@@ -46,15 +46,13 @@ export default function App() {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
     const uid = user._id || user.id;
     if (uid) {
-      const onConnect = () => {
-        import("./api/socket").then(({ default: s }) => {
+      import("./api/socket").then(({ default: s }) => {
+        const sync = () => {
           s.emit("join", uid);
           console.log("Citizen joined notification bridge:", uid);
-        });
-      };
-      import("./api/socket").then(({ default: s }) => {
-        if (s.connected) onConnect();
-        s.on("connect", onConnect);
+        };
+        if (s.connected) sync();
+        s.on("connect", sync);
       });
     }
 

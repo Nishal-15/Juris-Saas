@@ -1,6 +1,13 @@
 import { io } from "socket.io-client";
 
-const socket = io("https://armed-wavy-carwash.ngrok-free.dev", {
+const isLocal = window.location.hostname.includes("localhost") || 
+                  window.location.hostname.includes("127.0.0.1") || 
+                  window.location.hostname.startsWith("192.168.");
+const SOCKET_URL = isLocal 
+  ? "http://localhost:5000" 
+  : "https://armed-wavy-carwash.ngrok-free.dev";
+
+const socket = io(SOCKET_URL, {
   transports: ["polling", "websocket"],
   withCredentials: true,
   reconnection: true
