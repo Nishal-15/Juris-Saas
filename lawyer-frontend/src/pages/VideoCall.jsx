@@ -15,9 +15,9 @@ export default function VideoCall() {
 
     const loadJitsi = () => {
       if (window.JitsiMeetExternalAPI) {
-        const domain = "8x8.vc";
+        const domain = "meet.jit.si";
         const options = {
-          roomName: `vpaas-magic-cookie-3d02773950264b388b7764951478546b/${roomId}`,
+          roomName: `JurisBotConsultation_${roomId}`,
           width: "100%",
           height: "100%",
           parentNode: jitsiContainerRef.current,
@@ -29,16 +29,16 @@ export default function VideoCall() {
             startWithVideoMuted: false,
             prejoinPageEnabled: false,
             disableDeepLinking: true,
+            enableWelcomePage: false,
           },
           interfaceConfigOverwrite: {
             TOOLBAR_BUTTONS: [
               'microphone', 'camera', 'closedcaptions', 'desktop', 'fullscreen',
-              'fodeviceselection', 'hangup', 'profile', 'chat', 'recording',
-              'livestreaming', 'etherpad', 'sharedvideo', 'settings', 'raisehand',
-              'videoquality', 'filmstrip', 'invite', 'feedback', 'stats', 'shortcuts',
-              'tileview', 'videobackgroundblur', 'download', 'help', 'mute-everyone',
-              'security'
+              'fodeviceselection', 'hangup', 'profile', 'chat', 'settings', 'raisehand',
+              'videoquality', 'filmstrip', 'tileview', 'videobackgroundblur', 'help'
             ],
+            SHOW_JITSI_WATERMARK: false,
+            SHOW_WATERMARK_FOR_GUESTS: false,
           }
         };
         
@@ -47,16 +47,15 @@ export default function VideoCall() {
         apiRef.current.addEventListeners({
           readyToClose: () => {
             socket.emit("end-call", roomId);
-            navigate(-1);
+            navigate("/lawyer/dashboard");
           },
           videoConferenceLeft: () => {
             socket.emit("end-call", roomId);
-            navigate(-1);
+            navigate("/lawyer/dashboard");
           }
         });
       } else {
         console.error("Jitsi SDK not loaded");
-        // Retry in 1 second
         setTimeout(loadJitsi, 1000);
       }
     };
@@ -65,7 +64,7 @@ export default function VideoCall() {
 
     socket.on("end-call", () => {
        if (apiRef.current) apiRef.current.dispose();
-       navigate(-1);
+       navigate("/lawyer/dashboard");
     });
 
     return () => {
