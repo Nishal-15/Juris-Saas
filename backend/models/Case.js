@@ -14,7 +14,7 @@ const CaseSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Open", "In Progress", "Hearing Scheduled", "Verdict Pending", "Closed"],
+    enum: ["Open", "Pending Expert Acceptance", "Requested", "In Progress", "Hearing Scheduled", "Verdict Pending", "Closed"],
     default: "Open"
   },
   user: {

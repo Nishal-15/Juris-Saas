@@ -112,12 +112,14 @@ router.get("/open", auth(["lawyer"]), async (req, res) => {
       .populate("user", "name")
       .sort({ createdAt: -1 });
 
-    // 🔬 FALLBACK: If expert filter returned nothing, show all open cases
-    if (openCases.length === 0 && query.$or) {
-       const fallbackCases = await Case.find({ assignedLawyer: null })
+    // 🔬 FALLBACK: If expert filter returned nothing OR is too limited, show all open cases
+    if (openCases.length < 5 && query.$or) {
+       const allOpen = await Case.find({ assignedLawyer: null })
          .populate("user", "name")
          .sort({ createdAt: -1 });
-       return res.json(fallbackCases);
+       
+       // Deduplicate: merge filtered + all, keeping all
+       return res.json(allOpen);
     }
 
     res.json(openCases);
@@ -488,10 +490,12 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
     // 🔔 NOTIFY LAWYER: Send request to the Consultation Queue
     const io = req.app.get("io");
     if (io) {
-      io.emit(`new-request-${lawyerId}`, {
-        message: "New Consultation Request!",
-        case: updatedCase
+      io.to(lawyerId).emit("notification", {
+        text: "New Consultation Request! Please check your queue.",
+        type: "new_request"
       });
+      // Also trigger a silent refresh for the lawyer dashboard if they are on it
+      io.emit("marketplace-needs-refresh");
     }
 
     console.log(`📡 Request Sent: Case ${caseId} -> Lawyer ${lawyerId} (Pending Approval)`);
@@ -502,37 +506,40 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   }
 });
 
-/* Lawyer: List PENDING REQUESTS (Filter by Specialization) */
+/* Lawyer: List PENDING REQUESTS (Consultation Queue) */
 router.get("/requested", auth(["lawyer"]), async (req, res) => {
   try {
-    const lawyer = await Lawyer.findById(req.user.id);
-    if (!lawyer) return res.status(404).json({ message: "Lawyer profile not found" });
+    const lawyerId = req.user.id;
+    
+    // Find cases specifically assigned to this lawyer that are awaiting acceptance
+    const requestedCases = await Case.find({ 
+      assignedLawyer: lawyerId,
+      status: { $in: ["Pending Expert Acceptance", "Requested"] } 
+    }).populate("user", "name");
 
-    // Extract keywords from specialization (e.g., "Criminal, Civil" -> ["Criminal", "Civil"])
-    const keywords = lawyer.specialization?.split(/[&,]/).map(k => k.trim()) || [];
-
-    const query = {
-      assignedLawyer: req.user.id,
-      status: "Pending Expert Acceptance"
-    };
-
-    // ONLY filter if they have specific specializations set
-    if (keywords.length > 0 && keywords[0] !== "") {
-      query.$or = keywords.map(kw => ({
-        $or: [
-          { legalType: { $regex: kw, $options: "i" } },
-          { category: { $regex: kw, $options: "i" } },
-          { type: { $regex: kw, $options: "i" } }
-        ]
-      }));
-    }
-
-    const requestedCases = await Case.find(query).populate("user", "name");
-
-    console.log(`🔍 Found ${requestedCases.length} matching requests for Lawyer ${req.user.id} (Keywords: ${keywords.join(", ")})`);
+    console.log(`🔍 Found ${requestedCases.length} direct requests for Lawyer ${lawyerId}`);
     res.json(requestedCases);
 
   } catch (err) {
+    console.error("Requested cases error:", err);
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* Lawyer: List assigned cases (Active Workspace) */
+router.get("/my", auth(["lawyer"]), async (req, res) => {
+  try {
+    const lawyerId = req.user.id;
+    const activeStatuses = ["In Progress", "Hearing Scheduled", "Verdict Pending"];
+    
+    const cases = await Case.find({ 
+      assignedLawyer: lawyerId,
+      status: { $in: activeStatuses }
+    }).populate("user", "name");
+    
+    res.json(cases);
+  } catch (err) {
+    console.error("My cases error:", err);
     res.status(500).json({ message: err.message });
   }
 });
@@ -554,10 +561,10 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
 
     // 🔔 NOTIFY CLIENT: Their expert is ready
     const io = req.app.get("io");
-    if (io) {
-      io.emit(`case-accepted-${acceptedCase.user._id}`, {
-        message: "Your expert has accepted the case!",
-        case: acceptedCase
+    if (io && acceptedCase.user?._id) {
+      io.to(acceptedCase.user._id.toString()).emit("notification", {
+        text: "Great news! Your expert has accepted the case and is ready to consult.",
+        type: "case_accepted"
       });
     }
 

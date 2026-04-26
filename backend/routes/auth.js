@@ -112,10 +112,12 @@ router.post("/register", async (req, res) => {
     // ✅ NORMALIZE EMAIL
     const normalizedEmail = email.toLowerCase().trim();
 
-    // ✅ CHECK EXISTING USER
+    // ✅ IRON WALL: CHECK BOTH COLLECTIONS
     const existingUser = await User.findOne({ email: normalizedEmail });
-    if (existingUser) {
-      return res.status(400).json({ message: "User already exists" });
+    const existingLawyer = await Lawyer.findOne({ email: normalizedEmail });
+    
+    if (existingUser || existingLawyer) {
+      return res.status(400).json({ message: "An account already exists with this email address." });
     }
 
     const salt = await bcrypt.genSalt(10);

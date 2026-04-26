@@ -15,14 +15,32 @@ router.get("/", async (req, res) => {
 
 router.get("/lawyer", auth(["lawyer"]), async (req, res) => {
   try {
-    const totalCases = await Case.countDocuments({ assignedLawyer: req.user.id });
-    const pendingApps = await Appointment.countDocuments({ 
-      lawyerId: req.user.id, 
-      status: { $in: ["Scheduled", "Pending"] } 
-    });
-    const activeClients = await Case.distinct("user", { assignedLawyer: req.user.id });
+    const lawyerId = req.user.id;
+    const activeStatuses = ["In Progress", "Hearing Scheduled", "Verdict Pending"];
+    const pendingStatuses = ["Pending Expert Acceptance", "Requested"];
 
-    const lawyer = await Lawyer.findById(req.user.id, "name subscriptionTier casesClaimedCount subscriptionExpiresAt isBlocked");
+    // 1. Total Active Cases (In Progress, etc.)
+    const totalCases = await Case.countDocuments({ 
+      assignedLawyer: lawyerId,
+      status: { $in: activeStatuses } 
+    });
+
+    // 2. Pending Reviews (Consultation Queue)
+    const pendingApps = await Case.countDocuments({ 
+      assignedLawyer: lawyerId, 
+      status: { $in: pendingStatuses } 
+    });
+
+    // 3. Active Clients (Unique Users in Active Cases)
+    const activeClients = await Case.distinct("user", { 
+      assignedLawyer: lawyerId,
+      status: { $in: activeStatuses }
+    });
+
+    let lawyer = await Lawyer.findById(lawyerId, "name subscriptionTier casesClaimedCount subscriptionExpiresAt isBlocked");
+    if (!lawyer) {
+      lawyer = await User.findById(lawyerId, "name subscriptionTier casesClaimedCount subscriptionExpiresAt isBlocked");
+    }
 
     res.json({
       expertName: lawyer?.name || "Expert Advocate",
@@ -30,21 +48,25 @@ router.get("/lawyer", auth(["lawyer"]), async (req, res) => {
       pendingApps,
       activeClients: activeClients.length,
       subscription: {
-        tier: lawyer.subscriptionTier,
-        count: lawyer.casesClaimedCount,
-        expiry: lawyer.subscriptionExpiresAt,
-        isBlocked: lawyer.isBlocked
+        tier: lawyer?.subscriptionTier || "Trial",
+        count: lawyer?.casesClaimedCount || 0,
+        expiry: lawyer?.subscriptionExpiresAt,
+        isBlocked: lawyer?.isBlocked || false
       }
     });
   } catch (err) {
+    console.error("Analytics Error:", err);
     res.status(500).json({ message: err.message });
   }
 });
 
 router.get("/admin", auth(["admin"]), async (req, res) => {
   try {
-    const totalUsers = await User.countDocuments({ role: { $in: ["user", "admin"] } });
-    const totalLawyers = await Lawyer.countDocuments({ isVerified: true });
+    const totalUsers = await User.countDocuments({ role: "user" });
+    const lawyerUsersCount = await User.countDocuments({ role: "lawyer" });
+    const standaloneLawyersCount = await Lawyer.countDocuments({ isVerified: true });
+    
+    const totalLawyers = lawyerUsersCount + standaloneLawyersCount;
     const totalCases = await Case.countDocuments();
     const emergencyCases = await Case.countDocuments({ urgency: "Emergency" });
 

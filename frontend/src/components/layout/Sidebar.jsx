@@ -1,6 +1,6 @@
 import { useState, useEffect, memo, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
-import socket from "../../api/socket";
+import { socket } from "../../socket";
 import "./sidebar.css";
 
 /* ── SVG Icon Components ── */

@@ -13,6 +13,10 @@ export default function LawyerDashboard() {
   const [openCases, setOpenCases] = useState([]);
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("queue");
+  const [toast, setToast] = useState(null);
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  const fetchData = async () => {
     try {
       const [statsRes, pendingRes, openRes, requestedCasesRes, activeCasesRes] = await Promise.all([
         axios.get("/analytics/lawyer"),
@@ -39,19 +43,41 @@ export default function LawyerDashboard() {
       setPending(mergedPending);
 
       // 2. Active Workspace (Accepted Cases + Scheduled Appointments)
+      const activeStatuses = ["In Progress", "Hearing Scheduled", "Verdict Pending", "Accepted"];
+      const activeCaseList = activeCasesRes.data.filter(c => activeStatuses.includes(c.status));
+      const acceptedAppts = pendingRes.data.filter(p => p.status === "Accepted");
+
       const mergedActive = [
-        ...pendingRes.data.filter(p => p.status === "Accepted").map(p => ({ ...p, itemType: 'appointment' })),
-        ...activeCasesRes.data.filter(c => c.status === "In Progress").map(c => ({
-          _id: c._id,
-          userId: c.user,
-          caseId: c,
-          status: "Active",
-          itemType: 'active_case',
-          date: "Ongoing",
-          time: "Consultation"
+        ...activeCaseList.map(c => {
+          // Find if there's an appointment linked to this case
+          const linkedAppt = acceptedAppts.find(a => a.caseId?._id === c._id || a.caseId === c._id);
+          return {
+            _id: c._id,
+            userId: c.user,
+            caseId: c,
+            status: "ACCEPTED",
+            itemType: 'active_case',
+            date: linkedAppt ? linkedAppt.date : "Ongoing",
+            time: linkedAppt ? linkedAppt.time : "Consultation"
+          };
+        }),
+        // Add appointments that ARE NOT linked to any of the above active cases
+        ...acceptedAppts.filter(a => !activeCaseList.some(c => c._id === (a.caseId?._id || a.caseId))).map(p => ({ 
+          ...p, 
+          itemType: 'appointment',
+          status: "ACCEPTED"
         }))
       ];
       setActiveWorkspace(mergedActive);
+
+      // ⚖️ REAL-TIME STAT SYNC (Calculate locally for 100% accuracy)
+      const uniqueClients = new Set(mergedActive.map(a => a.userId?._id || a.userId));
+      setStats({
+        activeClients: uniqueClients.size,
+        activeCases: mergedActive.length,
+        pendingReviews: mergedPending.length,
+        expertName: statsRes.data.expertName
+      });
 
       setOpenCases(openRes.data);
     } catch (err) {
@@ -139,9 +165,9 @@ export default function LawyerDashboard() {
           {[
             { label: "Active Clients", value: stats.activeClients || 0, accent: "#3b82f6",
               icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> },
-            { label: "Active Cases", value: stats.totalCases || 0, accent: "#c9a84c",
+            { label: "Active Cases", value: stats.activeCases || 0, accent: "#c9a84c",
               icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg> },
-            { label: "Pending Reviews", value: stats.pendingApps || 0, accent: "#10b981",
+            { label: "Pending Reviews", value: stats.pendingReviews || 0, accent: "#10b981",
               icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
           ].map((s) => (
             <div className="ld-stat-card" key={s.label} style={{ "--accent": s.accent }}>
@@ -192,13 +218,15 @@ export default function LawyerDashboard() {
                 {pending.map((p) => (
                   <div key={p._id} className="ld-table-row">
                     <div className="ld-client-cell">
-                      <div className="ld-avatar">{(p.userId?.name?.[0] || "A").toUpperCase()}</div>
+                      <div className="ld-avatar" style={{ background: "var(--ld-gold-dim)", color: "var(--ld-gold)", border: "1px solid var(--ld-gold)" }}>
+                        {(p.userId?.name?.[0] || "A").toUpperCase()}
+                      </div>
                       <span className="ld-client-name">{p.userId?.name || "Anonymous"}</span>
                     </div>
                     <div className="ld-matter-cell">
                       {p.caseId ? (
                         <>
-                          <div className="ld-matter-title">{p.caseId.title}</div>
+                          <div className="ld-matter-title" style={{ fontWeight: 700 }}>{p.caseId.title}</div>
                           <div className="ld-filing-date">Filed: {new Date(p.caseId.createdAt).toLocaleDateString('en-GB')}</div>
                         </>
                       ) : (
@@ -207,7 +235,7 @@ export default function LawyerDashboard() {
                     </div>
                     <div className="ld-scheduled-cell ld-muted-text">{p.date} · {p.time}</div>
                     <div className="ld-status-cell">
-                      <span className={`ld-tag gold`}>{p.status}</span>
+                      <span className={`ld-tag gold`}>{p.status.toUpperCase()}</span>
                     </div>
                     <div className="ld-actions-cell">
                       <button className="ld-btn-primary" onClick={() => handleStatusUpdate(p._id, "Accepted", p.itemType)}>Accept Request</button>
@@ -235,21 +263,23 @@ export default function LawyerDashboard() {
                 <div className="ld-table-head">
                   <span className="ld-client-cell">Client</span>
                   <span className="ld-matter-cell">Matter</span>
-                  <span className="ld-scheduled-cell">Timeline</span>
+                  <span className="ld-scheduled-cell">Scheduled</span>
                   <span className="ld-status-cell">Status</span>
                   <span className="ld-actions-cell">Actions</span>
                 </div>
                 {activeWorkspace.map((p) => (
                   <div key={p._id} className="ld-table-row">
                     <div className="ld-client-cell">
-                      <div className="ld-avatar" style={{ background: "var(--gold-glow)" }}>{(p.userId?.name?.[0] || "A").toUpperCase()}</div>
+                      <div className="ld-avatar" style={{ background: "var(--ld-gold)", color: "#000", fontWeight: 800 }}>
+                        {(p.userId?.name?.[0] || "A").toUpperCase()}
+                      </div>
                       <span className="ld-client-name">{p.userId?.name || "Anonymous"}</span>
                     </div>
                     <div className="ld-matter-cell">
                       {p.caseId ? (
                         <>
-                          <div className="ld-matter-title">{p.caseId.title}</div>
-                          <div className="ld-filing-date">ID: #{p.caseId._id.slice(-6).toUpperCase()}</div>
+                          <div className="ld-matter-title" style={{ fontWeight: 700 }}>{p.caseId.title}</div>
+                          <div className="ld-filing-date">Filed: {new Date(p.caseId.createdAt).toLocaleDateString('en-GB')}</div>
                         </>
                       ) : (
                         <span className="ld-muted-text">Direct Consultation</span>
@@ -257,10 +287,10 @@ export default function LawyerDashboard() {
                     </div>
                     <div className="ld-scheduled-cell ld-muted-text">{p.date} · {p.time}</div>
                     <div className="ld-status-cell">
-                      <span className={`ld-tag green`}>ACTIVE</span>
+                      <span className={`ld-tag green`}>ACCEPTED</span>
                     </div>
                     <div className="ld-actions-cell">
-                      <button className="ld-btn-primary" onClick={() => navigate(`/chat/${p.userId?._id}`)}>Enter Chat</button>
+                      <button className="ld-btn-primary" onClick={() => navigate(`/chat/${p.userId?._id}`)}>Consult</button>
                       <button className="ld-btn-icon" onClick={() => p.caseId && navigate(`/case/${p.caseId._id}`)} title="View Brief">
                         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
                       </button>

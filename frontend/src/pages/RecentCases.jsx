@@ -1,7 +1,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import axios from "../api/axios";
-import socket from "../socket";
+import { socket } from "../socket";
 import Sidebar from "../components/layout/Sidebar";
 import BottomNav from "../components/layout/BottomNav";
 import MobileHeader from "../components/layout/MobileHeader";

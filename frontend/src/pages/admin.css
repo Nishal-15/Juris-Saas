@@ -65,12 +65,12 @@
   box-shadow: 0 4px 12px rgba(0,0,0,0.03);
 }
 .ad-setting-card:hover { transform: translateY(-3px); box-shadow: 0 8px 24px rgba(0,0,0,0.06); }
-.ad-setting-icon { 
-  width: 56px; height: 56px; background: #f8fafc; border-radius: 14px;
-  display: flex; align-items: center; justify-content: center; font-size: 24px;
+.ad-mini-filters { display: flex; gap: 8px; align-items: center; }
+.ad-filter-input-mini {
+  padding: 6px 12px; border: 1.5px solid #e2e8f0; border-radius: 8px;
+  font-size: 12px; outline: none; transition: all 0.2s; width: 180px;
 }
-.ad-setting-card h3 { font-size: 17px; font-weight: 800; color: #1a1f36; margin: 0; }
-.ad-setting-card p { font-size: 13px; color: #64748b; margin: 4px 0 0; }
+.ad-filter-input-mini:focus { border-color: #3b82f6; width: 220px; box-shadow: 0 0 0 3px rgba(59, 130, 246, 0.1); }
 .ad-stat-card:hover {
   transform: translateY(-4px) scale(1.01);
   box-shadow: 0 8px 20px rgba(0,0,0,0.06);
