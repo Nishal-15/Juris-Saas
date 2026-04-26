@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import socket from "../socket";
 import "./notification.css";
 
-const RINGTONE_URL = "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3";
+const RINGTONE_URL = "https://www.soundjay.com/phone/phone-calling-1.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);

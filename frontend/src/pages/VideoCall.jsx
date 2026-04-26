@@ -12,6 +12,7 @@ export default function VideoCall() {
   const [remoteUser, setRemoteUser] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
+  const [loading, setLoading] = useState(true);
 
   const client = useRef(null);
   const localTracks = useRef([]);
@@ -20,39 +21,50 @@ export default function VideoCall() {
 
   useEffect(() => {
     const initAgora = async () => {
-      client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
-      client.current.on("user-published", async (user, mediaType) => {
-        await client.current.subscribe(user, mediaType);
-        if (mediaType === "video") {
-          setRemoteUser(user);
-          user.videoTrack.play(remoteVideoRef.current);
-        }
-        if (mediaType === "audio") {
-          user.audioTrack.play();
-        }
-      });
-
-      client.current.on("user-unpublished", () => {
-        setRemoteUser(null);
-      });
+      // 1. Wait for SDK to load
+      if (!window.AgoraRTC) {
+        console.log("Agora: Waiting for SDK...");
+        setTimeout(initAgora, 500);
+        return;
+      }
 
       try {
+        // 2. Check Camera/Mic Permissions
+        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+        
+        client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+        client.current.on("user-published", async (user, mediaType) => {
+          await client.current.subscribe(user, mediaType);
+          if (mediaType === "video") {
+            setRemoteUser(user);
+            user.videoTrack.play(remoteVideoRef.current);
+          }
+          if (mediaType === "audio") {
+            user.audioTrack.play();
+          }
+        });
+
+        client.current.on("user-unpublished", () => setRemoteUser(null));
+
+        // 3. Join with Test ID (No Token Required)
         await client.current.join(AGORA_APP_ID, roomId, null, null);
+        
         localTracks.current = await window.AgoraRTC.createMicrophoneAndCameraTracks();
         localTracks.current[1].play(localVideoRef.current);
         await client.current.publish(localTracks.current);
+        
+        setLoading(false);
       } catch (err) {
-        console.error("Agora Init Error:", err);
+        console.error("Agora Critical Error:", err);
+        alert("Camera/Mic access denied. Please allow permissions in your browser.");
+        navigate("/dashboard");
       }
     };
 
     initAgora();
 
-    socket.on("end-call", () => {
-      leaveCall();
-    });
-
+    socket.on("end-call", () => leaveCall());
     return () => {
       leaveCall();
       socket.off("end-call");
