@@ -24,12 +24,16 @@ export default function VideoCall() {
     setLoading(true);
     setError(null);
     if (!window.AgoraRTC) {
-      setTimeout(initAgora, 500);
+      const script = document.createElement("script");
+      script.src = "https://download.agora.io/sdk/release/AgoraRTC_N-4.18.2.js";
+      script.onload = () => initAgora();
+      document.body.appendChild(script);
       return;
     }
 
     try {
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      stream.getTracks().forEach(t => t.stop());
 
       client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
@@ -37,25 +41,25 @@ export default function VideoCall() {
         await client.current.subscribe(user, mediaType);
         if (mediaType === "video") {
           setRemoteUser(user);
-          user.videoTrack.play(remoteVideoRef.current);
+          setTimeout(() => user.videoTrack.play(remoteVideoRef.current), 100);
         }
-        if (mediaType === "audio") {
-          user.audioTrack.play();
-        }
+        if (mediaType === "audio") user.audioTrack.play();
       });
 
       client.current.on("user-unpublished", () => setRemoteUser(null));
 
       await client.current.join(AGORA_APP_ID, roomId, null, null);
       
-      localTracks.current = await window.AgoraRTC.createMicrophoneAndCameraTracks();
-      localTracks.current[1].play(localVideoRef.current);
+      const [audioTrack, videoTrack] = await window.AgoraRTC.createMicrophoneAndCameraTracks();
+      localTracks.current = [audioTrack, videoTrack];
+      
+      videoTrack.play(localVideoRef.current);
       await client.current.publish(localTracks.current);
       
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Camera/Mic access denied. Please allow permissions and retry.");
+      setError("Camera/Mic not detected. Please ensure your camera is plugged in and permissions are granted.");
       setLoading(false);
     }
   };
@@ -71,10 +75,12 @@ export default function VideoCall() {
   }, [roomId]);
 
   const leaveCall = async () => {
-    localTracks.current.forEach(track => {
-      track.stop();
-      track.close();
-    });
+    if (localTracks.current.length > 0) {
+      localTracks.current.forEach(track => {
+        track.stop();
+        track.close();
+      });
+    }
     if (client.current) {
       await client.current.leave();
     }

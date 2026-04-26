@@ -24,16 +24,19 @@ export default function VideoCall() {
     setLoading(true);
     setError(null);
 
-    // 1. Wait for SDK to load
+    // 1. Robust SDK Check
     if (!window.AgoraRTC) {
-      console.log("Agora: Waiting for SDK...");
-      setTimeout(initAgora, 500);
+      const script = document.createElement("script");
+      script.src = "https://download.agora.io/sdk/release/AgoraRTC_N-4.18.2.js";
+      script.onload = () => initAgora();
+      document.body.appendChild(script);
       return;
     }
 
     try {
-      // 2. Check Camera/Mic Permissions
-      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      // 2. Request Permissions with retry logic
+      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      stream.getTracks().forEach(t => t.stop()); // Release temporary stream
       
       client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
@@ -41,26 +44,26 @@ export default function VideoCall() {
         await client.current.subscribe(user, mediaType);
         if (mediaType === "video") {
           setRemoteUser(user);
-          user.videoTrack.play(remoteVideoRef.current);
+          setTimeout(() => user.videoTrack.play(remoteVideoRef.current), 100);
         }
-        if (mediaType === "audio") {
-          user.audioTrack.play();
-        }
+        if (mediaType === "audio") user.audioTrack.play();
       });
 
       client.current.on("user-unpublished", () => setRemoteUser(null));
 
-      // 3. Join with Test ID (No Token Required)
+      // 3. Join Room
       await client.current.join(AGORA_APP_ID, roomId, null, null);
       
-      localTracks.current = await window.AgoraRTC.createMicrophoneAndCameraTracks();
-      localTracks.current[1].play(localVideoRef.current);
+      const [audioTrack, videoTrack] = await window.AgoraRTC.createMicrophoneAndCameraTracks();
+      localTracks.current = [audioTrack, videoTrack];
+      
+      videoTrack.play(localVideoRef.current);
       await client.current.publish(localTracks.current);
       
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Camera/Mic access denied. Please allow permissions in your browser and click retry.");
+      setError("Camera/Mic not detected. Please ensure your camera is plugged in and you have clicked 'Allow' in the browser popup.");
       setLoading(false);
     }
   };
@@ -76,15 +79,17 @@ export default function VideoCall() {
   }, [roomId]);
 
   const leaveCall = async () => {
-    localTracks.current.forEach(track => {
-      track.stop();
-      track.close();
-    });
+    if (localTracks.current.length > 0) {
+      localTracks.current.forEach(track => {
+        track.stop();
+        track.close();
+      });
+    }
     if (client.current) {
       await client.current.leave();
     }
     socket.emit("end-call", roomId);
-    navigate("/dashboard");
+    navigate("/user"); // <--- REDIRECT TO IMAGE 3 (AI CHAT)
   };
 
   const toggleMute = async () => {

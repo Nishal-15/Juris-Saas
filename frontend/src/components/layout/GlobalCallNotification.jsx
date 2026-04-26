@@ -25,9 +25,17 @@ export default function GlobalCallNotification() {
            ringtoneRef.current = new Audio(RINGTONE_URL);
            ringtoneRef.current.loop = true;
          }
-         ringtoneRef.current.play().catch(e => {
-           console.warn("Audio blocked! Click anywhere on the page to enable sound.", e);
-         });
+         
+         const playAudio = () => {
+            ringtoneRef.current.play().catch(() => {
+               // FALLBACK: Use a generated beep if the URL is blocked
+               const beep = new Audio("data:audio/wav;base64,UklGRl9vT19XQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YTtvT18AZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQ==");
+               beep.loop = true;
+               beep.play().catch(e => console.error("Audio fully blocked", e));
+            });
+         };
+         
+         playAudio();
        }
     });
 

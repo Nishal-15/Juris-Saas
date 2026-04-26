@@ -265,7 +265,7 @@
 }
 
 /* Desktop Layout Handling */
-@media (min-width: 1024px) {
+@media (min-width: 769px) {
   .db-bottom-nav { 
     display: none !important; 
   }
