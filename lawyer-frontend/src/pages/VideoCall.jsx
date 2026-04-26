@@ -4,7 +4,7 @@ import socket from "../socket";
 import "./videocall.css";
 
 // Use a demo App ID for testing
-const AGORA_APP_ID = "9a91fa9f0728438686eb9f2e26fb9b67";
+const AGORA_APP_ID = "c16823349942477382f6f595089e9095";
 
 export default function VideoCall() {
   const { id: roomId } = useParams();
