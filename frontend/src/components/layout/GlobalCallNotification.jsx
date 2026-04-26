@@ -4,7 +4,7 @@ import socket from "../../api/socket";
 import "./notification.css";
 
 // 🔔 PREMIUM RINGTONE URL
-const RINGTONE_URL = "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3";
+const RINGTONE_URL = "https://github.com/shubham-uttam/iPhone-Ringtone/raw/master/iPhone%20Ringtone.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);
@@ -16,11 +16,14 @@ export default function GlobalCallNotification() {
 
     socket.off("incoming-video-call");
     socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
-       console.log("📹 AUDIBLE ALERT: Incoming call from", fromName);
-       setIncomingCall({ from, fromName, roomId });
-       
-       // Play Ringtone (Requires user interaction first per browser policy)
-       ringtoneRef.current.play().catch(e => console.log("🔈 Audio awaiting interaction"));
+       const user = JSON.parse(localStorage.getItem("user") || "{}");
+       const myId = user._id || user.id;
+
+       if (from !== myId) {
+         console.log("AUDIBLE ALERT: Incoming call from", fromName);
+         setIncomingCall({ from, fromName, roomId });
+         ringtoneRef.current.play().catch(e => console.log("Audio awaiting interaction"));
+       }
     });
 
     return () => {
@@ -40,7 +43,7 @@ export default function GlobalCallNotification() {
   return (
     <div className="global-call-alert">
       <div className="call-info">
-        <div className="call-avatar pulsing">👨‍⚖️</div>
+        <div className="call-avatar pulsing">LAW</div>
         <div className="call-text">
           <h4>Expert {incomingCall.fromName}</h4>
           <p>Incoming Video Consultation...</p>
@@ -56,8 +59,11 @@ export default function GlobalCallNotification() {
         >
           Join Call
         </button>
-        <button className="btn-ignore" onClick={stopRingtone}>
-          Ignore
+        <button className="btn-ignore" onClick={() => {
+          socket.emit("end-call", incomingCall.roomId);
+          stopRingtone();
+        }}>
+          Decline
         </button>
       </div>
     </div>

@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import socket from "../socket";
 import "./notification.css";
 
-const RINGTONE_URL = "https://assets.mixkit.co/active_storage/sfx/2358/2358-preview.mp3";
+const RINGTONE_URL = "https://github.com/shubham-uttam/iPhone-Ringtone/raw/master/iPhone%20Ringtone.mp3";
 
 export default function GlobalCallNotification() {
   const [incomingCall, setIncomingCall] = useState(null);
@@ -14,8 +14,14 @@ export default function GlobalCallNotification() {
     ringtoneRef.current.loop = true;
 
     socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
-       setIncomingCall({ from, fromName, roomId });
-       ringtoneRef.current.play().catch(() => {});
+       const user = JSON.parse(localStorage.getItem("user") || "{}");
+       const myId = user._id || user.id;
+       
+       // Only show if the call is NOT from me
+       if (from !== myId) {
+         setIncomingCall({ from, fromName, roomId });
+         ringtoneRef.current.play().catch(() => {});
+       }
     });
 
     return () => {
@@ -35,7 +41,7 @@ export default function GlobalCallNotification() {
   return (
     <div className="global-call-alert glass">
       <div className="call-info">
-        <div className="call-avatar pulsing">⚖️</div>
+        <div className="call-avatar pulsing">LAW</div>
         <div className="call-text">
           <h4>{incomingCall.fromName}</h4>
           <p>Incoming Legal Request...</p>
@@ -51,7 +57,10 @@ export default function GlobalCallNotification() {
         >
           Accept Call
         </button>
-        <button className="btn-ignore" onClick={stopRingtone}>
+        <button className="btn-ignore" onClick={() => {
+          socket.emit("end-call", incomingCall.roomId);
+          stopRingtone();
+        }}>
           Decline
         </button>
       </div>

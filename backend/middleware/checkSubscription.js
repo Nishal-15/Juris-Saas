@@ -1,40 +1,47 @@
-const User = require("../models/User");
+const Lawyer = require("../models/Lawyer");
 
 const checkSubscription = async (req, res, next) => {
   try {
-    const user = await User.findById(req.user.id);
-    if (!user) return res.status(404).json({ message: "User not found" });
+    if (req.user.role !== "lawyer") return next();
 
-    if (user.role !== "lawyer") return next();
+    const lawyer = await Lawyer.findById(req.user.id);
+    if (!lawyer) return res.status(404).json({ message: "Lawyer account not found" });
 
-    // 1. Check Expiry
     const now = new Date();
-    if (user.subscriptionExpiresAt < now) {
-      user.isBlocked = true;
-      await user.save();
-      return res.status(403).json({ 
-        message: "Your subscription has expired. Please renew to continue accepting cases.",
-        expired: true 
-      });
+    const isExpired = lawyer.subscriptionExpiresAt && lawyer.subscriptionExpiresAt < now;
+
+    // 1. STRICT 30-DAY RENEWAL CHECK
+    if (isExpired) {
+      if (req.method === "POST" || req.method === "PATCH") {
+        return res.status(403).json({ 
+          message: "Subscription Expired. All plans require monthly renewal. Please renew to continue practicing.",
+          expired: true 
+        });
+      }
     }
 
-    // 2. Check Case Limits
-    const limits = {
-      trial: 2,
-      basic: 5,
-      premium: Infinity
-    };
+    // 2. TIERED CASE LIMITS
+    if (req.url.includes("/assign") || req.url.includes("/accept") || req.url.includes("/connect")) {
+      const limits = {
+        "Trial": 2,
+        "Pro": 5,      // 499 Plan
+        "Unlimited": Infinity // 1999 Plan
+      };
 
-    const currentLimit = limits[user.subscriptionTier] || 0;
-    if (user.casesClaimedCount >= currentLimit) {
-      return res.status(403).json({ 
-        message: `You have reached the limit for the ${user.subscriptionTier} plan (${currentLimit} cases). Upgrade for more access.`,
-        limitReached: true
-      });
+      const tier = lawyer.subscriptionTier || "Trial";
+      const currentLimit = limits[tier] || 0;
+      
+      if (lawyer.casesClaimedCount >= currentLimit) {
+        return res.status(403).json({ 
+          message: `Monthly case limit reached for your ${tier} plan. Please upgrade to Unlimited for infinite access.`,
+          limitReached: true
+        });
+      }
     }
 
     next();
   } catch (err) {
+    console.error("Subscription Check Error:", err);
     res.status(500).json({ message: "Subscription verification failed" });
   }
 };

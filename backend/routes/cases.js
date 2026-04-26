@@ -1,7 +1,8 @@
 const router = require("express").Router();
 const Case = require("../models/Case");
 const User = require("../models/User");
-const Lawyer = require("../models/Lawyer"); // 👈 Added
+const Lawyer = require("../models/Lawyer");
+const Notification = require("../models/Notification");
 const auth = require("../middleware/auth");
 const axios = require("axios");
 const checkSub = require("../middleware/checkSubscription");
@@ -25,7 +26,7 @@ router.post("/", auth(), async (req, res) => {
 
     await newCase.save();
 
-    // 🕵️‍♂️ EXPERT MATCHING
+    // EXPERT MATCHING
     let matchedLawyers = [];
     try {
       matchedLawyers = await Lawyer.find({
@@ -93,7 +94,7 @@ router.get("/open", auth(["lawyer"]), async (req, res) => {
     const lawyer = await Lawyer.findById(req.user.id);
     const keywords = lawyer?.specialization?.split(/[&,]/).map(k => k.trim()) || [];
 
-    // 🔬 LASER-FOCUS: Only check 'Type' and 'Title' — avoid Description bleed
+    // LASER-FOCUS: Only check 'Type' and 'Title' — avoid Description bleed
     const matchCriteria = keywords.map(kw => ({
       $or: [
         { type: { $regex: kw, $options: "i" } },
@@ -112,7 +113,7 @@ router.get("/open", auth(["lawyer"]), async (req, res) => {
       .populate("user", "name")
       .sort({ createdAt: -1 });
 
-    // 🔬 FALLBACK: If expert filter returned nothing OR is too limited, show all open cases
+    // FALLBACK: If expert filter returned nothing OR is too limited, show all open cases
     if (openCases.length < 5 && query.$or) {
        const allOpen = await Case.find({ assignedLawyer: null })
          .populate("user", "name")
@@ -150,10 +151,10 @@ router.post("/:id/assign", auth(["lawyer"]), async (req, res) => {
     targetCase.status = "In Progress";
     await targetCase.save();
 
-    // ✅ Update Lawyer Case Count Metrics
+    // Update Lawyer Case Count Metrics
     await Lawyer.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
 
-    // 🔬 BROADCAST: Case Claimed! Refresh other marketplaces
+    // BROADCAST: Case Claimed! Refresh other marketplaces
     const io = req.app.get("io");
     if (io) io.emit("marketplace-needs-refresh");
 
@@ -170,14 +171,14 @@ router.patch("/:id/accept", [auth(["lawyer"]), checkSub], async (req, res) => {
     if (!targetCase) return res.status(404).json({ message: "Case not found" });
     if (targetCase.assignedLawyer) return res.status(400).json({ message: "Already assigned." });
 
-    // ✅ Update Lawyer Case Count
+    // Update Lawyer Case Count
     await Lawyer.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
 
     targetCase.assignedLawyer = req.user.id;
     targetCase.status = "In Progress";
     await targetCase.save();
 
-    // 🔬 BROADCAST: Case Claimed! Refresh other marketplaces
+    // BROADCAST: Case Claimed! Refresh other marketplaces
     const io = req.app.get("io");
     if (io) io.emit("marketplace-needs-refresh");
 
@@ -208,7 +209,7 @@ router.patch("/:id/management", auth(["lawyer"]), async (req, res) => {
 
     await targetCase.save();
 
-    // 🔔 Real-time push to citizen
+    // Real-time push to citizen
     const io = req.app.get("io");
     if (io && targetCase.user?._id) {
       io.to(targetCase.user._id.toString()).emit("notification", {
@@ -232,7 +233,7 @@ router.get("/details/:id", auth(), async (req, res) => {
     
     if (!targetCase) return res.status(404).json({ message: "Case not found." });
 
-    // ✅ SCOPED ACCESS: Only owner, assigned lawyer, or admin
+    // SCOPED ACCESS: Only owner, assigned lawyer, or admin
     const isOwner = targetCase.user?._id.toString() === req.user.id;
     const isAssigned = targetCase.assignedLawyer?._id.toString() === req.user.id;
     const isAdmin = req.user.role === "admin";
@@ -274,7 +275,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
       return res.status(400).json({ message: "Description too short to analyze." });
     }
 
-    // 🚀 COURTROOM-READY LEGAL TRIAGE (Groq Llama 3.3 with Detailed Taxonomy)
+    // COURTROOM-READY LEGAL TRIAGE (Groq Llama 3.3 with Detailed Taxonomy)
     const GROQ_KEY = process.env.GROQ_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     
@@ -410,7 +411,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     try {
       if (GROQ_KEY) {
-        console.log("⚡ [AI TRIAGE] Attempting Groq Analysis...");
+        console.log("[AI TRIAGE] Attempting Groq Analysis...");
         try {
           const groqRes = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
@@ -423,20 +424,20 @@ router.post("/analyze-story", auth(), async (req, res) => {
             { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 10000 }
           );
           const data = JSON.parse(groqRes.data.choices[0].message.content);
-          console.log("✅ [AI TRIAGE] Groq Success:", data.title);
+          console.log("[AI TRIAGE] Groq Success:", data.title);
           return res.json({ 
             title: data.title, 
             category: data.category, 
             legalType: data.legalType
           });
         } catch (err) {
-          console.error("❌ [AI TRIAGE] Groq Failed:", err.response?.data || err.message);
+          console.error("[AI TRIAGE] Groq Failed:", err.response?.data || err.message);
         }
       }
 
       // Fallback to Gemini if no Groq or Groq fails
       if (GEMINI_KEY) {
-        console.log("✨ [AI TRIAGE] Attempting Gemini Fallback...");
+        console.log("[AI TRIAGE] Attempting Gemini Fallback...");
         try {
           const genRes = await axios.post(
             `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
@@ -447,21 +448,21 @@ router.post("/analyze-story", auth(), async (req, res) => {
           // Clean markdown JSON if present
           rawText = rawText.replace(/```json|```/g, "").trim();
           const data = JSON.parse(rawText);
-          console.log("✅ [AI TRIAGE] Gemini Success:", data.title);
+          console.log("[AI TRIAGE] Gemini Success:", data.title);
           return res.json({ 
             title: data.title, 
             category: data.category, 
             legalType: data.legalType
           });
         } catch (err) {
-          console.error("❌ [AI TRIAGE] Gemini Failed:", err.response?.data || err.message);
+          console.error("[AI TRIAGE] Gemini Failed:", err.response?.data || err.message);
         }
       }
 
       throw new Error("All AI Engines failed to respond.");
 
     } catch (aiErr) {
-      console.warn("⚠️ [AI TRIAGE] CRITICAL: Using heuristic fallback due to AI failure.");
+      console.warn("[AI TRIAGE] CRITICAL: Using heuristic fallback due to AI failure.");
       const words = description.split(" ").filter(w => w.length > 0);
       const fallbackTitle = words.slice(0, 7).join(" ") + "...";
       res.json({ title: fallbackTitle, category: "General Legal", legalType: "Civil" });
@@ -471,7 +472,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
   }
 });
 
-/* ⚖️ CONNECT: Client requests a lawyer */
+/* CONNECT: Client requests a lawyer */
 router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   try {
     const { caseId, lawyerId } = req.params;
@@ -487,7 +488,15 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
       { new: true }
     ).populate("user", "name");
 
-    // 🔔 NOTIFY LAWYER: Send request to the Consultation Queue
+    // PERSIST NOTIFICATION FOR LAWYER
+    await Notification.create({
+      user: lawyerId,
+      title: "New Consultation Request",
+      message: `You have received a new consultation request for the case: ${updatedCase.title}.`,
+      icon: "file-text"
+    });
+
+    // NOTIFY LAWYER: Send real-time request to the Consultation Queue
     const io = req.app.get("io");
     if (io) {
       io.to(lawyerId).emit("notification", {
@@ -498,7 +507,7 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
       io.emit("marketplace-needs-refresh");
     }
 
-    console.log(`📡 Request Sent: Case ${caseId} -> Lawyer ${lawyerId} (Pending Approval)`);
+    console.log(`Request Sent: Case ${caseId} -> Lawyer ${lawyerId} (Pending Approval)`);
     res.json({ message: "Request Sent to Expert", case: updatedCase });
 
   } catch (err) {
@@ -517,7 +526,7 @@ router.get("/requested", auth(["lawyer"]), async (req, res) => {
       status: { $in: ["Pending Expert Acceptance", "Requested"] } 
     }).populate("user", "name");
 
-    console.log(`🔍 Found ${requestedCases.length} direct requests for Lawyer ${lawyerId}`);
+    console.log(`Found ${requestedCases.length} direct requests for Lawyer ${lawyerId}`);
     res.json(requestedCases);
 
   } catch (err) {
@@ -544,7 +553,7 @@ router.get("/my", auth(["lawyer"]), async (req, res) => {
   }
 });
 
-/* ✅ ACCEPT: Lawyer accepts the client request */
+/* ACCEPT: Lawyer accepts the client request */
 router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
   try {
     const { caseId } = req.params;
@@ -559,7 +568,15 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
       { new: true }
     ).populate("user", "name");
 
-    // 🔔 NOTIFY CLIENT: Their expert is ready
+    // PERSIST NOTIFICATION FOR CITIZEN
+    await Notification.create({
+      user: acceptedCase.user?._id,
+      title: "Request Accepted",
+      message: "Great news! Your expert has accepted the case and is ready to consult.",
+      icon: "check-circle"
+    });
+
+    // NOTIFY CLIENT: Their expert is ready real-time
     const io = req.app.get("io");
     if (io && acceptedCase.user?._id) {
       io.to(acceptedCase.user._id.toString()).emit("notification", {
@@ -568,7 +585,7 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
       });
     }
 
-    console.log(`✅ Case Accepted: ${caseId} by Lawyer ${req.user.id}`);
+    console.log(`Case Accepted: ${caseId} by Lawyer ${req.user.id}`);
     res.json({ message: "Case Accepted Successfully", case: acceptedCase });
 
   } catch (err) {

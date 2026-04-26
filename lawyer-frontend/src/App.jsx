@@ -11,6 +11,7 @@ import VideoCall from "./pages/VideoCall";
 
 import GlobalCallNotification from "./components/GlobalCallNotification";
 import CaseDetails from "./pages/CaseDetails";
+import Notifications from "./pages/Notifications";
 
 export default function App() {
   
@@ -43,6 +44,7 @@ export default function App() {
       {/* Lawyer Workspace */}
       <Route path="/lawyer/dashboard" element={<LawyerDashboard />} />
       <Route path="/lawyer/cases" element={<AssignedCases />} />
+      <Route path="/lawyer/notifications" element={<Notifications />} />
       <Route path="/lawyer/messages" element={<MessagesList />} />
       <Route path="/case/:id" element={<CaseDetails />} />
 

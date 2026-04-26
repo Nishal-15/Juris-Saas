@@ -1,3 +1,4 @@
+import { useEffect } from "react";
 import { Routes, Route } from "react-router-dom";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
@@ -22,13 +23,31 @@ import Terms from "./pages/Terms";
 import CaseDetails from "./pages/CaseDetails";
 import Alerts from "./pages/Alerts";
 
+import { primeAudio } from "./api/socket";
+
 // ✅ AUTO TOKEN LOAD
 if (localStorage.token) {
-setAuthToken(localStorage.token);
+  setAuthToken(localStorage.token);
 }
 
 export default function App() {
-return ( 
+  // ✅ WAKE UP AUDIO ENGINE ON FIRST INTERACTION
+  const handleInteraction = () => {
+    primeAudio();
+    window.removeEventListener("click", handleInteraction);
+    window.removeEventListener("touchstart", handleInteraction);
+  };
+
+  useEffect(() => {
+    window.addEventListener("click", handleInteraction);
+    window.addEventListener("touchstart", handleInteraction);
+    return () => {
+      window.removeEventListener("click", handleInteraction);
+      window.removeEventListener("touchstart", handleInteraction);
+    };
+  }, []);
+
+  return ( 
 <>
   <GlobalCallNotification />
   <Routes>

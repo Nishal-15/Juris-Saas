@@ -435,6 +435,73 @@
 }
 .ld-card-btn:hover svg { transform: translateX(3px); }
 
+/* ── Subscription Bar ── */
+.ld-sub-bar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 12px 24px;
+  border-radius: 12px;
+  margin-bottom: 24px;
+  border: 1px solid rgba(255,255,255,0.08);
+  font-family: 'Inter', sans-serif;
+}
+
+.ld-sub-bar.Trial {
+  background: linear-gradient(90deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0.05) 100%);
+  border-left: 4px solid var(--ld-gold);
+}
+
+.ld-sub-bar.Pro {
+  background: linear-gradient(90deg, rgba(59,130,246,0.12) 0%, rgba(59,130,246,0.05) 100%);
+  border-left: 4px solid #3b82f6;
+}
+
+.ld-sub-bar.Unlimited {
+  background: linear-gradient(90deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.05) 100%);
+  border-left: 4px solid #10b981;
+}
+
+.ld-sub-info {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.ld-sub-tier {
+  font-size: 11px;
+  font-weight: 800;
+  letter-spacing: 1px;
+  color: #fff;
+}
+
+.ld-sub-divider {
+  opacity: 0.2;
+}
+
+.ld-sub-usage {
+  font-size: 13px;
+  font-weight: 500;
+  color: rgba(255,255,255,0.7);
+}
+
+.ld-upgrade-btn {
+  padding: 6px 14px;
+  background: #fff;
+  color: #000;
+  border: none;
+  border-radius: 6px;
+  font-size: 11px;
+  font-weight: 700;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.ld-upgrade-btn:hover {
+  background: var(--ld-gold);
+  transform: scale(1.05);
+}
+
 /* ── Animations ── */
 @keyframes pulse {
   0%, 100% { opacity: 1; transform: scale(1); }

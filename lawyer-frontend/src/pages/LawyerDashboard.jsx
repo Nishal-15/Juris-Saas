@@ -14,6 +14,9 @@ export default function LawyerDashboard() {
   const [loading, setLoading] = useState(true);
   const [activeSection, setActiveSection] = useState("queue");
   const [toast, setToast] = useState(null);
+  const [subInfo, setSubInfo] = useState({ tier: "Trial", count: 0, expiry: null, isBlocked: false });
+  
+  const notificationAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const fetchData = async () => {
@@ -26,6 +29,7 @@ export default function LawyerDashboard() {
         axios.get("/cases/my") // Fetching already accepted cases
       ]);
       setStats(statsRes.data);
+      setSubInfo(statsRes.data.subscription || subInfo);
 
       // 1. Pending Queue (Unaccepted Case Requests + Pending Appointments)
       const mergedPending = [
@@ -70,7 +74,7 @@ export default function LawyerDashboard() {
       ];
       setActiveWorkspace(mergedActive);
 
-      // ⚖️ REAL-TIME STAT SYNC (Calculate locally for 100% accuracy)
+      // REAL-TIME STAT SYNC (Calculate locally for 100% accuracy)
       const uniqueClients = new Set(mergedActive.map(a => a.userId?._id || a.userId));
       setStats({
         activeClients: uniqueClients.size,
@@ -90,12 +94,13 @@ export default function LawyerDashboard() {
   useEffect(() => {
     if (user?._id) {
       socket.emit("join", user._id);
-      console.log("📡 Joined real-time room:", user._id);
+      console.log("Joined real-time room:", user._id);
     }
 
     fetchData();
     socket.on("notification", (data) => {
       setToast(data.text || "New notification");
+      notificationAudio.play().catch(e => console.log("Interaction needed for sound"));
       fetchData();
       setTimeout(() => setToast(null), 5000);
     });
@@ -145,7 +150,25 @@ export default function LawyerDashboard() {
 
       <div className="ld-body">
 
-        {/* ── Top Bar ── */}
+        {/* -- Subscription Status Bar -- */}
+        {subInfo && (
+          <div className={`ld-sub-bar ${subInfo.tier}`}>
+            <div className="ld-sub-info">
+              <span className="ld-sub-tier">{subInfo.tier.toUpperCase()} PLAN</span>
+              <span className="ld-sub-divider">|</span>
+              <span className="ld-sub-usage">
+                {subInfo.tier === "Unlimited" ? "Infinite Access" : `Usage: ${subInfo.count} / ${subInfo.tier === "Trial" ? 2 : 5} Cases`}
+              </span>
+            </div>
+            {subInfo.tier !== "Unlimited" && (
+              <button className="ld-upgrade-btn" onClick={() => alert("Upgrade to Unlimited (₹1999) for infinite cases.")}>
+                Upgrade to Unlimited (₹1999)
+              </button>
+            )}
+          </div>
+        )}
+
+        {/* -- Top Bar -- */}
         <header className="ld-topbar">
           <div>
             <h1 className="ld-title">Practitioner Console</h1>
@@ -160,7 +183,7 @@ export default function LawyerDashboard() {
           </div>
         </header>
 
-        {/* ── Stats ── */}
+        {/* -- Stats -- */}
         <section className="ld-stats">
           {[
             { label: "Active Clients", value: stats.activeClients || 0, accent: "#3b82f6",
@@ -178,7 +201,7 @@ export default function LawyerDashboard() {
           ))}
         </section>
 
-        {/* ── Section Tabs ── */}
+        {/* -- Section Tabs -- */}
         <div className="ld-tabs">
           {[
             { id: "queue", label: "Consultation Queue", count: pending.length },
@@ -196,7 +219,7 @@ export default function LawyerDashboard() {
           ))}
         </div>
 
-        {/* ── QUEUE ── */}
+        {/* -- QUEUE -- */}
         {activeSection === "queue" && (
           <div className="ld-panel">
             {loading ? (
@@ -233,7 +256,7 @@ export default function LawyerDashboard() {
                         <span className="ld-muted-text">General Inquiry</span>
                       )}
                     </div>
-                    <div className="ld-scheduled-cell ld-muted-text">{p.date} · {p.time}</div>
+                    <div className="ld-scheduled-cell ld-muted-text">{p.date} - {p.time}</div>
                     <div className="ld-status-cell">
                       <span className={`ld-tag gold`}>{p.status.toUpperCase()}</span>
                     </div>
@@ -250,7 +273,7 @@ export default function LawyerDashboard() {
           </div>
         )}
 
-        {/* ── WORKSPACE (Active) ── */}
+        {/* -- WORKSPACE (Active) -- */}
         {activeSection === "workspace" && (
           <div className="ld-panel">
             {activeWorkspace.length === 0 ? (
@@ -285,7 +308,7 @@ export default function LawyerDashboard() {
                         <span className="ld-muted-text">Direct Consultation</span>
                       )}
                     </div>
-                    <div className="ld-scheduled-cell ld-muted-text">{p.date} · {p.time}</div>
+                    <div className="ld-scheduled-cell ld-muted-text">{p.date} - {p.time}</div>
                     <div className="ld-status-cell">
                       <span className={`ld-tag green`}>ACCEPTED</span>
                     </div>
@@ -302,7 +325,7 @@ export default function LawyerDashboard() {
           </div>
         )}
 
-        {/* ── MARKETPLACE ── */}
+        {/* -- MARKETPLACE -- */}
         {activeSection === "marketplace" && (
           <div className="ld-panel">
             {openCases.length === 0 ? (

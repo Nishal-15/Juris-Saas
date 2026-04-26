@@ -56,7 +56,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 const uploadsDir = path.join(__dirname, "uploads/documents");
 if (!fs.existsSync(uploadsDir)) {
   fs.mkdirSync(uploadsDir, { recursive: true });
-  console.log("📂 Storage Infrastructure: Initialized at /uploads/documents");
+  console.log("Storage Infrastructure: Initialized at /uploads/documents");
 }
 
 /* =======================
@@ -88,25 +88,25 @@ app.use("/api/documents", documentRoutes);
 const Message = require("./models/Message"); // Moved to top-level
 
 io.on("connection", (socket) => {
-  console.log("📡 Workspace Link Established:", socket.id);
+  console.log("Workspace Link Established:", socket.id);
 
   // ✅ TARGETED USER ROOM (For Private Notifications)
   socket.on("join", (userId) => {
     socket.join(userId);
-    console.log(`🔒 User ${userId} joined their private notification secure-room`);
+    console.log(`User ${userId} joined their private notification secure-room`);
   });
 
   // ✅ SHARED CHAT/VIDEO ROOM (For consultations)
   socket.on("join-room", (room) => {
     socket.join(room);
-    console.log(`👥 Socket ${socket.id} joined shared workspace: ${room}`);
+    console.log(`Socket ${socket.id} joined shared workspace: ${room}`);
     // Notify others in room to start peer handshake
     socket.to(room).emit("user-joined");
   });
 
   // ✅ REAL-TIME CHAT MESSAGING
   socket.on("send-message", async ({ to, message }) => {
-    console.log(`💬 Processing message from ${message.from} to ${to}`);
+    console.log(`Processing message from ${message.from} to ${to}`);
     try {
       await Message.create({
         from: message.from,
@@ -115,15 +115,15 @@ io.on("connection", (socket) => {
       });
       // Broadcast to specific recipient room
       io.to(to).emit("receive-message", message);
-      console.log(`✅ Message delivered to target: ${to}`);
+      console.log(`Message delivered to target: ${to}`);
     } catch (err) {
-      console.error("❌ Socket Data Persistence Error:", err);
+      console.error("Socket Data Persistence Error:", err);
     }
   });
 
   // ✅ VIDEO CALL SIGNALING REINFORCEMENT
   socket.on("video-call-request", ({ to, from, fromName, roomId }) => {
-    console.log(`📹 Video-call request for ${to} from ${fromName}`);
+    console.log(`Video-call request for ${to} from ${fromName}`);
     io.to(to).emit("incoming-video-call", { from, fromName, roomId });
   });
 
@@ -155,7 +155,7 @@ io.on("connection", (socket) => {
   });
 
   socket.on("disconnect", () => {
-    console.log("📡 User disconnected from workspace:", socket.id);
+    console.log("User disconnected from workspace:", socket.id);
   });
 });
 
@@ -168,5 +168,5 @@ app.set("io", io);
 const PORT = process.env.PORT || 5000;
 
 server.listen(PORT, () => {
-  console.log(`🚀 JurisBot Core: Unified Server Online on Port ${PORT}`);
+  console.log(`JurisBot Core: Unified Server Online on Port ${PORT}`);
 });

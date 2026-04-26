@@ -10,9 +10,18 @@ const LawyerSchema = new mongoose.Schema({
   fees: { type: String },
   rating: { type: Number, default: 4.5 },
   location: { type: String, default: "NEW DELHI, INDIA" },
-  isVerified: { type: Boolean, default: true },
-  isPro: { type: Boolean, default: true },
-  createdAt: { type: Date, default: Date.now }
-}, { collection: 'lawyers' }); // 👈 FORCING IT INTO THE 'lawyers' COLLECTION
+  isVerified: { type: Boolean, default: false },
+  isPro: { type: Boolean, default: false },
+  subscriptionTier: { 
+    type: String, 
+    enum: ["Trial", "Pro", "Unlimited", "Expired"], 
+    default: "Trial" 
+  },
+  subscriptionExpiresAt: { type: Date },
+  casesClaimedCount: { type: Number, default: 0 },
+  isBlocked: { type: Boolean, default: false },
+  createdAt: { type: Date, default: Date.now },
+  updatedAt: { type: Date, default: Date.now }
+}, { collection: 'lawyers', timestamps: true });
 
 module.exports = mongoose.model("Lawyer", LawyerSchema);
