@@ -160,6 +160,38 @@ io.on("connection", (socket) => {
   });
 });
 
+/* =======================
+   AGORA TOKEN GENERATOR
+======================= */
+const { RtcTokenBuilder, RtcRole } = require("agora-access-token");
+
+app.get("/api/agora/token", (req, res) => {
+  const channelName = req.query.channelName;
+  if (!channelName) return res.status(400).json({ error: "channelName is required" });
+
+  const appId = process.env.AGORA_APP_ID;
+  const appCertificate = process.env.AGORA_APP_CERTIFICATE;
+  const uid = 0; // Standard for dynamic join
+  const role = RtcRole.PUBLISHER;
+  const expirationTimeInSeconds = 3600;
+  const currentTimestamp = Math.floor(Date.now() / 1000);
+  const privilegeExpiredTs = currentTimestamp + expirationTimeInSeconds;
+
+  try {
+    const token = RtcTokenBuilder.buildTokenWithUid(
+      appId,
+      appCertificate,
+      channelName,
+      uid,
+      role,
+      privilegeExpiredTs
+    );
+    return res.json({ token, appId });
+  } catch (err) {
+    return res.status(500).json({ error: err.message });
+  }
+});
+
 // ✅ EXPOSE SOCKET.IO TO ROUTES
 app.set("io", io);
 

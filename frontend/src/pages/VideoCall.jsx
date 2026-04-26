@@ -1,6 +1,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import socket from "../api/socket";
+import axios from "../api/axios";
 import "./videocall.css";
 
 // Use a demo App ID for testing
@@ -59,7 +60,11 @@ export default function VideoCall() {
 
       client.current.on("user-unpublished", () => setRemoteUser(null));
 
-      await client.current.join(AGORA_APP_ID, roomId, null, null);
+      // 🔥 2. FETCH SECURE TOKEN FROM BACKEND
+      const { data } = await axios.get(`/agora/token?channelName=${roomId}`);
+      const { token, appId: remoteAppId } = data;
+
+      await client.current.join(remoteAppId, roomId, token, null);
       
       const [audioTrack, videoTrack] = await window.AgoraRTC.createMicrophoneAndCameraTracks();
       localTracks.current = [audioTrack, videoTrack];

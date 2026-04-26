@@ -1,0 +1,21 @@
+name: juris_video_call
+description: Agora RTC Video Calling for JurisBot.
+version: 1.0.0+1
+
+environment:
+  sdk: ">=3.0.0 <4.0.0"
+
+dependencies:
+  flutter:
+    sdk: flutter
+  agora_rtc_engine: ^6.3.0
+  permission_handler: ^11.0.1
+  http: ^1.1.0
+
+dev_dependencies:
+  flutter_test:
+    sdk: flutter
+  flutter_lints: ^2.0.0
+
+flutter:
+  uses-material-design: true

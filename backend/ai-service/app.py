@@ -1,17 +1,24 @@
 import os
 import requests
 import random
+import time
 from flask import Flask, request, jsonify
+from flask_cors import CORS
 from dotenv import load_dotenv
+from agora_token_builder import RtcTokenBuilder
 
 # Load environment variables
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
+AGORA_APP_ID = os.getenv("AGORA_APP_ID", "c16823349942477382f6f595089e9095")
+AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE")
+
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 
 app = Flask(__name__)
+CORS(app) # Allow cross-origin requests from Flutter
 
 # BROAD SUBJECT FILTER (First line of defense)
 REJECTED_CATEGORIES = [
@@ -134,6 +141,38 @@ def chat():
     except Exception as e:
         print(f"CRITICAL ERROR: {str(e)}", flush=True)
         return jsonify({"error": "Internal AI server error"}), 500
+
+@app.route("/generate-token", methods=["GET"])
+def generate_token():
+    channel_name = request.args.get("channel_name")
+    uid = request.args.get("uid", 0, type=int)
+    
+    if not channel_name:
+        return jsonify({"error": "channel_name is required"}), 400
+
+    # Role: Publisher (1)
+    role = 1
+    expire_time_in_seconds = 3600
+    current_timestamp = int(time.time())
+    privilege_expired_ts = current_timestamp + expire_time_in_seconds
+
+    # 🔥 GENERATE TOKEN
+    try:
+        token = RtcTokenBuilder.buildTokenWithUid(
+            AGORA_APP_ID, 
+            AGORA_APP_CERTIFICATE, 
+            channel_name, 
+            uid, 
+            role, 
+            privilege_expired_ts
+        )
+        return jsonify({
+            "token": token,
+            "channel": channel_name,
+            "uid": uid
+        })
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8088)
