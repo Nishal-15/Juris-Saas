@@ -13,55 +13,59 @@ export default function VideoCall() {
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState(null);
 
   const client = useRef(null);
   const localTracks = useRef([]);
   const localVideoRef = useRef(null);
   const remoteVideoRef = useRef(null);
 
+  const initAgora = async () => {
+    setLoading(true);
+    setError(null);
+
+    // 1. Wait for SDK to load
+    if (!window.AgoraRTC) {
+      console.log("Agora: Waiting for SDK...");
+      setTimeout(initAgora, 500);
+      return;
+    }
+
+    try {
+      // 2. Check Camera/Mic Permissions
+      await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      
+      client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
+
+      client.current.on("user-published", async (user, mediaType) => {
+        await client.current.subscribe(user, mediaType);
+        if (mediaType === "video") {
+          setRemoteUser(user);
+          user.videoTrack.play(remoteVideoRef.current);
+        }
+        if (mediaType === "audio") {
+          user.audioTrack.play();
+        }
+      });
+
+      client.current.on("user-unpublished", () => setRemoteUser(null));
+
+      // 3. Join with Test ID (No Token Required)
+      await client.current.join(AGORA_APP_ID, roomId, null, null);
+      
+      localTracks.current = await window.AgoraRTC.createMicrophoneAndCameraTracks();
+      localTracks.current[1].play(localVideoRef.current);
+      await client.current.publish(localTracks.current);
+      
+      setLoading(false);
+    } catch (err) {
+      console.error("Agora Critical Error:", err);
+      setError("Camera/Mic access denied. Please allow permissions in your browser and click retry.");
+      setLoading(false);
+    }
+  };
+
   useEffect(() => {
-    const initAgora = async () => {
-      // 1. Wait for SDK to load
-      if (!window.AgoraRTC) {
-        console.log("Agora: Waiting for SDK...");
-        setTimeout(initAgora, 500);
-        return;
-      }
-
-      try {
-        // 2. Check Camera/Mic Permissions
-        await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-        
-        client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
-
-        client.current.on("user-published", async (user, mediaType) => {
-          await client.current.subscribe(user, mediaType);
-          if (mediaType === "video") {
-            setRemoteUser(user);
-            user.videoTrack.play(remoteVideoRef.current);
-          }
-          if (mediaType === "audio") {
-            user.audioTrack.play();
-          }
-        });
-
-        client.current.on("user-unpublished", () => setRemoteUser(null));
-
-        // 3. Join with Test ID (No Token Required)
-        await client.current.join(AGORA_APP_ID, roomId, null, null);
-        
-        localTracks.current = await window.AgoraRTC.createMicrophoneAndCameraTracks();
-        localTracks.current[1].play(localVideoRef.current);
-        await client.current.publish(localTracks.current);
-        
-        setLoading(false);
-      } catch (err) {
-        console.error("Agora Critical Error:", err);
-        alert("Camera/Mic access denied. Please allow permissions in your browser.");
-        navigate("/dashboard");
-      }
-    };
-
     initAgora();
 
     socket.on("end-call", () => leaveCall());
@@ -95,21 +99,41 @@ export default function VideoCall() {
 
   return (
     <div className="v2-call-page">
-      <div className="remote-wrapper">
-        <div ref={remoteVideoRef} className="remote-video-el" />
-        {!remoteUser && (
-          <div className="connecting-overlay">
-            <div className="avatar-placeholder pulsing">LAW</div>
-            <h3>Establishing Secure Bridge...</h3>
-            <p>Wait for the expert to join</p>
+      {error ? (
+        <div className="error-overlay">
+          <div className="avatar-placeholder">!</div>
+          <h3>Connection Failed</h3>
+          <p>{error}</p>
+          <div className="error-actions">
+            <button className="btn-retry" onClick={initAgora}>Try Again</button>
+            <button className="btn-cancel" onClick={() => navigate("/dashboard")}>Go Back</button>
           </div>
-        )}
-      </div>
+        </div>
+      ) : (
+        <>
+          <div className="remote-wrapper">
+            <div ref={remoteVideoRef} className="remote-video-el" />
+            {!remoteUser && !loading && (
+              <div className="connecting-overlay">
+                <div className="avatar-placeholder pulsing">LAW</div>
+                <h3>Establishing Secure Bridge...</h3>
+                <p>Wait for the expert to join</p>
+              </div>
+            )}
+            {loading && (
+              <div className="connecting-overlay">
+                <div className="loader-spinner"></div>
+                <h3>Waking up Camera...</h3>
+              </div>
+            )}
+          </div>
 
-      <div className="local-preview">
-        <div ref={localVideoRef} className="local-video-el" />
-        <div className="local-label">You</div>
-      </div>
+          <div className="local-preview">
+            <div ref={localVideoRef} className="local-video-el" />
+            <div className="local-label">You</div>
+          </div>
+        </>
+      )}
 
       <div className="call-controls-wrap">
         <div className="call-controls glass">

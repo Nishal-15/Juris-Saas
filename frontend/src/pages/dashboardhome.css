@@ -264,13 +264,34 @@
   color: #c9a84c;
 }
 
-/* Desktop Sidebar handling */
-@media (min-width: 769px) {
-  .db-bottom-nav { display: none; }
-  .db-main { margin-left: 270px; padding-bottom: 24px; }
-  .db-header { display: none; }
+/* Desktop Layout Handling */
+@media (min-width: 1024px) {
+  .db-bottom-nav { 
+    display: none !important; 
+  }
+  .db-main { 
+    margin-left: 280px; 
+    padding-bottom: 24px; 
+    max-width: calc(100% - 320px);
+  }
+  .db-header { 
+    display: none !important; 
+  }
+  .cs-sidebar {
+    display: flex !important;
+  }
 }
 
-@media (max-width: 768px) {
-  .cs-sidebar { display: none; }
+/* Mobile Layout Handling */
+@media (max-width: 1023px) {
+  .cs-sidebar { 
+    display: none !important; 
+  }
+  .db-main {
+    margin-left: 0;
+    padding-bottom: 100px;
+  }
+  .db-header {
+    display: flex;
+  }
 }
