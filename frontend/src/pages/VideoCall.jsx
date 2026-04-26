@@ -35,7 +35,12 @@ export default function VideoCall() {
 
     try {
       // 1. HARDWARE HANDOFF: Release camera if other tabs were using it
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const hardwarePromise = navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Camera Timeout: Hardware is busy or blocked.")), 10000)
+      );
+
+      const stream = await Promise.race([hardwarePromise, timeoutPromise]);
       stream.getTracks().forEach(t => t.stop());
       
       // Small delay to let OS release hardware
@@ -66,7 +71,7 @@ export default function VideoCall() {
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Camera Locked: Please ensure NO other tabs are using the camera and try again.");
+      setError(err.message || "Camera Locked: Please ensure NO other tabs are using the camera and try again.");
       setLoading(false);
     }
   };

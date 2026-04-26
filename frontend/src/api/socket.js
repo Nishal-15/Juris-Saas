@@ -4,10 +4,14 @@ import { io } from "socket.io-client";
 const SOCKET_URL = "https://armed-wavy-carwash.ngrok-free.dev";
 
 const socket = io(SOCKET_URL, {
-  transports: ["websocket", "polling"],
-  secure: true,
-  reconnection: true
+  transports: ["polling", "websocket"], // Polling first is more stable for ngrok
+  withCredentials: true,
+  reconnection: true,
+  reconnectionAttempts: 10
 });
+
+socket.on("connect", () => console.log("✅ JurisBot Communication Link Active"));
+socket.on("connect_error", (err) => console.error("❌ Communication Link Failure:", err.message));
 
 // ✅ AUDIO PRIMER: Bypasses Mobile Browser Auto-play Policy
 export const primeAudio = () => {

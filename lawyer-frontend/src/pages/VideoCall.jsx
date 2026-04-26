@@ -35,7 +35,14 @@ export default function VideoCall() {
 
     try {
       console.log("Agora: Releasing hardware for lawyer tab...");
-      const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      
+      // 1. Hardware acquisition with timeout
+      const hardwarePromise = navigator.mediaDevices.getUserMedia({ video: true, audio: true });
+      const timeoutPromise = new Promise((_, reject) => 
+        setTimeout(() => reject(new Error("Camera Timeout: Hardware is busy or permission not granted.")), 10000)
+      );
+
+      const stream = await Promise.race([hardwarePromise, timeoutPromise]);
       stream.getTracks().forEach(t => t.stop());
       
       // Hardware handoff delay
@@ -66,7 +73,7 @@ export default function VideoCall() {
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Camera Blocked: Please ensure the Citizen tab has closed its camera and click Start again.");
+      setError(err.message || "Camera Blocked: Please ensure the Citizen tab has closed its camera and click Start again.");
       setLoading(false);
     }
   };
