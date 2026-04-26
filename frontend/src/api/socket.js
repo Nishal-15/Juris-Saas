@@ -1,7 +1,7 @@
 import { io } from "socket.io-client";
 
-// ✅ USE THE NGROK URL OR ENV FOR PRODUCTION
-const SOCKET_URL = import.meta.env.VITE_SOCKET_URL || "https://armed-wavy-carwash.ngrok-free.dev";
+// ✅ USE THE NGROK URL FOR CROSS-DEVICE TESTING (Laptops <-> Mobiles)
+const SOCKET_URL = "https://armed-wavy-carwash.ngrok-free.dev";
 
 const socket = io(SOCKET_URL, {
   transports: ["websocket", "polling"],

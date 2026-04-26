@@ -41,8 +41,8 @@ router.post("/", auth(), async (req, res) => {
     const dbUser = await User.findById(userId).select("name") || await Lawyer.findById(userId).select("name");
     if (dbUser) userName = dbUser.name;
 
-    // 2. Forward to Python AI Service (The Central Brain with Guardrails)
-    const pythonAIServiceUrl = "http://127.0.0.1:8088/chat";
+    // 2. Forward to Python AI Service (Dynamic Link for Vercel/Local)
+    const pythonAIServiceUrl = process.env.PYTHON_AI_SERVICE_URL || "http://127.0.0.1:8088/chat";
     
     try {
       const aiRes = await axios.post(pythonAIServiceUrl, {

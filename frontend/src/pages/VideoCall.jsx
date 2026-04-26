@@ -12,8 +12,9 @@ export default function VideoCall() {
   const [remoteUser, setRemoteUser] = useState(null);
   const [isMuted, setIsMuted] = useState(false);
   const [isCamOff, setIsCamOff] = useState(false);
-  const [loading, setLoading] = useState(true);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
+  const [isJoined, setIsJoined] = useState(false);
 
   const client = useRef(null);
   const localTracks = useRef([]);
@@ -24,7 +25,6 @@ export default function VideoCall() {
     setLoading(true);
     setError(null);
 
-    // 1. Robust SDK Check
     if (!window.AgoraRTC) {
       const script = document.createElement("script");
       script.src = "https://download.agora.io/sdk/release/AgoraRTC_N-4.18.2.js";
@@ -34,11 +34,13 @@ export default function VideoCall() {
     }
 
     try {
-      // 2. FORCE RELEASE & RE-ACQUIRE (Fixes 'Access Denied' when other tabs are open)
-      console.log("Agora: Requesting fresh hardware access...");
+      // 1. HARDWARE HANDOFF: Release camera if other tabs were using it
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
-      stream.getTracks().forEach(t => t.stop()); // Immediately release to let Agora take over
+      stream.getTracks().forEach(t => t.stop());
       
+      // Small delay to let OS release hardware
+      await new Promise(r => setTimeout(r, 800));
+
       client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
       client.current.on("user-published", async (user, mediaType) => {
@@ -52,7 +54,6 @@ export default function VideoCall() {
 
       client.current.on("user-unpublished", () => setRemoteUser(null));
 
-      // 3. Join Room
       await client.current.join(AGORA_APP_ID, roomId, null, null);
       
       const [audioTrack, videoTrack] = await window.AgoraRTC.createMicrophoneAndCameraTracks();
@@ -61,17 +62,16 @@ export default function VideoCall() {
       videoTrack.play(localVideoRef.current);
       await client.current.publish(localTracks.current);
       
+      setIsJoined(true);
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Hardware Conflict: Please close any other browser tabs using your camera (like the Lawyer tab) and click 'Try Again'. Only one tab can use the camera at a time.");
+      setError("Camera Locked: Please ensure NO other tabs are using the camera and try again.");
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    initAgora();
-
     socket.on("end-call", () => leaveCall());
     return () => {
       leaveCall();
@@ -90,7 +90,7 @@ export default function VideoCall() {
       await client.current.leave();
     }
     socket.emit("end-call", roomId);
-    navigate("/user"); // <--- REDIRECT TO IMAGE 3 (AI CHAT)
+    navigate("/user");
   };
 
   const toggleMute = async () => {
@@ -105,31 +105,28 @@ export default function VideoCall() {
 
   return (
     <div className="v2-call-page">
-      {error ? (
+      {!isJoined ? (
         <div className="error-overlay">
-          <div className="avatar-placeholder">!</div>
-          <h3>Connection Failed</h3>
-          <p>{error}</p>
+          <div className="avatar-placeholder pulsing">LAW</div>
+          <h3>Ready for Consultation?</h3>
+          <p>Please ensure all other browser tabs using your camera are closed.</p>
           <div className="error-actions">
-            <button className="btn-retry" onClick={initAgora}>Try Again</button>
-            <button className="btn-cancel" onClick={() => navigate("/dashboard")}>Go Back</button>
+            <button className="btn-retry" onClick={initAgora} disabled={loading}>
+              {loading ? "Waking up..." : "Start Video Call"}
+            </button>
+            <button className="btn-cancel" onClick={() => navigate("/user")}>Not Now</button>
           </div>
+          {error && <p className="error-text" style={{color: '#ea4335', marginTop: '15px'}}>{error}</p>}
         </div>
       ) : (
         <>
           <div className="remote-wrapper">
             <div ref={remoteVideoRef} className="remote-video-el" />
-            {!remoteUser && !loading && (
+            {!remoteUser && (
               <div className="connecting-overlay">
                 <div className="avatar-placeholder pulsing">LAW</div>
                 <h3>Establishing Secure Bridge...</h3>
                 <p>Wait for the expert to join</p>
-              </div>
-            )}
-            {loading && (
-              <div className="connecting-overlay">
-                <div className="loader-spinner"></div>
-                <h3>Waking up Camera...</h3>
               </div>
             )}
           </div>

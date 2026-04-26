@@ -15,6 +15,8 @@ export default function VideoCall() {
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState(null);
 
+  const [isJoined, setIsJoined] = useState(false);
+
   const client = useRef(null);
   const localTracks = useRef([]);
   const localVideoRef = useRef(null);
@@ -35,6 +37,9 @@ export default function VideoCall() {
       console.log("Agora: Releasing hardware for lawyer tab...");
       const stream = await navigator.mediaDevices.getUserMedia({ video: true, audio: true });
       stream.getTracks().forEach(t => t.stop());
+      
+      // Hardware handoff delay
+      await new Promise(r => setTimeout(r, 800));
 
       client.current = window.AgoraRTC.createClient({ mode: "rtc", codec: "vp8" });
 
@@ -57,17 +62,16 @@ export default function VideoCall() {
       videoTrack.play(localVideoRef.current);
       await client.current.publish(localTracks.current);
       
+      setIsJoined(true);
       setLoading(false);
     } catch (err) {
       console.error("Agora Critical Error:", err);
-      setError("Hardware Conflict: Close any other tabs using your camera (like the Citizen tab) and click 'Try Again'.");
+      setError("Camera Blocked: Please ensure the Citizen tab has closed its camera and click Start again.");
       setLoading(false);
     }
   };
 
   useEffect(() => {
-    initAgora();
-
     socket.on("end-call", () => leaveCall());
     return () => {
       leaveCall();
@@ -101,31 +105,28 @@ export default function VideoCall() {
 
   return (
     <div className="v2-call-page">
-      {error ? (
+      {!isJoined ? (
         <div className="error-overlay">
-          <div className="avatar-placeholder">!</div>
-          <h3>Connection Failed</h3>
-          <p>{error}</p>
+          <div className="avatar-placeholder pulsing">LAW</div>
+          <h3>Lawyer Console: Ready?</h3>
+          <p>Click below to initialize your secure video feed.</p>
           <div className="error-actions">
-            <button className="btn-retry" onClick={initAgora}>Try Again</button>
-            <button className="btn-cancel" onClick={() => navigate("/lawyer/dashboard")}>Go Back</button>
+            <button className="btn-retry" onClick={initAgora} disabled={loading}>
+              {loading ? "Initializing..." : "Start Consultation"}
+            </button>
+            <button className="btn-cancel" onClick={() => navigate("/lawyer/dashboard")}>Cancel</button>
           </div>
+          {error && <p className="error-text" style={{color: '#ea4335', marginTop: '15px'}}>{error}</p>}
         </div>
       ) : (
         <>
           <div className="remote-wrapper">
             <div ref={remoteVideoRef} className="remote-video-el" />
-            {!remoteUser && !loading && (
+            {!remoteUser && (
               <div className="connecting-overlay">
                 <div className="avatar-placeholder pulsing">LAW</div>
                 <h3>Establishing Secure Bridge...</h3>
                 <p>Wait for the client to join</p>
-              </div>
-            )}
-            {loading && (
-              <div className="connecting-overlay">
-                <div className="loader-spinner"></div>
-                <h3>Waking up Camera...</h3>
               </div>
             )}
           </div>
