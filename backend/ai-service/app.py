@@ -84,12 +84,12 @@ def get_legal_answer(user_input, lang="en"):
     if GEMINI_API_KEY:
         try:
             print("Trying Gemini...", flush=True)
-            url = f"https://generativelanguage.googleapis.com/v1/models/gemini-1.5-flash:generateContent?key={GEMINI_API_KEY}"
-            payload = {"contents": [{"parts": [{"text": f"{system_instruction}\n\nQuery: {user_input}"}]}]}
-            res = requests.post(url, json=payload, timeout=10)
-            data = res.json()
-            if "candidates" in data:
-                return data["candidates"][0]["content"]["parts"][0]["text"]
+            import google.generativeai as genai
+            genai.configure(api_key=GEMINI_API_KEY)
+            model = genai.GenerativeModel('gemini-1.5-flash')
+            response = model.generate_content(f"{system_instruction}\n\nQuery: {user_input}")
+            if response.text:
+                return response.text
         except Exception as e:
             print(f"Gemini error: {str(e)}", flush=True)
 
