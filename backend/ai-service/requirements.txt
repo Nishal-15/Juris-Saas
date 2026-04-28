@@ -7,3 +7,4 @@ python-dotenv
 ollama
 google-generativeai
 gunicorn
+agora-token-builder
