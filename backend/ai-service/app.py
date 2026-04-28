@@ -50,6 +50,8 @@ def get_legal_answer(user_input, lang="en"):
     if any(topic in user_input.lower() for topic in REJECTED_CATEGORIES):
         return "Sorry, I can't provide an answer for this. Please ask only law-related questions."
 
+    groq_err = "No error recorded"
+
     # 2. STRICT SYSTEM PROMPT (The "2nd Image" Format + Logic)
     system_instruction = f"""
     You are a professional Legal Expert. 
@@ -99,7 +101,8 @@ def get_legal_answer(user_input, lang="en"):
             if "choices" in data:
                 return data["choices"][0]["message"]["content"]
         except Exception as e:
-            print(f"Groq error: {str(e)}", flush=True)
+            groq_err = str(e)
+            print(f"Groq error: {groq_err}", flush=True)
 
     # 5. Ollama Fallback
     try:
@@ -109,9 +112,9 @@ def get_legal_answer(user_input, lang="en"):
         if res.status_code == 200:
             return res.json().get("response")
     except Exception as e:
-        print(f"Ollama error: {str(e)}", flush=True)
+        return f"Ollama error: {str(e)}"
 
-    return "I am having trouble connecting to my legal brains. Please ask only law-related questions."
+    return f"Debug Info: Groq failed with error [{groq_err}]"
 
 @app.route("/chat", methods=["POST"])
 def chat():
