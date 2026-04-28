@@ -92,8 +92,9 @@ router.post("/", auth(), async (req, res) => {
     const dbUser = await User.findById(userId).select("name") || await Lawyer.findById(userId).select("name");
     if (dbUser) userName = dbUser.name;
 
-    // 🧠 UNIVERSAL AI BRIDGE: Prioritize External Tunnel for Vercel, Fallback to Local
-    const pythonAIServiceUrl = process.env.PYTHON_AI_SERVICE_URL || "http://127.0.0.1:8088/chat";
+    // 🧠 UNIVERSAL AI BRIDGE: Support both AI_SERVICE_URL and PYTHON_AI_SERVICE_URL
+    const baseUrl = process.env.PYTHON_AI_SERVICE_URL || process.env.AI_SERVICE_URL || "http://127.0.0.1:8088/chat";
+    const pythonAIServiceUrl = baseUrl.endsWith("/chat") ? baseUrl : `${baseUrl}/chat`;
     console.log(`📡 Routing AI request to: ${pythonAIServiceUrl}`);
     
     try {
