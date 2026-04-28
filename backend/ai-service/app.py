@@ -107,10 +107,8 @@ def get_legal_answer(user_input, lang="en"):
             groq_err = str(e)
             print(f"Groq error: {groq_err}", flush=True)
 
-    # 5. Localhost Ollama Fallback (ONLY run if NOT on Render)
-    is_render = os.environ.get("RENDER") == "true" or os.environ.get("RENDER") is not None
-    
-    if not is_render:
+    # 5. Localhost Ollama Fallback (STRICTLY OPT-IN)
+    if os.environ.get("USE_OLLAMA") == "true":
         try:
             print("Trying Local Mistral...", flush=True)
             payload = {"model": "mistral", "prompt": f"{system_instruction}\n\nQuery: {user_input}", "stream": False}
@@ -119,10 +117,9 @@ def get_legal_answer(user_input, lang="en"):
                 return res.json().get("response")
         except Exception as e:
             print(f"Ollama error: {str(e)}", flush=True)
-            
-        return "JurisBot is having trouble connecting to its local or cloud brains. Please ensure Ollama is running or check your API keys."
+            return "JurisBot is having trouble connecting to Local Mistral. Please ensure Ollama is running."
     
-    # If we are on Render, and Groq failed, return a clean error without Ollama traces
+    # If Groq failed, and we are not using Ollama, return the exact Groq error for debugging
     return f"JurisBot is having trouble connecting to its cloud brain. (Debug: {groq_err})"
 
 @app.route("/chat", methods=["POST"])
