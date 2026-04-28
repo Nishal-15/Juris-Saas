@@ -84,7 +84,7 @@ def get_legal_answer(user_input, lang="en"):
 
     # 3. Gemini Attempt (Removed as requested)
 
-    # 4. Groq Fallback
+    # 4. Groq Priority (Always First)
     if GROQ_API_KEY:
         try:
             print("Trying Groq...", flush=True)
@@ -101,22 +101,29 @@ def get_legal_answer(user_input, lang="en"):
             if "choices" in data:
                 return data["choices"][0]["message"]["content"]
             else:
-                raise Exception(f"Groq API Error: {data}")
+                groq_err = f"Groq API Error: {data}"
+                print(groq_err, flush=True)
         except Exception as e:
             groq_err = str(e)
             print(f"Groq error: {groq_err}", flush=True)
 
-    # 5. Ollama Fallback
-    try:
-        print("Trying Local Mistral...", flush=True)
-        payload = {"model": "mistral", "prompt": f"{system_instruction}\n\nQuery: {user_input}", "stream": False}
-        res = requests.post(OLLAMA_URL, json=payload, timeout=15)
-        if res.status_code == 200:
-            return res.json().get("response")
-    except Exception as e:
-        return f"Ollama error: {str(e)}"
-
-    return f"Debug Info: Groq failed with error [{groq_err}]"
+    # 5. Localhost Ollama Fallback (ONLY run if NOT on Render)
+    is_render = os.environ.get("RENDER") == "true" or os.environ.get("RENDER") is not None
+    
+    if not is_render:
+        try:
+            print("Trying Local Mistral...", flush=True)
+            payload = {"model": "mistral", "prompt": f"{system_instruction}\n\nQuery: {user_input}", "stream": False}
+            res = requests.post(OLLAMA_URL, json=payload, timeout=15)
+            if res.status_code == 200:
+                return res.json().get("response")
+        except Exception as e:
+            print(f"Ollama error: {str(e)}", flush=True)
+            
+        return "JurisBot is having trouble connecting to its local or cloud brains. Please ensure Ollama is running or check your API keys."
+    
+    # If we are on Render, and Groq failed, return a clean error without Ollama traces
+    return f"JurisBot is having trouble connecting to its cloud brain. (Debug: {groq_err})"
 
 @app.route("/chat", methods=["POST"])
 def chat():
