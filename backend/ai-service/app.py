@@ -80,18 +80,7 @@ def get_legal_answer(user_input, lang="en"):
     Answer in {lang}. NO EMOJIS. NO LONG PARAGRAPHS.
     """
 
-    # 3. Gemini Attempt
-    if GEMINI_API_KEY:
-        try:
-            print("Trying Gemini...", flush=True)
-            import google.generativeai as genai
-            genai.configure(api_key=GEMINI_API_KEY)
-            model = genai.GenerativeModel('gemini-1.5-flash')
-            response = model.generate_content(f"{system_instruction}\n\nQuery: {user_input}")
-            if response.text:
-                return response.text
-        except Exception as e:
-            print(f"Gemini error: {str(e)}", flush=True)
+    # 3. Gemini Attempt (Removed as requested)
 
     # 4. Groq Fallback
     if GROQ_API_KEY:
