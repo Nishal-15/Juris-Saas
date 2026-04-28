@@ -100,6 +100,8 @@ def get_legal_answer(user_input, lang="en"):
             data = res.json()
             if "choices" in data:
                 return data["choices"][0]["message"]["content"]
+            else:
+                raise Exception(f"Groq API Error: {data}")
         except Exception as e:
             groq_err = str(e)
             print(f"Groq error: {groq_err}", flush=True)
