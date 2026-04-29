@@ -1,10 +1,6 @@
 flask
 flask-cors
-sentence-transformers
-deep-translator
-pinecone
+requests
 python-dotenv
-ollama
-google-generativeai
-gunicorn
 agora-token-builder
+gunicorn
