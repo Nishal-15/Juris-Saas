@@ -50,10 +50,16 @@ def get_legal_answer(user_input, lang="en"):
     if any(topic in user_input.lower() for topic in REJECTED_CATEGORIES):
         return "Sorry, I can't provide an answer for this. Please ask only law-related questions."
 
+    # NEW: Detection for short notification/reminder prompts
+    is_notification = any(x in user_input.lower() for x in ["reminder", "alert", "whatsapp", "1-sentence"])
+
     groq_err = "No error recorded"
 
-    # 2. STRICT SYSTEM PROMPT (The "2nd Image" Format + Logic)
-    system_instruction = f"""
+    # 2. STRICT SYSTEM PROMPT
+    if is_notification:
+        system_instruction = "You are a professional Legal Expert. Write a short, professional 1-sentence legal notification for WhatsApp. Be concise."
+    else:
+        system_instruction = f"""
     You are a professional Legal Expert. 
     
     RULE 1: If the user's query is NOT strictly related to law, legal procedures, or Indian Law, you MUST reply ONLY with: 
@@ -81,8 +87,6 @@ def get_legal_answer(user_input, lang="en"):
     
     Answer in {lang}. NO EMOJIS. NO LONG PARAGRAPHS.
     """
-
-    # 3. Gemini Attempt (Removed as requested)
 
     # 4. Groq Priority (Always First)
     if GROQ_API_KEY:

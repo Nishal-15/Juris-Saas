@@ -3,6 +3,8 @@ const Appointment = require("../models/Appointment");
 const Case = require("../models/Case");
 const Notification = require("../models/Notification");
 const auth = require("../middleware/auth");
+const { sendAIWhatsApp } = require("../utils/notifier");
+const User = require("../models/User");
 
 router.post("/", auth(), async (req, res) => {
   try {
@@ -70,6 +72,15 @@ router.patch("/:id/status", auth(["lawyer"]), async (req, res) => {
        io.to(app.userId.toString()).emit("notification", {
           text: `Expert Adv. ${status === "Accepted" ? "✅ Accepted" : "❌ Returned"} your consultation request!`
        });
+    }
+
+    // 📱 WHATSAPP: Send AI alert if accepted
+    if (status === "Accepted") {
+      const citizen = await User.findById(app.userId);
+      const activeCase = app.caseId ? await Case.findById(app.caseId) : null;
+      if (citizen && citizen.phone) {
+        sendAIWhatsApp(citizen.phone, citizen.name, activeCase?.title || "Legal Consultation", "booking_accepted");
+      }
     }
 
     res.json(app);

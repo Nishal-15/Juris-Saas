@@ -6,6 +6,7 @@ const Notification = require("../models/Notification");
 const auth = require("../middleware/auth");
 const axios = require("axios");
 const checkSub = require("../middleware/checkSubscription");
+const { sendAIWhatsApp } = require("../utils/notifier");
 
 /* Create Case */
 router.post("/", auth(), async (req, res) => {
@@ -215,6 +216,12 @@ router.patch("/:id/management", auth(["lawyer"]), async (req, res) => {
       io.to(targetCase.user._id.toString()).emit("notification", {
         text: `Case Update: "${targetCase.title}" — ${updateNote || status || "Your case has been updated by your advocate."}`
       });
+    }
+
+    // 📱 WHATSAPP: Send AI alert for status update
+    const citizen = await User.findById(targetCase.user?._id);
+    if (citizen && citizen.phone) {
+       sendAIWhatsApp(citizen.phone, citizen.name, targetCase.title, "case_update");
     }
 
     res.json({ message: "Case information updated!", targetCase });
@@ -583,6 +590,12 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
         text: "Great news! Your expert has accepted the case and is ready to consult.",
         type: "case_accepted"
       });
+    }
+
+    // 📱 WHATSAPP: Send AI alert for case acceptance
+    const citizen = await User.findById(acceptedCase.user?._id);
+    if (citizen && citizen.phone) {
+       sendAIWhatsApp(citizen.phone, citizen.name, acceptedCase.title, "case_update");
     }
 
     console.log(`Case Accepted: ${caseId} by Lawyer ${req.user.id}`);
