@@ -14,6 +14,7 @@ export default function CaseDetails() {
   const [loading, setLoading] = useState(true);
   const [saving, setSaving] = useState(false);
   const [saved, setSaved] = useState(false);
+  const [accepting, setAccepting] = useState(false);
 
   const [form, setForm] = useState({
     status: "", hearingDate: "", courtLocation: "",
@@ -66,6 +67,20 @@ export default function CaseDetails() {
     }
   };
 
+  const handleAcceptCase = async () => {
+    setAccepting(true);
+    try {
+      await axios.post(`/cases/${id}/assign`);
+      // Refresh to unlock edit mode
+      const fresh = await axios.get(`/cases/details/${id}`);
+      setCaseData(fresh.data);
+    } catch (err) {
+      alert("Failed to accept case: " + (err.response?.data?.message || err.message));
+    } finally {
+      setAccepting(false);
+    }
+  };
+
   const urgencyColor = (u) =>
     u === "Emergency" ? "#ef4444" : u === "High" ? "#f59e0b" : "#10b981";
 
@@ -88,6 +103,10 @@ export default function CaseDetails() {
   };
 
   const countdown = getCountdown();
+
+  // Determine if the lawyer has accepted this case yet
+  const user = JSON.parse(localStorage.getItem("user") || "{}");
+  const isAssignedToMe = caseData?.assignedLawyer?._id === user._id || caseData?.assignedLawyer === user._id;
 
   return (
     <div className="cd-page">
@@ -144,15 +163,41 @@ export default function CaseDetails() {
               {/* LEFT — Update Form + Timeline */}
               <div className="cd-left">
 
-                {/* Update Panel */}
-                <div className="cd-card">
-                  <div className="cd-card-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                      <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                    </svg>
-                    Update Case Record
+                {/* Conditional Panel: Either 'Accept Case' OR 'Update Case Record' */}
+                {!isAssignedToMe ? (
+                  <div className="cd-card" style={{ border: '2px solid #3b82f6', background: 'rgba(59,130,246,0.05)' }}>
+                    <div className="cd-card-title" style={{ color: '#3b82f6', fontSize: '1.2rem' }}>
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <path d="M22 11.08V12a10 10 0 1 1-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/>
+                      </svg>
+                      Awaiting Assignment
+                    </div>
+                    <p className="cd-desc-text" style={{ marginBottom: '20px' }}>
+                      This case is currently open in the global marketplace. Review the initial description and case details. To unlock consultation, schedule hearings, and communicate with the client, you must take official charge of this case.
+                    </p>
+                    <button 
+                      className="cd-save-btn" 
+                      onClick={handleAcceptCase} 
+                      disabled={accepting}
+                      style={{ width: '100%', padding: '16px', fontSize: '1.1rem', background: '#3b82f6', color: 'white', border: 'none', borderRadius: '12px', cursor: 'pointer', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px' }}
+                    >
+                      {accepting ? "Securing Case..." : "Accept & Take Charge"}
+                      {!accepting && (
+                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round" width="20" height="20">
+                          <polyline points="20 6 9 17 4 12"/>
+                        </svg>
+                      )}
+                    </button>
                   </div>
+                ) : (
+                  <div className="cd-card">
+                    <div className="cd-card-title">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                        <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                      </svg>
+                      Update Case Record
+                    </div>
 
                   <div className="cd-form-grid">
                     <div className="cd-form-group">
@@ -209,6 +254,7 @@ export default function CaseDetails() {
                     </button>
                   </div>
                 </div>
+                )}
 
                 {/* Initial Description — standalone */}
                 <div className="cd-card">
@@ -262,17 +308,19 @@ export default function CaseDetails() {
                   </div>
                 )}
 
-                <div className="cd-card">
-                  <div className="cd-card-title">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-                      <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-                    </svg>
-                    Contact Client
+                {isAssignedToMe && (
+                  <div className="cd-card">
+                    <div className="cd-card-title">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+                      </svg>
+                      Contact Client
+                    </div>
+                    <button className="cd-workspace-btn" onClick={() => navigate(`/chat/${caseData.user?._id}`)}>
+                      Open Consultation Channel
+                    </button>
                   </div>
-                  <button className="cd-workspace-btn" onClick={() => navigate(`/chat/${caseData.user?._id}`)}>
-                    Open Consultation Channel
-                  </button>
-                </div>
+                )}
               </div>
             </div>
           </>

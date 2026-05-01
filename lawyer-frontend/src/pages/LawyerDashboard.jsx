@@ -15,6 +15,7 @@ export default function LawyerDashboard() {
   const [activeSection, setActiveSection] = useState("queue");
   const [toast, setToast] = useState(null);
   const [subInfo, setSubInfo] = useState({ tier: "Trial", count: 0, expiry: null, isBlocked: false });
+  const [broadcast, setBroadcast] = useState(null);
   
   const notificationAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
   const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -105,9 +106,25 @@ export default function LawyerDashboard() {
       setTimeout(() => setToast(null), 5000);
     });
     socket.on("marketplace-needs-refresh", fetchData);
+
+    const handleBroadcast = (data) => {
+      console.log("📣 [DASHBOARD DETECTED BROADCAST]", data);
+      notificationAudio.play().catch(e => console.log("Audio play failed on broadcast", e));
+      alert(`🏛️ JURISBOT SIGNAL RECEIVED\n\nPriority: ${String(data.priority).toUpperCase()}\nTitle: ${data.title}\nMessage: ${data.message}`);
+      setBroadcast(data);
+      const isEmergency = String(data.priority).toLowerCase() === 'emergency';
+      if (!isEmergency) {
+        setTimeout(() => setBroadcast(null), 10000);
+      }
+    };
+    socket.on("institutional-broadcast", handleBroadcast);
+    socket.on("institutional-broadcast-lawyer", handleBroadcast);
+
     return () => {
       socket.off("notification");
       socket.off("marketplace-needs-refresh");
+      socket.off("institutional-broadcast", handleBroadcast);
+      socket.off("institutional-broadcast-lawyer", handleBroadcast);
     };
   }, []);
 
@@ -146,6 +163,27 @@ export default function LawyerDashboard() {
 
   return (
     <div className="ld-page">
+      {broadcast && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
+          background: String(broadcast.priority).toLowerCase() === 'emergency' ? '#ef4444' : '#0f111a',
+          color: 'white', padding: '20px', textAlign: 'center',
+          borderBottom: '4px solid #c9a84c', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          animation: 'slideDown 0.3s ease-out'
+        }}>
+          <h2 style={{ margin: '0 0 10px 0', fontFamily: 'Playfair Display' }}>
+            {String(broadcast.priority).toLowerCase() === 'emergency' ? '🚨 URGENT INSTITUTIONAL DIRECTIVE' : '🏛️ JURISBOT INSTITUTIONAL NOTICE'}
+          </h2>
+          <h3 style={{ margin: '0 0 5px 0' }}>{broadcast.title}</h3>
+          <p style={{ margin: '0 0 15px 0', opacity: 0.9 }}>{broadcast.message}</p>
+          <button 
+            onClick={() => setBroadcast(null)}
+            style={{ background: 'white', color: '#0f111a', border: 'none', padding: '8px 20px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Acknowledge
+          </button>
+        </div>
+      )}
       <Sidebar />
 
       <div className="ld-body">

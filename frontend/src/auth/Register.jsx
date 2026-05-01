@@ -23,11 +23,11 @@ export default function Register() {
 
     setLoading(true);
     try {
-      // ✅ REGISTER (Returns {token, user} now)
+      // Direct registration
       const res = await axios.post("/auth/register", form);
       const { token, user } = res.data;
 
-      // 2. SET STATE & STORAGE
+      // SET STATE & STORAGE
       localStorage.setItem("token", token);
       localStorage.setItem("user", JSON.stringify(user));
       
@@ -41,7 +41,7 @@ export default function Register() {
       else navigate("/user");
     } catch (err) {
       console.error(err);
-      alert(err.response?.data?.message || "Registration failed");
+      alert(err.response?.data?.message || err.message || "Registration failed");
     } finally {
       setLoading(false);
     }

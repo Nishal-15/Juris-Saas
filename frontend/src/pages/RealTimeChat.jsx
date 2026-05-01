@@ -32,7 +32,7 @@ export default function RealTimeChat() {
 
     socket.on("receive-message", (message) => {
       // Check if message is from the person we are chatting with
-      if (message.from === id) {
+      if (String(message.from) === String(id)) {
         setMessages(prev => [...prev, message]);
       }
     });

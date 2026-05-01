@@ -26,8 +26,8 @@ export default function LawyerChat({ currentUser, targetUser }) {
     axios.get(`/chat/${targetUser}`).then(res => setMessages(res.data)).catch(() => {});
 
     socket.on("receive-message", (message) => {
-      // Check if message belongs to this conversation
-      if (message.from === targetUser) {
+      // Check if message belongs to this conversation (Loose equality to prevent String/Object mismatch)
+      if (String(message.from) === String(targetUser)) {
         setMessages(prev => [...prev, message]);
       }
     });

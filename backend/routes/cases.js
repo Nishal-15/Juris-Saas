@@ -157,7 +157,17 @@ router.post("/:id/assign", auth(["lawyer"]), async (req, res) => {
 
     // BROADCAST: Case Claimed! Refresh other marketplaces
     const io = req.app.get("io");
-    if (io) io.emit("marketplace-needs-refresh");
+    if (io) {
+      io.emit("marketplace-needs-refresh");
+      
+      // ✅ TARGETED PUSH: Tell the citizen immediately so their UI auto-refreshes
+      if (targetCase.user) {
+        io.to(targetCase.user.toString()).emit("notification", {
+          text: "A Legal Expert has accepted your case!",
+          type: "case_assigned"
+        });
+      }
+    }
 
     res.json({ message: "Case assigned successfully!" });
   } catch (err) {
@@ -240,12 +250,13 @@ router.get("/details/:id", auth(), async (req, res) => {
     
     if (!targetCase) return res.status(404).json({ message: "Case not found." });
 
-    // SCOPED ACCESS: Only owner, assigned lawyer, or admin
+    // SCOPED ACCESS: Only owner, assigned lawyer, admin, OR verified lawyers if case is open/unassigned
     const isOwner = targetCase.user?._id.toString() === req.user.id;
     const isAssigned = targetCase.assignedLawyer?._id.toString() === req.user.id;
     const isAdmin = req.user.role === "admin";
+    const isOpenMarketplaceCase = !targetCase.assignedLawyer && req.user.role === "lawyer";
 
-    if (!isOwner && !isAssigned && !isAdmin) {
+    if (!isOwner && !isAssigned && !isAdmin && !isOpenMarketplaceCase) {
        return res.status(403).json({ message: "Access denied: You are not authorized to view this legal file." });
     }
 

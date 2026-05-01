@@ -24,13 +24,13 @@ export default function Register() {
     e.preventDefault();
     setLoading(true);
 
-    const data = new FormData();
-    Object.keys(formData).forEach(key => data.append(key, formData[key]));
-    if (file) data.append("certificate", file);
-    if (avatar) data.append("avatar", avatar);
-
-
     try {
+      // Step 3: Proceed with multipart registration
+      const data = new FormData();
+      Object.keys(formData).forEach(key => data.append(key, formData[key]));
+      if (file) data.append("certificate", file);
+      if (avatar) data.append("avatar", avatar);
+
       const res = await axios.post("/auth/register-lawyer", data, {
         headers: { "Content-Type": "multipart/form-data" }
       });
@@ -38,7 +38,7 @@ export default function Register() {
       // Redirect to login or verification pending page
       navigate("/");
     } catch (err) {
-      alert(err.response?.data?.message || "Registration failed");
+      alert(err.response?.data?.message || err.message || "Registration failed");
     } finally {
       setLoading(false);
     }

@@ -231,4 +231,63 @@ router.put("/update", auth(), async (req, res) => {
   }
 });
 
+const axios = require("axios");
+const otpCache = {};
+
+// 📲 1. REQUEST OTP
+router.post("/request-otp", async (req, res) => {
+  try {
+    const { phone } = req.body;
+    if (!phone) return res.status(400).json({ message: "Phone number required" });
+
+    // Generate numeric 6-digit OTP
+    const otp = Math.floor(100000 + Math.random() * 900000).toString();
+    otpCache[phone] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 mins expiry
+
+    // Normalize phone number for MSG91 (e.g. 917708084027)
+    let cleanPhone = phone.replace(/\D/g, "");
+    if (!cleanPhone.startsWith("91") && cleanPhone.length === 10) {
+      cleanPhone = "91" + cleanPhone;
+    }
+
+    console.log(`📱 [MSG91 OTP SERVICE] Dispatching code for ${phone}: ${otp}`);
+
+    // Call real MSG91 SMS/OTP API
+    try {
+      const msg91AuthKey = "513203T6qGKIGXOCG69f4a117P1";
+      const msg91Url = `https://control.msg91.com/api/v5/otp?mobile=${cleanPhone}&authkey=${msg91AuthKey}&otp=${otp}`;
+      await axios.post(msg91Url);
+      console.log(`✅ [MSG91 Success] OTP delivered via MSG91 to ${phone}`);
+    } catch (msg91Err) {
+      console.error("❌ [MSG91 API Error]", msg91Err.response?.data || msg91Err.message);
+    }
+
+    res.json({ message: "Verification code sent to your phone number via MSG91.", otp });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// 📲 2. VERIFY OTP
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { phone, otp } = req.body;
+    if (!phone || !otp) return res.status(400).json({ message: "Phone and OTP are required" });
+
+    const cached = otpCache[phone];
+    if (!cached) return res.status(400).json({ message: "OTP expired or invalid" });
+
+    if (cached.otp !== otp || Date.now() > cached.expires) {
+      return res.status(400).json({ message: "Incorrect or expired OTP" });
+    }
+
+    // Success! Wipe from cache
+    delete otpCache[phone];
+
+    res.json({ message: "Phone number verified successfully!", verified: true });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

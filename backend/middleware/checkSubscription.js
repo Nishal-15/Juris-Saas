@@ -24,17 +24,18 @@ const checkSubscription = async (req, res, next) => {
     if (req.url.includes("/assign") || req.url.includes("/accept") || req.url.includes("/connect")) {
       const limits = {
         "Trial": 2,
-        "Pro": 5,      // 499 Plan
-        "Unlimited": Infinity // 1999 Plan
+        "Starter": 5,    // ₹499 Plan
+        "Pro": Infinity  // ₹1999 Plan
       };
 
       const tier = lawyer.subscriptionTier || "Trial";
       const currentLimit = limits[tier] || 0;
       
-      if (lawyer.casesClaimedCount >= currentLimit) {
+      if (lawyer.casesUsed >= currentLimit || lawyer.casesClaimedCount >= currentLimit) {
         return res.status(403).json({ 
-          message: `Monthly case limit reached for your ${tier} plan. Please upgrade to Unlimited for infinite access.`,
-          limitReached: true
+          message: `Case limit reached for your ${tier} plan. Please upgrade to Pro for unlimited access.`,
+          limitReached: true,
+          currentTier: tier
         });
       }
     }

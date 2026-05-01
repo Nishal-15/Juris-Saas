@@ -139,4 +139,39 @@ router.get("/laws", auth(["admin"]), async (req, res) => {
   }
 });
 
+// 📂 GET ALL CASES (GLOBAL OVERSIGHT)
+router.get("/all-cases", auth(["admin"]), async (req, res) => {
+  try {
+    const cases = await Case.find()
+      .populate("user", "name email")
+      .populate("assignedLawyer", "name email")
+      .sort({ createdAt: -1 });
+    res.json(cases);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// 📢 BROADCAST SIGNAL (TO ALL OR TARGETED)
+router.post("/broadcast", auth(["admin"]), async (req, res) => {
+  try {
+    const { target, title, message, priority } = req.body;
+    const io = req.app.get("io");
+
+    // 1. DATABASE PERSISTENCE (Optional: store in a Broadcasts collection)
+    // 2. REAL-TIME SIGNAL
+    if (target === "all") {
+      io.emit("institutional-broadcast", { title, message, priority });
+    } else {
+      // Logic for specific roles if needed
+      io.emit(`institutional-broadcast-${target}`, { title, message, priority });
+    }
+
+    console.log(`📡 BROADCAST: [${priority}] ${title} sent to ${target}`);
+    res.json({ message: "Signal transmitted successfully across the grid." });
+  } catch (err) {
+    res.status(500).json({ message: "Signal transmission failed." });
+  }
+});
+
 module.exports = router;

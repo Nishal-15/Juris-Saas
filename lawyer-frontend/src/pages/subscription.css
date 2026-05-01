@@ -1,0 +1,188 @@
+.subscription-container {
+    padding: 30px;
+    background: #0f111a;
+    min-height: 100vh;
+    color: white;
+}
+
+.subscription-header {
+    margin-bottom: 40px;
+}
+
+.subscription-header h1 {
+    font-size: 2.5rem;
+    background: linear-gradient(90deg, #facc15, #eab308);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    margin-bottom: 10px;
+}
+
+/* Status Card */
+.status-card {
+    background: rgba(255, 255, 255, 0.05);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 20px;
+    padding: 30px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    backdrop-filter: blur(10px);
+    margin-bottom: 50px;
+    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+}
+
+.status-info h2 {
+    font-size: 1.2rem;
+    color: #94a3b8;
+    margin-bottom: 10px;
+}
+
+.current-tier {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #facc15;
+}
+
+.usage-section {
+    flex: 1;
+    margin: 0 50px;
+}
+
+.usage-labels {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    font-size: 0.9rem;
+    color: #94a3b8;
+}
+
+.usage-bar-bg {
+    height: 12px;
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 6px;
+    overflow: hidden;
+}
+
+.usage-bar-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #facc15, #eab308);
+    transition: width 1s ease-in-out;
+    box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
+}
+
+.expiry-info {
+    text-align: right;
+}
+
+.expiry-days {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #ef4444;
+}
+
+/* Pricing Grid */
+.pricing-grid {
+    display: flex;
+    flex-direction: row;
+    gap: 30px;
+    justify-content: space-between;
+}
+
+.pricing-card {
+    flex: 1;
+    min-width: 0;
+    background: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 24px;
+    padding: 40px;
+    text-align: center;
+    transition: all 0.3s ease;
+    position: relative;
+    overflow: hidden;
+}
+
+.pricing-card:hover {
+    transform: translateY(-10px);
+    background: rgba(255, 255, 255, 0.06);
+    border-color: #facc15;
+}
+
+.pricing-card.popular {
+    border-color: #facc15;
+    background: rgba(250, 204, 21, 0.05);
+}
+
+.popular-badge {
+    position: absolute;
+    top: 20px;
+    right: -30px;
+    background: #facc15;
+    color: #000;
+    padding: 5px 40px;
+    transform: rotate(45deg);
+    font-weight: bold;
+    font-size: 0.8rem;
+}
+
+.plan-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    margin-bottom: 20px;
+}
+
+.plan-price {
+    font-size: 3rem;
+    font-weight: 800;
+    margin-bottom: 30px;
+}
+
+.plan-price span {
+    font-size: 1rem;
+    color: #94a3b8;
+    font-weight: normal;
+}
+
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin-bottom: 40px;
+    text-align: left;
+}
+
+.plan-features li {
+    margin-bottom: 15px;
+    color: #cbd5e1;
+    display: flex;
+    align-items: center;
+}
+
+.plan-features li::before {
+    content: "✓";
+    color: #facc15;
+    margin-right: 10px;
+    font-weight: bold;
+}
+
+.upgrade-btn {
+    width: 100%;
+    padding: 15px;
+    border-radius: 12px;
+    border: none;
+    background: #1e293b;
+    color: white;
+    font-weight: bold;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.upgrade-btn:hover {
+    background: #facc15;
+    color: black;
+}
+
+.current-plan-btn {
+    background: transparent;
+    border: 1px solid #facc15;
+    color: #facc15;
+    cursor: default;
+}

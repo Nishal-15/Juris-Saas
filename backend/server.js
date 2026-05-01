@@ -12,25 +12,19 @@ const app = express();
 const server = http.createServer(app);
 
 /* =======================
+/* =======================
    SOCKET.IO CONFIG
 ======================= */
-const origins = process.env.ALLOWED_ORIGINS 
-  ? process.env.ALLOWED_ORIGINS.split(",").map(o => o.trim()) 
-  : [
-      "http://localhost:5173",
-      "http://localhost:5174",
-      "http://127.0.0.1:5173",
-      "http://127.0.0.1:5174",
-      "https://armed-wavy-carwash.ngrok-free.dev"
-    ];
-
+// ✅ DYNAMIC CORS: Fixes the Localhost -> Vercel cross-domain blocking for Video & Chat
 const io = socketio(server, {
   cors: {
-    origin: origins,
-    methods: ["GET", "POST"],
+    origin: "*", // Accepts connections from ANY domain (Vercel, Netlify, Custom Domains)
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     credentials: true
   }
 });
+
+app.set("io", io);
 
 /* =======================
    DATABASE
@@ -40,8 +34,12 @@ connectDB();
 /* =======================
    MIDDLEWARE
 ======================= */
+// Apply dynamic CORS to Express API routes as well
 app.use(cors({
-  origin: origins,
+  origin: function (origin, callback) {
+    // Allow any origin
+    callback(null, true);
+  },
   credentials: true
 }));
 
@@ -82,6 +80,10 @@ app.use("/api/analytics", analyticsRoutes);
 app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/branding", require("./routes/branding"));
+
+// 🖼️ GLOBAL BRANDING ASSETS
+app.use("/branding", express.static(path.join(__dirname, "public/branding")));
 
 /* =======================
    SOCKET.IO LOGIC

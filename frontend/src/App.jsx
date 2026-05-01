@@ -1,11 +1,9 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
 import { Routes, Route } from "react-router-dom";
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import UserDashboard from "./pages/UserDashboard";
 import DashboardHome from "./pages/DashboardHome";
-import LawyerDashboard from "./pages/LawyerDashboard";
-import AdminDashboard from "./pages/AdminDashboard";
 import ProtectedRoute from "./routes/ProtectedRoute";
 import Settings from "./pages/Setting";
 import { setAuthToken } from "./api/axios";
@@ -31,6 +29,7 @@ if (localStorage.token) {
 }
 
 export default function App() {
+  const [broadcast, setBroadcast] = useState(null);
   // ✅ WAKE UP AUDIO ENGINE ON FIRST INTERACTION
   const handleInteraction = () => {
     primeAudio();
@@ -42,19 +41,33 @@ export default function App() {
     window.addEventListener("click", handleInteraction);
     window.addEventListener("touchstart", handleInteraction);
 
-    // ✅ GLOBAL JOIN & RECONNECT LAYER
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const uid = user._id || user.id;
-    if (uid) {
-      import("./api/socket").then(({ default: s }) => {
+    import("./api/socket").then(({ default: s }) => {
+      const handleBroadcast = (data) => {
+        console.log("📣 [CITIZEN DETECTED BROADCAST]", data);
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
+        audio.play().catch(e => console.log("Audio failed on citizen broadcast", e));
+        alert(`🏛️ JURISBOT SIGNAL RECEIVED\n\nPriority: ${String(data.priority).toUpperCase()}\nTitle: ${data.title}\nMessage: ${data.message}`);
+        setBroadcast(data);
+        const isEmergency = String(data.priority).toLowerCase() === 'emergency';
+        if (!isEmergency) {
+          setTimeout(() => setBroadcast(null), 10000);
+        }
+      };
+      s.on("institutional-broadcast", handleBroadcast);
+      s.on("institutional-broadcast-user", handleBroadcast);
+
+      // ✅ GLOBAL JOIN & RECONNECT LAYER
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const uid = user._id || user.id;
+      if (uid) {
         const sync = () => {
           s.emit("join", uid);
           console.log("Citizen joined notification bridge:", uid);
         };
         if (s.connected) sync();
         s.on("connect", sync);
-      });
-    }
+      }
+    });
 
     return () => {
       window.removeEventListener("click", handleInteraction);
@@ -62,10 +75,31 @@ export default function App() {
     };
   }, []);
 
-  return ( 
-<>
-  <GlobalCallNotification />
-  <Routes>
+  return (
+    <>
+      {broadcast && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, right: 0, zIndex: 99999,
+          background: broadcast.priority === 'Emergency' ? '#ef4444' : '#0f111a',
+          color: 'white', padding: '20px', textAlign: 'center',
+          borderBottom: '4px solid #c9a84c', boxShadow: '0 10px 30px rgba(0,0,0,0.5)',
+          animation: 'slideDown 0.3s ease-out'
+        }}>
+          <h2 style={{ margin: '0 0 10px 0', fontFamily: 'Playfair Display' }}>
+            {broadcast.priority === 'Emergency' ? '🚨 URGENT INSTITUTIONAL DIRECTIVE' : '🏛️ JURISBOT INSTITUTIONAL NOTICE'}
+          </h2>
+          <h3 style={{ margin: '0 0 5px 0' }}>{broadcast.title}</h3>
+          <p style={{ margin: '0 0 15px 0', opacity: 0.9 }}>{broadcast.message}</p>
+          <button 
+            onClick={() => setBroadcast(null)}
+            style={{ background: 'white', color: '#0f111a', border: 'none', padding: '8px 20px', borderRadius: '4px', fontWeight: 'bold', cursor: 'pointer' }}
+          >
+            Acknowledge
+          </button>
+        </div>
+      )}
+      <GlobalCallNotification />
+      <Routes>
     <Route path="/" element={<Login />} />
     <Route path="/register" element={<Register />} />
     <Route path="/terms" element={<Terms />} />
@@ -80,16 +114,8 @@ export default function App() {
       }/>
 
     <Route path="/create-case" element={
-      <ProtectedRoute allowedRoles={["user", "admin"]}><FilingConsole /></ProtectedRoute>
+      <ProtectedRoute allowedRoles={["user"]}><FilingConsole /></ProtectedRoute>
     }/>
-
-      <Route path="/lawyer" element={
-        <ProtectedRoute allowedRoles={["lawyer", "admin"]}><LawyerDashboard /></ProtectedRoute>
-      }/>
-
-      <Route path="/admin" element={
-        <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>
-      }/>
 
       {/* ✅ FIXED ROUTES */}
       <Route path="/cases" element={

