@@ -18,7 +18,7 @@ export default function ChatWindow() {
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
 
-  const [sidebarOpen, setSidebarOpen] = useState(true);
+  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
 
   const [sessions, setSessions] = useState(() => {
     const saved = localStorage.getItem("jurisbot_chat_sessions");
