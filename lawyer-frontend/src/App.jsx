@@ -46,6 +46,15 @@ export default function App() {
     socket.on("institutional-broadcast", handleBroadcast);
     socket.on("institutional-broadcast-lawyer", handleBroadcast);
 
+    // Dynamic alerts
+    const handleNotification = (data) => {
+      console.log("🔔 [ALERT DETECTED IN ADVOCATE PORTAL]", data);
+      const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
+      audio.play().catch(e => console.log("Audio play failed on notification", e));
+      alert(`🔔 JURISBOT NOTIFICATION\n\n${data.text || data.message || "New message received."}`);
+    };
+    socket.on("notification", handleNotification);
+
     // Also sync on storage change (login/logout in other tabs)
     window.addEventListener("storage", syncSocket);
 
@@ -53,6 +62,7 @@ export default function App() {
       socket.off("connect", syncSocket);
       socket.off("institutional-broadcast", handleBroadcast);
       socket.off("institutional-broadcast-lawyer", handleBroadcast);
+      socket.off("notification", handleNotification);
       window.removeEventListener("storage", syncSocket);
     };
   }, []);

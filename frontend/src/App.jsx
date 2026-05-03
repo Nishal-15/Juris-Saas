@@ -56,6 +56,15 @@ export default function App() {
       s.on("institutional-broadcast", handleBroadcast);
       s.on("institutional-broadcast-user", handleBroadcast);
 
+      // Alert/notification fallback
+      const handleNotification = (data) => {
+        console.log("🔔 [ALERT DETECTED IN CITIZEN PORTAL]", data);
+        const audio = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
+        audio.play().catch(e => console.log("Audio play failed on notification", e));
+        alert(`🔔 JURISBOT NOTIFICATION\n\n${data.text || data.message || "New message received."}`);
+      };
+      s.on("notification", handleNotification);
+
       // ✅ GLOBAL JOIN & RECONNECT LAYER
       const user = JSON.parse(localStorage.getItem("user") || "{}");
       const uid = user._id || user.id;

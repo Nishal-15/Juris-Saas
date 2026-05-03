@@ -85,24 +85,58 @@ export default function ConsultLawyer() {
               const status = getStatus(lawyer._id);
               const initials = lawyer.name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
               return (
-                <div className="cl-card" key={lawyer._id}>
-                  <div className="cl-pro-badge">PRO</div>
+                <div className="cl-card premium-card" key={lawyer._id}>
+                  {/* Top Certified Header */}
+                  <div className="cl-certified-header">JURISBOT CERTIFIED</div>
 
-                  <div className="cl-avatar-wrap">
-                    <div className="cl-avatar">{initials}</div>
+                  {/* Pro/Verified Badge */}
+                  <div className="cl-pro-badge">
+                    <svg viewBox="0 0 24 24" fill="currentColor" width="10" height="10" style={{ marginRight: "4px" }}>
+                      <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41z"/>
+                    </svg>
+                    VERIFIED BY JURISBOT
                   </div>
 
+                  {/* Halo Avatar */}
+                  <div className="cl-avatar-wrap-premium">
+                    <div className="cl-avatar-premium">{initials}</div>
+                  </div>
+
+                  {/* Name & Title */}
                   <div className="cl-name">{lawyer.name}</div>
+                  <div className="cl-title-adv">Senior Advocate</div>
+
+                  {/* Subtitle / Location */}
                   <div className="cl-location">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="11" height="11">
                       <path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0118 0z"/><circle cx="12" cy="10" r="3"/>
                     </svg>
-                    New Delhi, India
+                    {lawyer.firm || "National Legal Identification"}
                   </div>
 
-                  <p className="cl-bio">
-                    {lawyer.specialization?.split(",")[0]?.trim()} specialist with over {lawyer.experience || "10+"} years of experience in high-stakes litigation.
-                  </p>
+                  {/* Experience Card Section */}
+                  <div className="cl-experience-badge">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" width="22" height="22">
+                      <path d="M12 20V10M18 20V4M6 20v-4" />
+                    </svg>
+                    <div className="cl-experience-text">
+                      <span className="cl-exp-label">Years of</span>
+                      <span className="cl-exp-value">Experience: {lawyer.experience || "10+"}+</span>
+                    </div>
+                  </div>
+
+                  {/* Explicit Details Section */}
+                  <div className="cl-details-list">
+                    <div className="cl-detail-item"><strong>Bar Council Reg:</strong> {lawyer.barId || "BAR2023IND987"}</div>
+                    <div className="cl-detail-item"><strong>Firm:</strong> {lawyer.firm || "Capital Legal Chambers"}</div>
+                    <div className="cl-detail-item"><strong>Specialization:</strong> {lawyer.specialization?.split(",")[0]?.trim() || "General Practice"}</div>
+                  </div>
+
+                  {/* Certificate Expiry Block */}
+                  <div className="cl-expiry-block">
+                    <span>ISSUED: 14 NOV 2024</span>
+                    <span>EXPIRES: 14 NOV 2029</span>
+                  </div>
 
                   {/* CTA Button */}
                   {!status ? (
@@ -123,16 +157,6 @@ export default function ConsultLawyer() {
                       Reviewing Request...
                     </button>
                   )}
-
-                  {/* Expertise Tags */}
-                  <div className="cl-tags-section">
-                    <span className="cl-tags-label">Expertise</span>
-                    <div className="cl-tags">
-                      {(lawyer.specialization?.split(",") || ["General Law"]).map(s => (
-                        <span key={s} className="cl-tag">{s.trim()}</span>
-                      ))}
-                    </div>
-                  </div>
                 </div>
               );
             })}

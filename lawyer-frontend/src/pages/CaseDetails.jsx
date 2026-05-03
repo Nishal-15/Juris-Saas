@@ -95,9 +95,17 @@ export default function CaseDetails() {
   // Hearing countdown
   const getCountdown = () => {
     if (!caseData?.hearingDate) return null;
-    const diff = new Date(caseData.hearingDate) - new Date();
-    if (diff <= 0) return "Hearing date has passed";
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [y, m, d] = caseData.hearingDate.split('T')[0].split('-');
+    const hDate = new Date(y, m - 1, d);
+    hDate.setHours(0, 0, 0, 0);
+
+    const diff = hDate.getTime() - today.getTime();
+    const days = Math.round(diff / (1000 * 60 * 60 * 24));
+
+    if (days < 0) return "Hearing date has passed";
     if (days === 0) return "Hearing is TODAY";
     return `${days} day${days > 1 ? "s" : ""} until next hearing`;
   };

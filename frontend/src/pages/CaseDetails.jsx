@@ -22,18 +22,27 @@ export default function CaseDetails() {
     u === "Emergency" ? "#ef4444" : u === "Urgent" ? "#f59e0b" : "#10b981";
 
   const statusConfig = {
-    "Open":              { color: "#6b7280", label: "Open — Awaiting Assignment" },
-    "In Progress":       { color: "#3b82f6", label: "In Progress" },
-    "Hearing Scheduled": { color: "#c9a84c", label: "Hearing Scheduled" },
-    "Verdict Pending":   { color: "#f59e0b", label: "Verdict Pending" },
-    "Closed":            { color: "#10b981", label: "Closed" },
+    "Open":                      { color: "#6b7280", label: "Open — Awaiting Assignment" },
+    "Pending Expert Acceptance": { color: "#8b5cf6", label: "Pending Expert Acceptance" },
+    "In Progress":               { color: "#3b82f6", label: "In Progress" },
+    "Hearing Scheduled":         { color: "#c9a84c", label: "Hearing Scheduled" },
+    "Verdict Pending":           { color: "#f59e0b", label: "Verdict Pending" },
+    "Closed":                    { color: "#10b981", label: "Closed" },
   };
 
   const getCountdown = () => {
     if (!caseData?.hearingDate) return null;
-    const diff = new Date(caseData.hearingDate) - new Date();
-    if (diff <= 0) return { label: "Hearing date has passed", urgent: false };
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+
+    const [y, m, d] = caseData.hearingDate.split('T')[0].split('-');
+    const hDate = new Date(y, m - 1, d);
+    hDate.setHours(0, 0, 0, 0);
+
+    const diff = hDate.getTime() - today.getTime();
+    const days = Math.round(diff / (1000 * 60 * 60 * 24));
+
+    if (days < 0) return { label: "Hearing date has passed", urgent: false };
     return {
       label: days === 0 ? "Your hearing is TODAY" : `Next hearing in ${days} day${days !== 1 ? "s" : ""}`,
       urgent: days <= 3
@@ -142,25 +151,27 @@ export default function CaseDetails() {
                     Case Progress Timeline
                   </div>
                   <div className="ct-timeline">
-                    <div className="ct-tl-item active">
-                      <div className="ct-tl-dot" />
-                      <div>
-                        <p className="ct-tl-label">Case Filed &amp; Registered</p>
-                        <p className="ct-tl-date">{new Date(caseData.createdAt).toLocaleString("en-IN")}</p>
-                      </div>
-                    </div>
-                    {[...(caseData.trackingHistory || [])].reverse().map((m, i) => (
-                      <div key={i} className="ct-tl-item">
-                        <div className="ct-tl-dot" />
-                        <div>
-                          <p className="ct-tl-label">{m.status}</p>
-                          <p className="ct-tl-date">{new Date(m.date).toLocaleString("en-IN")}</p>
+                    {(() => {
+                      const allEvents = [
+                        { status: "Case Filed & Registered", date: caseData.createdAt },
+                        ...(caseData.trackingHistory || [])
+                      ].sort((a, b) => new Date(a.date) - new Date(b.date));
+                      return allEvents.map((m, i) => (
+                        <div key={i} className={`ct-tl-item ${i === allEvents.length - 1 ? "active" : ""}`}>
+                          <div className="ct-tl-dot" />
+                          <div>
+                            <p className="ct-tl-label">{m.status}</p>
+                            <p className="ct-tl-date">
+                              {new Date(m.date).toLocaleString("en-IN", {
+                                day: "numeric", month: "numeric", year: "numeric",
+                                hour: "numeric", minute: "numeric", second: "numeric",
+                                hour12: true
+                              })}
+                            </p>
+                          </div>
                         </div>
-                      </div>
-                    ))}
-                    {caseData.trackingHistory?.length === 0 && (
-                      <p className="ct-tl-empty">Your advocate has not posted any updates yet. Check back soon.</p>
-                    )}
+                      ));
+                    })()}
                   </div>
                 </div>
 
