@@ -8,14 +8,32 @@ from dotenv import load_dotenv
 from agora_token_builder import RtcTokenBuilder
 
 # Load environment variables
+from pinecone import Pinecone
+from sentence_transformers import SentenceTransformer
+
+# Load environment variables
 load_dotenv()
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY")
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 AGORA_APP_ID = os.getenv("AGORA_APP_ID", "c16823349942477382f6f595089e9095")
 AGORA_APP_CERTIFICATE = os.getenv("AGORA_APP_CERTIFICATE")
+PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "jurisbot-index")
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
+
+# Initialize Pinecone and Embedding Model
+try:
+    print("Initializing Pinecone & Embedding Model...", flush=True)
+    pc = Pinecone(api_key=PINECONE_API_KEY)
+    pinecone_index = pc.Index(PINECONE_INDEX_NAME)
+    embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+    print("✅ RAG Engine Ready", flush=True)
+except Exception as e:
+    print(f"❌ RAG Init Error: {e}", flush=True)
+    pinecone_index = None
+    embed_model = None
 
 app = Flask(__name__)
 CORS(app) # Allow cross-origin requests from Flutter
@@ -55,64 +73,58 @@ def get_legal_answer(user_input, lang="en"):
 
     groq_err = "No error recorded"
 
-    # 2. STRICT SYSTEM PROMPT
+    # 2. RETRIEVE LEGAL CONTEXT (RAG)
+    legal_context = ""
+    if pinecone_index and embed_model:
+        try:
+            print(f"Retrieving context for: {user_input[:50]}...", flush=True)
+            query_vector = embed_model.encode(user_input).tolist()
+            search_results = pinecone_index.query(vector=query_vector, top_k=3, include_metadata=True)
+            
+            contexts = []
+            for res in search_results["matches"]:
+                meta = res["metadata"]
+                contexts.append(f"Source: {meta.get('act', 'Unknown')} ({meta.get('year', 'Unknown')})\nSection: {meta.get('heading', 'Unknown')}\nContent: {meta.get('content', '')}")
+            
+            legal_context = "\n\n---\n\n".join(contexts)
+        except Exception as e:
+            print(f"RAG Retrieval Error: {e}", flush=True)
+
+    # 3. STRICT SYSTEM PROMPT
     if is_notification:
         system_instruction = "You are a professional Legal Expert. Write a short, professional 1-sentence legal notification for WhatsApp. Be concise."
     else:
         system_instruction = f"""
-You are an advanced AI legal assistant for Indian law. Your goal is to explain legal topics in simple, everyday language that a normal person can immediately understand — while staying 100% legally accurate.
+You are an advanced AI legal assistant for Indian law. Your goal is to explain legal topics in simple language while staying 100% legally accurate.
+
+You have been provided with the following REAL LAW SECTIONS as context. Use them to answer the user's question accurately.
+
+LEGAL CONTEXT (VERIFIED SOURCES):
+{legal_context if legal_context else "No specific sections found in database. Use your internal knowledge but be extremely cautious."}
 
 CORE OBJECTIVE:
-- Explain what something means in REAL LIFE first
-- Do NOT lead with law sections or legal definitions
-- Sound like a knowledgeable person explaining to a friend, not a lawyer reading from a textbook
-- Still be legally correct — simplicity never means inaccuracy
+- Explain what the issue means in REAL LIFE first.
+- Use the provided LEGAL CONTEXT to ensure the highest accuracy.
+- If the context contradicts your internal knowledge, trust the context.
+- Sound knowledgeable and helpful, not robotic.
 
-MANDATORY RESPONSE FORMAT — follow this exact order every time:
+MANDATORY RESPONSE FORMAT:
 
 **Direct Answer** (max 2 lines)
-- Answer in plain English
-- No section numbers here
-- Talk like a normal person
+- Plain English only. No section numbers.
 
-**Quick Understanding** (3 to 5 bullets only)
-- What this means in everyday life
-- What usually happens in this situation
-- Possible real-world consequences
-- Use simple words only — no legal jargon
+**Quick Understanding** (3-5 bullets)
+- Real-world meaning and consequences.
 
-**Legal Support** (brief — only at the end if needed)
-- Mention law briefly, not as the main point
-- Instead of listing every section, say things like:
-  "Under Indian law, this is treated as cheating, and in serious cases involving money or fraud, stricter punishment applies."
-- Only mention a section number if it is 100% accurate and adds real value
-- NEVER confuse definition sections with punishment sections:
-  IPC 415 defines cheating, IPC 417 is the punishment, IPC 420 covers serious cheating with stricter punishment
+**Legal Support**
+- Mention the specific Acts/Sections from the provided context.
+- Be precise about what the law says.
 
-**Practical Insight** (important)
-- What police actually do in this case
-- How courts usually handle it
-- Common mistakes people make
-- What outcome to realistically expect
+**Practical Insight**
+- Real-world handling by police/courts.
 
 **Simple Example**
-- One short, relatable real-life scenario
-- Keep it under 3 lines
-
-ACCURACY RULES (non-negotiable):
-- Legal accuracy must never be sacrificed for simplicity
-- If unsure of a section number — do NOT mention it; explain the concept without it
-- If multiple sections apply, say "basic case" vs "serious case" — don't list all sections unless certain
-- Only reference BNS 2023 if you are completely sure of the mapping; otherwise use IPC
-- Never say "consult a lawyer" unless it is genuinely the only path forward
-
-STRICT OUTPUT RULES:
-- No long paragraphs — bullets only
-- No heavy legal terms without immediately explaining them in plain words
-- No repetition across sections
-- No preamble, no "As an AI", no disclaimers
-- Keep total response scannable in under 10 seconds
-- If the question is NOT about law: reply ONLY with "I only answer legal questions. Ask me about Indian law, your rights, or legal situations."
+- Relatable scenario (max 3 lines).
 
 Answer in {lang}.
 """
