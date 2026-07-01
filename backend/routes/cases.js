@@ -294,7 +294,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
     }
 
     // COURTROOM-READY LEGAL TRIAGE (Groq Llama 3.3 with Detailed Taxonomy)
-    const GROQ_KEY = process.env.GROQ_API_KEY;
+    const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     
     const TAXONOMY_TITLES = {
@@ -428,28 +428,28 @@ router.post("/analyze-story", auth(), async (req, res) => {
     RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "..."}`;
 
     try {
-      if (GROQ_KEY) {
-        console.log("[AI TRIAGE] Attempting Groq Analysis...");
+      if (NVIDIA_KEY) {
+        console.log("[AI TRIAGE] Attempting NVIDIA Analysis...");
         try {
-          const groqRes = await axios.post(
-            "https://api.groq.com/openai/v1/chat/completions",
+          const nvidiaRes = await axios.post(
+            "https://integrate.api.nvidia.com/v1/chat/completions",
             {
-              model: "llama-3.3-70b-versatile",
+              model: "meta/llama-3.3-70b-instruct",
               messages: [{ role: "user", content: analysisPrompt }],
               response_format: { type: "json_object" },
               temperature: 0.1
             },
-            { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 10000 }
+            { headers: { Authorization: `Bearer ${NVIDIA_KEY}` }, timeout: 10000 }
           );
-          const data = JSON.parse(groqRes.data.choices[0].message.content);
-          console.log("[AI TRIAGE] Groq Success:", data.title);
+          const data = JSON.parse(nvidiaRes.data.choices[0].message.content);
+          console.log("[AI TRIAGE] NVIDIA Success:", data.title);
           return res.json({ 
             title: data.title, 
             category: data.category, 
             legalType: data.legalType
           });
         } catch (err) {
-          console.error("[AI TRIAGE] Groq Failed:", err.response?.data || err.message);
+          console.error("[AI TRIAGE] NVIDIA Failed:", err.response?.data || err.message);
         }
       }
 
