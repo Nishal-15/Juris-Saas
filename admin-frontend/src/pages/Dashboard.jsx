@@ -1,8 +1,19 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Users, Scale, FileText, Activity } from 'lucide-react';
+import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
 
 const API_BASE = "http://localhost:5000/api/admin"; // Updated to local backend
+
+const mockChartData = [
+  { name: 'Mon', queries: 4000, latency: 240 },
+  { name: 'Tue', queries: 3000, latency: 139 },
+  { name: 'Wed', queries: 2000, latency: 980 },
+  { name: 'Thu', queries: 2780, latency: 390 },
+  { name: 'Fri', queries: 1890, latency: 480 },
+  { name: 'Sat', queries: 2390, latency: 380 },
+  { name: 'Sun', queries: 3490, latency: 430 },
+];
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -93,14 +104,39 @@ export default function Dashboard() {
         </div>
       </div>
 
-      <div className="content-section">
+      <div className="content-section" style={{ marginTop: '30px' }}>
         <div className="section-title">
-          <h3>Infrastructure Status</h3>
+          <h3>Infrastructure Status & AI Latency</h3>
           <span className="badge badge-verified">System Nominal</span>
         </div>
-        <div style={{ color: '#64748b', lineHeight: '1.6' }}>
-            JurisBot Core is currently monitoring <strong>{stats.citizens + stats.lawyers}</strong> active identities across the national legal grid. 
-            AI synthesis latency is <strong>450ms</strong>. Database integrity: <strong>99.98%</strong>.
+        <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>
+          Real-time visualization of JurisBot AI triage query volume and processing latency across the legal grid.
+        </p>
+        
+        <div style={{ width: '100%', height: 350, background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+          <ResponsiveContainer width="100%" height="100%">
+            <AreaChart data={mockChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
+              <defs>
+                <linearGradient id="colorQueries" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#c9a84c" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#c9a84c" stopOpacity={0}/>
+                </linearGradient>
+                <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
+                  <stop offset="5%" stopColor="#1e293b" stopOpacity={0.3}/>
+                  <stop offset="95%" stopColor="#1e293b" stopOpacity={0}/>
+                </linearGradient>
+              </defs>
+              <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+              <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+              <Tooltip 
+                contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                itemStyle={{ fontSize: '13px', fontWeight: 600 }}
+              />
+              <Area type="monotone" dataKey="queries" stroke="#c9a84c" strokeWidth={3} fillOpacity={1} fill="url(#colorQueries)" />
+              <Area type="monotone" dataKey="latency" stroke="#1e293b" strokeWidth={3} fillOpacity={1} fill="url(#colorLatency)" />
+            </AreaChart>
+          </ResponsiveContainer>
         </div>
       </div>
     </div>
