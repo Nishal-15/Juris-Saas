@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import Sidebar from '../components/Sidebar';
-import axios from 'axios';
+import axios from '../api/axios';
 import './legal_drafter.css';
 
 export default function LegalDrafter() {
@@ -29,7 +29,7 @@ export default function LegalDrafter() {
     
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/documents/draft', {
+      const res = await axios.post('/documents/draft', {
         docType,
         facts
       }, {

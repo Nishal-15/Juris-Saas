@@ -1,6 +1,6 @@
 import React, { useState, useRef } from 'react';
 import Sidebar from '../components/Sidebar';
-import axios from 'axios';
+import axios from '../api/axios';
 import './document_analyzer.css';
 
 export default function DocumentAnalyzer() {
@@ -36,7 +36,7 @@ export default function DocumentAnalyzer() {
     setSummary('');
     try {
       const token = localStorage.getItem('token');
-      const res = await axios.post('http://localhost:5000/api/documents/analyze', formData, {
+      const res = await axios.post('/documents/analyze', formData, {
         headers: { 'Content-Type': 'multipart/form-data', 'x-auth-token': token }
       });
       setSummary(res.data.summary);
