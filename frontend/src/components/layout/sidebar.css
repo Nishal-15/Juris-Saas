@@ -49,9 +49,6 @@
 
 /* ── Toggle ── */
 .cs-toggle {
-  position: absolute;
-  top: 12px;
-  right: 12px;
   width: 26px; height: 26px;
   background: rgba(201,168,76,0.1);
   border: 1px solid rgba(201,168,76,0.2);
@@ -59,14 +56,14 @@
   display: flex; align-items: center; justify-content: center;
   color: var(--gold);
   cursor: pointer;
-  z-index: 200;
   transition: all 0.2s;
   padding: 0;
+  flex-shrink: 0;
 }
-.cs-toggle svg { width: 13px; height: 13px; stroke: var(--gold); stroke-width: 2.5; }
+.cs-toggle svg { width: 14px; height: 14px; stroke: var(--gold); stroke-width: 2; }
 .cs-toggle:hover { background: rgba(201,168,76,0.18); border-color: rgba(201,168,76,0.35); }
 
-.cs-sidebar.collapsed .cs-toggle { right: 23px; top: 72px; opacity: 0.7; }
+/* Removed absolute collapsed state since it is now unrendered when collapsed */
 
 /* ── Logo ── */
 .cs-logo {

@@ -76,22 +76,26 @@ const Sidebar = memo(() => {
 
   return (
     <div className={`cs-sidebar ${collapsed ? "collapsed" : ""} ${mobileOpen ? "mobile-open" : ""}`}>
-      {/* Desktop Toggle */}
-      <button className="cs-toggle" onClick={() => setCollapsed(!collapsed)}>
-        <span style={{ transform: collapsed ? "rotate(180deg)" : "none", display: "inline-flex" }}>
-          {Icons.chevron}
-        </span>
-      </button>
-
-      <div className="cs-logo">
+      
+      <div className="cs-logo" onClick={() => collapsed && setCollapsed(false)} style={{ cursor: collapsed ? "pointer" : "default" }}>
         <div className="cs-logo-icon" style={{ background: '#fff', padding: '2px' }}>
           <img src="/logo.png" alt="Logo" style={{ width: '100%', height: '100%', borderRadius: '50%', objectFit: 'cover', border: '2px solid #c9a84c' }} />
         </div>
         {!collapsed && (
-          <div className="fade-in">
+          <div className="fade-in" style={{ flex: 1 }}>
             <span className="cs-logo-name">JurisBot</span>
             <span className="cs-logo-tag">Legal Awareness AI</span>
           </div>
+        )}
+        
+        {/* Desktop Toggle in Flow */}
+        {!collapsed && (
+          <button className="cs-toggle fade-in" onClick={(e) => { e.stopPropagation(); setCollapsed(true); }}>
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
         )}
       </div>
 

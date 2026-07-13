@@ -32,8 +32,6 @@
 
 /* ---- Toggle ---- */
 .sidebar-toggle {
-  position: absolute;
-  top: 12px; right: 12px;
   width: 28px; height: 28px;
   background: rgba(201,168,76,0.1);
   border: 1px solid rgba(201,168,76,0.2);
@@ -41,13 +39,13 @@
   display: flex; align-items: center; justify-content: center;
   color: var(--gold);
   cursor: pointer;
-  z-index: 200;
   transition: all 0.2s;
+  flex-shrink: 0;
 }
-.sidebar-toggle svg { width: 14px; height: 14px; }
+.sidebar-toggle svg { width: 15px; height: 15px; }
 .sidebar-toggle:hover { background: rgba(201,168,76,0.2); color: var(--gold-lite); }
 
-.sidebar.collapsed .sidebar-toggle { right: 22px; top: 82px; opacity: 0.7; }
+/* Removed absolute collapsed state since it is unrendered when collapsed */
 
 /* ---- Logo ---- */
 .sidebar-logo {

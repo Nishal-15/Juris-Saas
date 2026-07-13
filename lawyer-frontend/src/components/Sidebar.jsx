@@ -90,19 +90,12 @@ export default function Sidebar() {
   return (
     <div className={`sidebar ${collapsed ? "collapsed" : ""}`}>
 
-      {/* Toggle Button */}
-      <button className="sidebar-toggle" onClick={() => setCollapsed(!collapsed)} title="Toggle Sidebar">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-          {collapsed ? (
-            <><line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/></>
-          ) : (
-            <><line x1="19" y1="12" x2="5" y2="12"/><polyline points="12 19 5 12 12 5"/></>
-          )}
-        </svg>
-      </button>
-
-      {/* Logo */}
-      <div className="sidebar-logo">
+      {/* Logo Area & Toggle */}
+      <div 
+        className="sidebar-logo" 
+        onClick={() => collapsed && setCollapsed(false)} 
+        style={{ cursor: collapsed ? "pointer" : "default" }}
+      >
         <div className="logo-icon-wrap" style={{ background: '#fff', padding: '2px' }}>
           <img 
             src="/logo.png" 
@@ -118,10 +111,20 @@ export default function Sidebar() {
           />
         </div>
         {!collapsed && (
-          <div className="logo-text fade-in">
+          <div className="logo-text fade-in" style={{ flex: 1 }}>
             <span className="logo-name">JurisBot</span>
             <span className="logo-sub">Legal Workspace</span>
           </div>
+        )}
+
+        {/* Toggle Button in Flow */}
+        {!collapsed && (
+          <button className="sidebar-toggle fade-in" onClick={(e) => { e.stopPropagation(); setCollapsed(true); }} title="Collapse Sidebar">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <rect x="3" y="3" width="18" height="18" rx="2" ry="2"/>
+              <line x1="9" y1="3" x2="9" y2="21"/>
+            </svg>
+          </button>
         )}
       </div>
 
