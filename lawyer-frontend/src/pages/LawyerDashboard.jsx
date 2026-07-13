@@ -158,6 +158,27 @@ export default function LawyerDashboard() {
     }
   };
 
+  const handleExportReport = () => {
+    const csvContent = `data:text/csv;charset=utf-8,`
+      + `Report Generated On,${new Date().toLocaleString()}\n\n`
+      + `PRACTICE SUMMARY\n`
+      + `Active Clients,${stats.activeClients || 0}\n`
+      + `Total Cases,${stats.totalCases || 0}\n`
+      + `Pending Reviews,${stats.pendingApps || 0}\n\n`
+      + `MEMBERSHIP DETAILS\n`
+      + `Tier,${subInfo.tier}\n`
+      + `Cases Claimed,${subInfo.count}\n`
+      + `Limit Exceeded,${subInfo.isBlocked ? 'Yes' : 'No'}\n`;
+
+    const encodedUri = encodeURI(csvContent);
+    const link = document.createElement("a");
+    link.setAttribute("href", encodedUri);
+    link.setAttribute("download", `jurisbot_practice_report_${new Date().toISOString().split('T')[0]}.csv`);
+    document.body.appendChild(link);
+    link.click();
+    document.body.removeChild(link);
+  };
+
   const urgencyColor = (u) =>
     u === "Emergency" ? "#ef4444" : u === "High" ? "#f59e0b" : "#10b981";
 
@@ -212,8 +233,15 @@ export default function LawyerDashboard() {
             <h1 className="ld-title">Practitioner Console</h1>
             <p className="ld-subtitle">Welcome back, {stats.expertName || "Advocate"}</p>
           </div>
-          <div className="ld-topbar-right">
+          <div className="ld-topbar-right" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             {toast && <div className="ld-toast">{toast}</div>}
+            <button 
+              onClick={handleExportReport}
+              style={{ background: 'transparent', border: '1px solid var(--ld-border)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', gap: '6px', alignItems: 'center' }}
+            >
+              <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+              Export Report
+            </button>
             <div className="ld-live-badge">
               <span className="ld-pulse-dot" />
               Live
