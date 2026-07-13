@@ -36,7 +36,11 @@ export default function Login() {
       login(res.data); // ✅ PASS ENTIRE DATA {token, user}
 
       // ✅ NAVIGATE BASED ON ROLE
-      if (user.role === "admin") navigate("/admin");
+      if (user.role === "admin") {
+        alert("Please use the Admin Portal to log in.");
+        localStorage.clear();
+        return;
+      }
       else if (user.role === "lawyer") navigate("/lawyer");
       else navigate("/user");
 
