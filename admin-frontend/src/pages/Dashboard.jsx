@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Users, Scale, FileText, Activity } from 'lucide-react';
-import { LineChart, Line, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, AreaChart, Area } from 'recharts';
+import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 const API_BASE = "http://localhost:5000/api/admin"; // Updated to local backend
 
-const mockChartData = [
+const mockBarData = [
   { name: 'Mon', queries: 4000, latency: 240 },
   { name: 'Tue', queries: 3000, latency: 139 },
   { name: 'Wed', queries: 2000, latency: 980 },
@@ -14,6 +14,14 @@ const mockChartData = [
   { name: 'Sat', queries: 2390, latency: 380 },
   { name: 'Sun', queries: 3490, latency: 430 },
 ];
+
+const mockPieData = [
+  { name: 'Civil Law', value: 400 },
+  { name: 'Criminal Law', value: 300 },
+  { name: 'Corporate Law', value: 300 },
+  { name: 'Family Law', value: 200 },
+];
+const COLORS = ['#c9a84c', '#1e293b', '#64748b', '#f1f5f9'];
 
 export default function Dashboard() {
   const [stats, setStats] = useState({
@@ -106,38 +114,63 @@ export default function Dashboard() {
 
       <div className="content-section" style={{ marginTop: '30px' }}>
         <div className="section-title">
-          <h3>Infrastructure Status & AI Latency</h3>
+          <h3>Infrastructure Status & Analytics</h3>
           <span className="badge badge-verified">System Nominal</span>
         </div>
-        <p style={{ color: 'var(--muted)', fontSize: '14px', marginBottom: '24px' }}>
-          Real-time visualization of JurisBot AI triage query volume and processing latency across the legal grid.
-        </p>
         
-        <div style={{ width: '100%', height: 350, background: '#fff', borderRadius: '12px', padding: '20px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-          <ResponsiveContainer width="100%" height="100%">
-            <AreaChart data={mockChartData} margin={{ top: 10, right: 30, left: 0, bottom: 0 }}>
-              <defs>
-                <linearGradient id="colorQueries" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#c9a84c" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#c9a84c" stopOpacity={0}/>
-                </linearGradient>
-                <linearGradient id="colorLatency" x1="0" y1="0" x2="0" y2="1">
-                  <stop offset="5%" stopColor="#1e293b" stopOpacity={0.3}/>
-                  <stop offset="95%" stopColor="#1e293b" stopOpacity={0}/>
-                </linearGradient>
-              </defs>
-              <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-              <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-              <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
-              <Tooltip 
-                contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
-                itemStyle={{ fontSize: '13px', fontWeight: 600 }}
-              />
-              <Area type="monotone" dataKey="queries" stroke="#c9a84c" strokeWidth={3} fillOpacity={1} fill="url(#colorQueries)" />
-              <Area type="monotone" dataKey="latency" stroke="#1e293b" strokeWidth={3} fillOpacity={1} fill="url(#colorLatency)" />
-            </AreaChart>
-          </ResponsiveContainer>
+        <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginTop: '20px' }}>
+          {/* BAR CHART */}
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+            <h4 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '15px' }}>Weekly Query Volume & Latency</h4>
+            <div style={{ width: '100%', height: 300 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <BarChart data={mockBarData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                  <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
+                  <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                  <Tooltip 
+                    cursor={{ fill: 'rgba(201,168,76,0.05)' }}
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '10px' }} />
+                  <Bar dataKey="queries" fill="#c9a84c" radius={[4, 4, 0, 0]} name="Query Volume" />
+                  <Bar dataKey="latency" fill="#1e293b" radius={[4, 4, 0, 0]} name="Latency (ms)" />
+                </BarChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
+
+          {/* PIE CHART */}
+          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <h4 style={{ marginBottom: '10px', color: 'var(--text-primary)', fontSize: '15px', width: '100%' }}>AI Consultation Topics</h4>
+            <div style={{ width: '100%', height: 260 }}>
+              <ResponsiveContainer width="100%" height="100%">
+                <PieChart>
+                  <Pie
+                    data={mockPieData}
+                    cx="50%"
+                    cy="50%"
+                    innerRadius={60}
+                    outerRadius={90}
+                    paddingAngle={5}
+                    dataKey="value"
+                    stroke="none"
+                  >
+                    {mockPieData.map((entry, index) => (
+                      <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                    ))}
+                  </Pie>
+                  <Tooltip 
+                    contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
+                    itemStyle={{ fontSize: '13px', fontWeight: 600, color: '#1e293b' }}
+                  />
+                  <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
+                </PieChart>
+              </ResponsiveContainer>
+            </div>
+          </div>
         </div>
+
       </div>
     </div>
   );
