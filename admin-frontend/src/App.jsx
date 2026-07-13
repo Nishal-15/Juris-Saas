@@ -30,7 +30,7 @@ const Login = ({ setAuth }) => {
   return (
     <div style={{ background: '#0f111a', height: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
       <div style={{ background: 'white', padding: '40px', borderRadius: '24px', width: '400px', textAlign: 'center' }}>
-        <img src="http://localhost:5000/branding/logo.png" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '20px' }} />
+        <img src="/juris-logo.png" alt="JurisBot Shield" style={{ width: '80px', height: '80px', objectFit: 'contain', marginBottom: '20px' }} />
         <h1 style={{ fontFamily: 'Playfair Display', marginBottom: '10px' }}>Institutional Access</h1>
         <p style={{ color: '#64748b', marginBottom: '30px', fontSize: '0.9rem' }}>JurisBot National Legal Infrastructure</p>
         <input 
