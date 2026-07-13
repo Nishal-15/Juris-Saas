@@ -1,12 +1,12 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import axios from '../api/axios';
 import './legal_drafter.css';
 
 export default function LegalDrafter() {
-  const [docType, setDocType] = useState('Bail Application');
-  const [facts, setFacts] = useState('');
-  const [draft, setDraft] = useState('');
+  const [docType, setDocType] = useState(() => sessionStorage.getItem('drafter_docType') || 'Bail Application');
+  const [facts, setFacts] = useState(() => sessionStorage.getItem('drafter_facts') || '');
+  const [draft, setDraft] = useState(() => sessionStorage.getItem('drafter_draft') || '');
   const [isDrafting, setIsDrafting] = useState(false);
   const [error, setError] = useState('');
 
@@ -17,6 +17,22 @@ export default function LegalDrafter() {
     'Mutual Consent Divorce Petition',
     'Employment Contract'
   ];
+
+  useEffect(() => {
+    sessionStorage.setItem('drafter_docType', docType);
+    sessionStorage.setItem('drafter_facts', facts);
+    sessionStorage.setItem('drafter_draft', draft);
+  }, [docType, facts, draft]);
+
+  const handleClear = () => {
+    setDocType('Bail Application');
+    setFacts('');
+    setDraft('');
+    setError('');
+    sessionStorage.removeItem('drafter_docType');
+    sessionStorage.removeItem('drafter_facts');
+    sessionStorage.removeItem('drafter_draft');
+  };
 
   const handleDraft = async () => {
     if (!facts.trim()) {
@@ -93,13 +109,25 @@ export default function LegalDrafter() {
 
             {error && <div className="ld-error">{error}</div>}
 
-            <button 
-              className={`ld-generate-btn ${isDrafting ? 'loading' : ''}`}
-              onClick={handleDraft}
-              disabled={isDrafting}
-            >
-              {isDrafting ? 'Drafting Document...' : 'Generate Legal Draft'}
-            </button>
+            <div className="ld-actions" style={{ display: 'flex', gap: '10px' }}>
+              <button 
+                className={`ld-generate-btn ${isDrafting ? 'loading' : ''}`}
+                onClick={handleDraft} 
+                disabled={isDrafting}
+                style={{ flex: 1 }}
+              >
+                {isDrafting ? 'Drafting...' : 'Generate Legal Draft'}
+              </button>
+              <button 
+                className="ld-generate-btn" 
+                onClick={handleClear} 
+                disabled={isDrafting}
+                style={{ background: 'transparent', border: '1px solid var(--ld-border)', color: 'var(--text-primary)', flex: 'none', padding: '0 20px' }}
+                title="Clear all fields"
+              >
+                Clear
+              </button>
+            </div>
           </div>
 
           <div className="ld-output-panel">

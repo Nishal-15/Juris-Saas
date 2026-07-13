@@ -1,15 +1,26 @@
-import React, { useState, useRef } from 'react';
+import React, { useState, useRef, useEffect } from 'react';
 import Sidebar from '../components/Sidebar';
 import axios from '../api/axios';
 import './document_analyzer.css';
 
 export default function DocumentAnalyzer() {
   const [file, setFile] = useState(null);
-  const [summary, setSummary] = useState('');
+  const [summary, setSummary] = useState(() => sessionStorage.getItem('analyzer_summary') || '');
   const [isAnalyzing, setIsAnalyzing] = useState(false);
   const [error, setError] = useState('');
   const [isDragging, setIsDragging] = useState(false);
   const fileRef = useRef();
+
+  useEffect(() => {
+    sessionStorage.setItem('analyzer_summary', summary);
+  }, [summary]);
+
+  const handleClear = () => {
+    setFile(null);
+    setSummary('');
+    setError('');
+    sessionStorage.removeItem('analyzer_summary');
+  };
 
   const handleFileSelect = (selectedFile) => {
     if (selectedFile && selectedFile.type === 'application/pdf') {
@@ -114,17 +125,28 @@ export default function DocumentAnalyzer() {
           )}
         </div>
 
-        {/* Analyze Button */}
-        <button className={`da-analyze-btn ${isAnalyzing ? 'loading' : ''}`}
-          onClick={handleAnalyze} disabled={isAnalyzing || !file}>
-          {isAnalyzing ? (
-            <><div className="da-spinner" />Analyzing Legal Context... This may take up to 45 seconds</>
-          ) : (
-            <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
-              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>Analyze Document</>
-          )}
-        </button>
+        {/* Analyze & Clear Buttons */}
+        <div style={{ display: 'flex', gap: '10px' }}>
+          <button className={`da-analyze-btn ${isAnalyzing ? 'loading' : ''}`}
+            onClick={handleAnalyze} disabled={isAnalyzing || !file} style={{ flex: 1 }}>
+            {isAnalyzing ? (
+              <><div className="da-spinner" />Analyzing Legal Context... This may take up to 45 seconds</>
+            ) : (
+              <><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+                <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+              </svg>Analyze Document</>
+            )}
+          </button>
+          <button 
+            className="da-analyze-btn" 
+            onClick={handleClear} 
+            disabled={isAnalyzing || (!file && !summary)}
+            style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', flex: 'none', padding: '0 20px' }}
+            title="Clear analysis"
+          >
+            Clear
+          </button>
+        </div>
 
         {error && (
           <div className="da-error">

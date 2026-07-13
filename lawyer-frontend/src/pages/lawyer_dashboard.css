@@ -488,7 +488,7 @@
 .ld-upgrade-btn {
   padding: 6px 14px;
   background: var(--text-primary);
-  color: var(--text-primary);
+  color: #0f111a;
   border: none;
   border-radius: 6px;
   font-size: 11px;

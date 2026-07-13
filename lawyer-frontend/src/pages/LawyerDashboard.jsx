@@ -199,8 +199,8 @@ export default function LawyerDashboard() {
               </span>
             </div>
             {subInfo.tier !== "Unlimited" && (
-              <button className="ld-upgrade-btn" onClick={() => alert("Upgrade to Unlimited (₹1999) for infinite cases.")}>
-                Upgrade to Unlimited (₹1999)
+              <button className="ld-upgrade-btn" onClick={() => navigate("/lawyer/subscription")}>
+                {subInfo.isBlocked ? "Quota Exceeded - Upgrade Plan" : "Upgrade Plan"}
               </button>
             )}
           </div>

@@ -85,7 +85,14 @@ export default function Subscription() {
         }
     };
 
-    if (loading) return <div className="loading">Loading JurisBot SaaS...</div>;
+    if (loading) return (
+        <div style={{ display: 'flex' }}>
+            <Sidebar />
+            <div className="subscription-container" style={{ position: 'relative', width: '100%', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                <div style={{ color: 'var(--gold)', fontSize: '16px', fontWeight: 'bold' }}>Loading Subscription Data...</div>
+            </div>
+        </div>
+    );
 
     const rawDays = Math.ceil((new Date(lawyer.subscriptionExpiresAt) - new Date()) / (1000 * 60 * 60 * 24));
     const daysLeft = rawDays > 30 ? 30 : Math.max(0, rawDays);
