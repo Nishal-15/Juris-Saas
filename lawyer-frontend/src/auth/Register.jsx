@@ -16,6 +16,7 @@ export default function Register() {
   const [avatar, setAvatar] = useState(null);
   const [showPass, setShowPass] = useState(false);
   const [agreed, setAgreed] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -168,9 +169,27 @@ export default function Register() {
               style={{ width: 'auto', margin: 0 }}
             />
             <label htmlFor="lawyer-terms" style={{ color: 'var(--muted)', fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>
-              I agree to the <span style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Professional Terms of Service</span> and Privacy Policy. I confirm that the credentials provided are accurate and authorize JurisBot to verify them with the respective Bar Council.
+              I agree to the <span onClick={() => setShowTerms(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Professional Terms of Service</span> and Privacy Policy. I confirm that the credentials provided are accurate and authorize JurisBot to verify them with the respective Bar Council.
             </label>
           </div>
+
+          {/* Terms Modal */}
+          {showTerms && (
+            <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <div style={{ background: '#0f111a', border: '1px solid #c9a84c', padding: '30px', borderRadius: '12px', maxWidth: '600px', width: '90%', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+                <button type="button" onClick={() => setShowTerms(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✖</button>
+                <h2 style={{ color: 'var(--gold)', marginBottom: '15px', fontFamily: 'Playfair Display', textTransform: 'none' }}>JurisBot Professional Terms</h2>
+                <div style={{ color: '#c9d1d9', fontSize: '14px', lineHeight: '1.6', textTransform: 'none', letterSpacing: 'normal' }}>
+                  <p><strong>1. Verification of Credentials:</strong> By registering as a Legal Practitioner, you grant JurisBot the authorization to verify your Bar Council ID and provided credentials with the respective state or national Bar Councils. Falsifying credentials will lead to a permanent ban and potential legal action.</p>
+                  <p><strong>2. Professional Conduct:</strong> You agree to maintain the highest standard of professional ethics when communicating with citizens. JurisBot provides a medium for consultation; however, any formal retainer must be executed independently of the platform.</p>
+                  <p><strong>3. Use of AI Tools:</strong> Our AI Drafter and Analyzer are assistive tools. You are solely responsible for reviewing and verifying all AI-generated drafts before filing them in any court of law.</p>
+                  <p><strong>4. Confidentiality:</strong> You agree to uphold strict attorney-client privilege regarding any case details discussed or shared by citizens over the platform.</p>
+                  <p><strong>5. Acceptance:</strong> Checking the box constitutes your digital signature and binding agreement to these Professional Terms of Service.</p>
+                </div>
+                <button type="button" onClick={() => setShowTerms(false)} style={{ width: '100%', background: 'var(--gold)', border: 'none', padding: '12px', color: '#0f111a', fontWeight: 'bold', marginTop: '20px', borderRadius: '6px', cursor: 'pointer' }}>Close and Continue</button>
+              </div>
+            </div>
+          )}
 
           <button type="submit" className="btn-primary-gold" disabled={loading || !agreed}>
             {loading ? "PROCESSING..." : "SUBMIT FOR VERIFICATION"}

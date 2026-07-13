@@ -11,6 +11,7 @@ export default function Register() {
   const [form, setForm] = useState({ preferredLanguage: "en" });
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [showTerms, setShowTerms] = useState(false);
   const { login } = useContext(AuthContext); 
   const navigate = useNavigate();
   const { t, i18n } = useTranslation();
@@ -197,9 +198,27 @@ export default function Register() {
             onChange={e => setForm({ ...form, agreed: e.target.checked })} 
           />
           <label htmlFor="terms">
-            I agree to the <span onClick={() => navigate("/terms")} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and Privacy Policy. I acknowledge that JurisBot provides AI-generated informational insights and does not constitute formal legal counsel or establish an attorney-client relationship.
+            I agree to the <span onClick={() => setShowTerms(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and Privacy Policy. I acknowledge that JurisBot provides AI-generated informational insights and does not constitute formal legal counsel or establish an attorney-client relationship.
           </label>
         </div>
+
+        {/* Terms Modal */}
+        {showTerms && (
+          <div style={{ position: 'fixed', top: 0, left: 0, right: 0, bottom: 0, background: 'rgba(0,0,0,0.8)', zIndex: 9999, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <div style={{ background: '#0f111a', border: '1px solid #c9a84c', padding: '30px', borderRadius: '12px', maxWidth: '600px', width: '90%', maxHeight: '80vh', overflowY: 'auto', position: 'relative' }}>
+              <button onClick={() => setShowTerms(false)} style={{ position: 'absolute', top: '15px', right: '15px', background: 'none', border: 'none', color: '#fff', fontSize: '20px', cursor: 'pointer' }}>✖</button>
+              <h2 style={{ color: 'var(--gold)', marginBottom: '15px', fontFamily: 'Playfair Display' }}>JurisBot Terms of Service</h2>
+              <div style={{ color: '#c9d1d9', fontSize: '14px', lineHeight: '1.6' }}>
+                <p><strong>1. Nature of Service:</strong> JurisBot is an AI-powered legal information assistant. It is NOT a human lawyer and does NOT provide formal legal advice. By using JurisBot, you acknowledge that all AI-generated drafts, answers, and summaries are for informational purposes only.</p>
+                <p><strong>2. No Attorney-Client Relationship:</strong> Interacting with JurisBot does not establish an attorney-client relationship. If you require binding legal counsel, you must hire a verified practitioner through our platform.</p>
+                <p><strong>3. Data Privacy:</strong> We employ end-to-end encryption. Your case facts and documents are strictly confidential and are not used to train public AI models.</p>
+                <p><strong>4. Practitioner Verification:</strong> All lawyers on the JurisBot network are independently verified via the Bar Council. However, JurisBot is not liable for the outcome of any direct consultations between citizens and lawyers.</p>
+                <p><strong>5. Acceptance:</strong> By checking the box and creating an account, you legally agree to these terms.</p>
+              </div>
+              <button onClick={() => setShowTerms(false)} style={{ width: '100%', background: 'var(--gold)', border: 'none', padding: '12px', color: '#0f111a', fontWeight: 'bold', marginTop: '20px', borderRadius: '6px', cursor: 'pointer' }}>Close and Continue</button>
+            </div>
+          </div>
+        )}
 
         <button className="btn-primary" onClick={submit} disabled={loading || !form.agreed}>
           {loading ? "creating account…" : "create"}
