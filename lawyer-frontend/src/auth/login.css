@@ -122,6 +122,48 @@
   box-shadow: 0 0 0 4px rgba(201,168,76,0.1);
 }
 
+/* Hide Native Browser Eye Icon */
+input[type="password"]::-ms-reveal,
+input[type="password"]::-ms-clear,
+input[type="password"]::-webkit-contacts-auto-fill-button,
+input[type="password"]::-webkit-credentials-auto-fill-button {
+  display: none !important;
+}
+
+/* Password Toggle Styles */
+.password-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-box input {
+  padding-right: 50px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  margin-top: 0 !important;
+  box-shadow: none !important;
+}
+
+.password-toggle:hover {
+  color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  transform: none !important;
+}
+
 .login-card button {
   width: 100%;
   padding: 18px;

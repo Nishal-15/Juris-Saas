@@ -210,3 +210,36 @@ body {
   font-weight: 700;
 }
 
+/* Password Toggle Styles */
+.password-box {
+  position: relative;
+  display: flex;
+  align-items: center;
+}
+
+.password-box input {
+  padding-right: 50px !important;
+}
+
+.password-toggle {
+  position: absolute;
+  right: 14px;
+  background: none;
+  border: none;
+  color: var(--muted);
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 8px;
+  border-radius: 8px;
+  transition: all 0.2s;
+  margin-top: 0 !important;
+  box-shadow: none !important;
+}
+
+.password-toggle:hover {
+  color: var(--gold);
+  background: rgba(201,168,76,0.1);
+  transform: none !important;
+}
