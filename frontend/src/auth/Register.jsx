@@ -191,14 +191,15 @@ export default function Register() {
           </div>
         </div>
 
-        <div className="form-field-check">
+        <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'flex-start', marginTop: '15px', marginBottom: '20px' }}>
           <input 
             type="checkbox" 
             id="terms" 
             onChange={e => setForm({ ...form, agreed: e.target.checked })} 
+            style={{ width: '16px', height: '16px', marginTop: '3px', cursor: 'pointer' }}
           />
-          <label htmlFor="terms">
-            I agree to the <span onClick={() => setShowTerms(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and Privacy Policy. I acknowledge that JurisBot provides AI-generated informational insights and does not constitute formal legal counsel or establish an attorney-client relationship.
+          <label htmlFor="terms" style={{ color: '#c9d1d9', fontSize: '14px', lineHeight: '1.5', cursor: 'pointer', margin: 0, textAlign: 'left' }}>
+            I agree to the <span onClick={(e) => { e.preventDefault(); setShowTerms(true); }} style={{ textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and Privacy Policy. I acknowledge that JurisBot provides AI-generated informational insights and does not constitute formal legal counsel or establish an attorney-client relationship.
           </label>
         </div>
 

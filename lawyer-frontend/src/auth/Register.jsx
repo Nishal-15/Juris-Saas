@@ -161,15 +161,15 @@ export default function Register() {
             </button>
           </div>
 
-          <div className="input-group full-width" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
+          <div style={{ display: 'flex', flexDirection: 'row', gap: '10px', alignItems: 'flex-start', marginTop: '15px', marginBottom: '15px', gridColumn: '1 / -1' }}>
             <input 
               type="checkbox" 
               id="lawyer-terms" 
               onChange={e => setAgreed(e.target.checked)} 
-              style={{ width: 'auto', margin: 0 }}
+              style={{ width: '16px', height: '16px', marginTop: '3px', cursor: 'pointer' }}
             />
-            <label htmlFor="lawyer-terms" style={{ color: 'var(--muted)', fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>
-              I agree to the <span onClick={() => setShowTerms(true)} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Professional Terms of Service</span> and Privacy Policy. I confirm that the credentials provided are accurate and authorize JurisBot to verify them with the respective Bar Council.
+            <label htmlFor="lawyer-terms" style={{ color: 'var(--muted)', fontSize: '14px', textTransform: 'none', letterSpacing: 'normal', cursor: 'pointer', margin: 0, textAlign: 'left', lineHeight: '1.5' }}>
+              I agree to the <span onClick={(e) => { e.preventDefault(); setShowTerms(true); }} style={{ textDecoration: 'underline', color: 'var(--gold)' }}>Professional Terms of Service</span> and Privacy Policy. I confirm that the credentials provided are accurate and authorize JurisBot to verify them with the respective Bar Council.
             </label>
           </div>
 
