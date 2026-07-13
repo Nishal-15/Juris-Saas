@@ -164,7 +164,7 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   transform: none !important;
 }
 
-.login-card button {
+.login-card .login-btn {
   width: 100%;
   padding: 18px;
   background: linear-gradient(to right, #fcc419, #ffd43b); /* Vibrant Gold Gradient */
@@ -180,13 +180,13 @@ input[type="password"]::-webkit-credentials-auto-fill-button {
   text-transform: capitalize;
 }
 
-.login-card button:hover {
+.login-card .login-btn:hover {
   transform: translateY(-3px);
   box-shadow: 0 8px 25px rgba(252, 196, 25, 0.6);
   filter: brightness(1.1);
 }
 
-.login-card button:disabled {
+.login-card .login-btn:disabled {
   background: #334155;
   color: var(--muted-2);
   cursor: not-allowed;
