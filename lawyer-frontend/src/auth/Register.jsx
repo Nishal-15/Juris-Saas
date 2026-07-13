@@ -15,6 +15,7 @@ export default function Register() {
   const [file, setFile] = useState(null);
   const [avatar, setAvatar] = useState(null);
   const [showPass, setShowPass] = useState(false);
+  const [agreed, setAgreed] = useState(false);
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
 
@@ -159,7 +160,19 @@ export default function Register() {
             </button>
           </div>
 
-          <button type="submit" className="btn-primary-gold" disabled={loading}>
+          <div className="input-group full-width" style={{ display: 'flex', gap: '10px', alignItems: 'center', marginTop: '10px' }}>
+            <input 
+              type="checkbox" 
+              id="lawyer-terms" 
+              onChange={e => setAgreed(e.target.checked)} 
+              style={{ width: 'auto', margin: 0 }}
+            />
+            <label htmlFor="lawyer-terms" style={{ color: 'var(--muted)', fontSize: '14px', textTransform: 'none', letterSpacing: 'normal' }}>
+              I agree to the <span style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Professional Terms of Service</span> and Privacy Policy. I confirm that the credentials provided are accurate and authorize JurisBot to verify them with the respective Bar Council.
+            </label>
+          </div>
+
+          <button type="submit" className="btn-primary-gold" disabled={loading || !agreed}>
             {loading ? "PROCESSING..." : "SUBMIT FOR VERIFICATION"}
           </button>
         </form>

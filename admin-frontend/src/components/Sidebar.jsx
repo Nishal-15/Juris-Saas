@@ -22,7 +22,7 @@ export default function Sidebar() {
   return (
     <div className="sidebar">
       <NavLink to="/dashboard" className="sidebar-logo" style={{ textDecoration: 'none', display: 'flex' }}>
-        <img src="http://localhost:5000/branding/logo.png" alt="JurisBot" />
+        <img src="/juris-logo.png" alt="JurisBot" />
         <div className="logo-text">
           <h1>JURISBOT</h1>
           <p>Institutional Suite</p>

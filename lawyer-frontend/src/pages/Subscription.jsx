@@ -58,19 +58,54 @@ export default function Subscription() {
                 return;
             }
 
-            // Construct and trigger standard UPI deep link redirection
-            if (formInputs.upi.trim()) {
-                const upiUrl = `upi://pay?pa=${encodeURIComponent(formInputs.upi)}&pn=${encodeURIComponent(formInputs.cardName)}&am=${totalDue}&cu=INR&tn=${encodeURIComponent(selectedPlan.planName + "_Upgrade")}`;
-                window.location.href = upiUrl;
-            }
+            // TODO: Replace with actual Order ID from backend
+            // const orderResponse = await axios.post('/payments/create-order', { amount: totalDue });
+            // const orderId = orderResponse.data.id;
 
-            // Simulated payment delay for premium UX
-            await new Promise((resolve) => setTimeout(resolve, 1500));
+            const options = {
+                key: "rzp_test_XXXXXXXXXXXXXX", // Enter your Razorpay API Key here
+                amount: totalDue * 100, // Amount in paise
+                currency: "INR",
+                name: "JurisBot SaaS",
+                description: `${selectedPlan.planName} Plan Upgrade`,
+                image: "/logo.png",
+                // order_id: orderId, // Uncomment when backend is ready
+                handler: async function (response) {
+                    try {
+                        // Verify payment signature on backend
+                        // await axios.post('/payments/verify', {
+                        //     razorpay_payment_id: response.razorpay_payment_id,
+                        //     razorpay_order_id: response.razorpay_order_id,
+                        //     razorpay_signature: response.razorpay_signature
+                        // });
 
-            // Explicit payment failure condition
-            if (formInputs.upi.toLowerCase().includes("fail") || formInputs.cardName.toLowerCase().includes("fail")) {
-                throw new Error("Payment declined by issuing bank.");
-            }
+                        // Execute actual plan upgrade
+                        await axios.patch("/lawyers/upgrade", { planType: selectedPlan.planName });
+                        alert(`🎉 Payment Successful! Welcome to the ${selectedPlan.planName} Plan.`);
+                        setModalOpen(false);
+                        fetchProfile();
+                    } catch (err) {
+                        alert("Payment verification failed. Please contact support.");
+                    }
+                },
+                prefill: {
+                    name: formInputs.cardName,
+                    email: lawyer.email || "lawyer@jurisbot.com",
+                    contact: "9999999999" // Fetch from profile if available
+                },
+                theme: {
+                    color: "#c9a84c"
+                }
+            };
+
+            const rzp = new window.Razorpay(options);
+            rzp.on('payment.failed', function (response) {
+                alert(`Payment Failed: ${response.error.description}`);
+            });
+            rzp.open();
+            
+            // Note: The code below is skipped as the flow is now handled by Razorpay's modal
+            return;
 
             // Execute actual plan upgrade
             await axios.patch("/lawyers/upgrade", { planType: selectedPlan.planName });

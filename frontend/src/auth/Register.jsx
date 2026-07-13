@@ -197,7 +197,7 @@ export default function Register() {
             onChange={e => setForm({ ...form, agreed: e.target.checked })} 
           />
           <label htmlFor="terms">
-            I agree to the <span onClick={() => navigate("/terms")} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and acknowledge that JurisBot is an AI assistant, not a substitute for legal advice.
+            I agree to the <span onClick={() => navigate("/terms")} style={{ cursor: 'pointer', textDecoration: 'underline', color: 'var(--gold)' }}>Terms of Service</span> and Privacy Policy. I acknowledge that JurisBot provides AI-generated informational insights and does not constitute formal legal counsel or establish an attorney-client relationship.
           </label>
         </div>
 
