@@ -9,7 +9,7 @@
   --cs-gold-d:  rgba(201,168,76,0.08);
   --cs-muted:   var(--muted);
   --cs-text:    var(--muted);
-  --cs-var(--text-primary):   var(--text-primary);
+  --cs-text-primary: var(--text-primary);
   --cs-width:   240px;
   --cs-font:    'Inter', system-ui, sans-serif;
   --cs-mobile-width: 280px;
@@ -66,7 +66,7 @@
 .cs-toggle svg { width: 13px; height: 13px; stroke: var(--gold); stroke-width: 2.5; }
 .cs-toggle:hover { background: rgba(201,168,76,0.18); border-color: rgba(201,168,76,0.35); }
 
-.cs-sidebar.collapsed .cs-toggle { right: 8px; top: 8px; opacity: 0.7; }
+.cs-sidebar.collapsed .cs-toggle { right: 23px; top: 72px; opacity: 0.7; }
 
 /* ── Logo ── */
 .cs-logo {
@@ -93,7 +93,7 @@
 
 .cs-logo-name {
   font-size: 17px; font-weight: 800;
-  color: var(--cs-var(--text-primary)); letter-spacing: 0.2px;
+  color: var(--cs-text-primary); letter-spacing: 0.2px;
   display: block; line-height: 1;
 }
 .cs-logo-tag {
@@ -149,7 +149,7 @@
 
 .cs-nav-label { flex: 1; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
-.cs-nav-btn:hover { background: rgba(255,255,255,0.04); color: var(--cs-var(--text-primary)); }
+.cs-nav-btn:hover { background: rgba(255,255,255,0.04); color: var(--cs-text-primary); }
 .cs-nav-btn.active { background: var(--cs-gold-d); color: var(--cs-gold); font-weight: 600; }
 
 /* ── Footer ── */
@@ -173,7 +173,7 @@
   display: flex; align-items: center; justify-content: center;
 }
 
-.cs-user-name { font-size: 13px; font-weight: 600; color: var(--cs-var(--text-primary)); display: block; }
+.cs-user-name { font-size: 13px; font-weight: 600; color: var(--cs-text-primary); display: block; }
 .cs-user-role { font-size: 10.5px; color: var(--cs-gold); display: block; margin-top: 2px; }
 
 .cs-logout-btn {

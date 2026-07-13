@@ -47,7 +47,7 @@
 .sidebar-toggle svg { width: 14px; height: 14px; }
 .sidebar-toggle:hover { background: rgba(201,168,76,0.2); color: var(--gold-lite); }
 
-.sidebar.collapsed .sidebar-toggle { right: 8px; top: 8px; opacity: 0.7; }
+.sidebar.collapsed .sidebar-toggle { right: 22px; top: 82px; opacity: 0.7; }
 
 /* ---- Logo ---- */
 .sidebar-logo {
