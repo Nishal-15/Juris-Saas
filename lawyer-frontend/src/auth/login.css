@@ -16,7 +16,7 @@
   flex-direction: column;
   justify-content: center;
   padding: 80px;
-  color: white;
+  color: var(--text-primary);
   position: relative;
 }
 
@@ -78,7 +78,7 @@
 .login-card h2 {
   font-family: var(--font-display);
   font-size: 32px;
-  color: white;
+  color: var(--text-primary);
   margin-bottom: 8px;
   text-align: center;
 }
@@ -110,7 +110,7 @@
   border-radius: 14px;
   border: 1px solid var(--border);
   background: var(--bg-3);
-  color: white;
+  color: var(--text-primary);
   font-size: 15px;
   transition: all 0.3s;
   outline: none;
@@ -128,7 +128,7 @@
   background: linear-gradient(to right, #fcc419, #ffd43b); /* Vibrant Gold Gradient */
   border: none;
   border-radius: 14px;
-  color: #000000; /* High contrast black text */
+  color: var(--text-primary); /* High contrast black text */
   font-weight: 600;
   font-size: 16px;
   cursor: pointer;
@@ -146,7 +146,7 @@
 
 .login-card button:disabled {
   background: #334155;
-  color: #94A3B8;
+  color: var(--muted-2);
   cursor: not-allowed;
   box-shadow: none;
 }

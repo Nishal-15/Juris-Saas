@@ -1,0 +1,247 @@
+.ld-page {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-main);
+  overflow: hidden;
+}
+
+.ld-body {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+}
+
+.ld-header {
+  margin-bottom: 30px;
+}
+
+.ld-title {
+  font-size: 2.2rem;
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  margin: 0 0 10px 0;
+}
+
+.ld-subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+.ld-content-wrapper {
+  display: flex;
+  gap: 30px;
+  flex: 1;
+  min-height: 0; /* Important for scroll */
+}
+
+/* INPUT PANEL */
+.ld-input-panel {
+  flex: 1;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 25px;
+  display: flex;
+  flex-direction: column;
+  gap: 20px;
+}
+
+.ld-panel-title {
+  font-size: 1.3rem;
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  margin: 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
+}
+
+.ld-form-group {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.ld-form-group label {
+  font-size: 0.95rem;
+  font-weight: 500;
+  color: var(--text-main);
+}
+
+.ld-form-group select,
+.ld-form-group textarea {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 15px;
+  border-radius: 8px;
+  font-family: 'Inter', sans-serif;
+  font-size: 0.95rem;
+  resize: none;
+  transition: all 0.3s ease;
+}
+
+.ld-form-group select:focus,
+.ld-form-group textarea:focus {
+  outline: none;
+  border-color: var(--gold);
+  box-shadow: 0 0 10px rgba(212, 175, 55, 0.1);
+}
+
+.ld-error {
+  color: #ef4444;
+  background: rgba(239, 68, 68, 0.1);
+  padding: 10px 15px;
+  border-radius: 6px;
+  font-size: 0.9rem;
+}
+
+.ld-generate-btn {
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  padding: 16px;
+  border-radius: 8px;
+  font-size: 1.05rem;
+  font-weight: 600;
+  cursor: pointer;
+  transition: all 0.3s ease;
+  margin-top: auto;
+}
+
+.ld-generate-btn:hover:not(:disabled) {
+  transform: translateY(-2px);
+  box-shadow: 0 5px 15px rgba(212, 175, 55, 0.2);
+}
+
+.ld-generate-btn:disabled {
+  opacity: 0.7;
+  cursor: not-allowed;
+}
+
+.ld-generate-btn.loading {
+  background: var(--bg-2);
+  color: var(--text-muted);
+  border: 1px solid var(--border);
+}
+
+/* OUTPUT PANEL */
+.ld-output-panel {
+  flex: 1.5;
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+.ld-output-header {
+  padding: 20px 25px;
+  border-bottom: 1px solid var(--border);
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.ld-output-header .ld-panel-title {
+  border-bottom: none;
+  padding-bottom: 0;
+}
+
+.ld-copy-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  background: transparent;
+  color: var(--gold);
+  border: 1px solid var(--gold);
+  padding: 8px 16px;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 0.9rem;
+  font-weight: 500;
+  transition: all 0.2s ease;
+}
+
+.ld-copy-btn:hover {
+  background: rgba(212, 175, 55, 0.1);
+}
+
+.ld-copy-btn svg {
+  width: 16px;
+  height: 16px;
+}
+
+.ld-draft-container {
+  flex: 1;
+  padding: 30px;
+  overflow-y: auto;
+  position: relative;
+}
+
+.ld-empty-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--text-muted);
+  opacity: 0.5;
+}
+
+.ld-empty-icon {
+  font-size: 3rem;
+  margin-bottom: 15px;
+}
+
+.ld-loading-state {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: var(--gold);
+}
+
+.ld-spinner {
+  width: 40px;
+  height: 40px;
+  border: 3px solid rgba(212, 175, 55, 0.2);
+  border-radius: 50%;
+  border-top-color: var(--gold);
+  animation: spin 1s ease-in-out infinite;
+  margin-bottom: 20px;
+}
+
+@keyframes spin {
+  to { transform: rotate(360deg); }
+}
+
+.ld-draft-content {
+  color: var(--text-main);
+  line-height: 1.6;
+}
+
+.ld-section-title {
+  color: var(--gold);
+  font-family: 'Playfair Display', serif;
+  font-size: 1.2rem;
+  margin: 25px 0 10px 0;
+}
+
+.ld-bullet {
+  margin-left: 20px;
+  margin-bottom: 8px;
+}
+
+.ld-spacer {
+  height: 15px;
+}
+
+.ld-line {
+  margin: 0 0 10px 0;
+}

@@ -1,34 +1,34 @@
 /* Expert Advocates / Consult Lawyer */
-.cl-page { display: flex; height: 100vh; background: #0d1117; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+.cl-page { display: flex; height: 100vh; background: var(--bg); font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
 .cl-body { flex: 1; overflow-y: auto; padding: 36px 44px; }
 .cl-body::-webkit-scrollbar { width: 4px; }
-.cl-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+.cl-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 .cl-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 32px; }
-.cl-title { font-size: 26px; font-weight: 800; color: #f0f0f0; letter-spacing: -0.4px; margin: 0 0 4px; }
-.cl-subtitle { font-size: 13.5px; color: rgba(255,255,255,0.35); margin: 0; }
+.cl-title { font-size: 26px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.4px; margin: 0 0 4px; }
+.cl-subtitle { font-size: 13.5px; color: var(--muted); margin: 0; }
 
 .cl-clear-filter {
   padding: 9px 16px;
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--bg-3);
   border-radius: 9px;
-  color: rgba(255,255,255,0.45);
+  color: var(--muted);
   font-size: 12.5px; font-weight: 600;
   cursor: pointer; font-family: inherit; transition: all 0.2s;
 }
-.cl-clear-filter:hover { border-color: rgba(201,168,76,0.25); color: #c9a84c; }
+.cl-clear-filter:hover { border-color: rgba(201,168,76,0.25); color: var(--gold); }
 
 /* Empty */
 .cl-empty {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
-  padding: 80px 40px; color: rgba(255,255,255,0.25); font-size: 14px; text-align: center;
+  padding: 80px 40px; color: var(--muted-2); font-size: 14px; text-align: center;
 }
 .cl-empty svg { width: 40px; height: 40px; opacity: 0.2; }
 .cl-spinner {
   width: 26px; height: 26px;
-  border: 2px solid rgba(255,255,255,0.08);
-  border-top-color: #c9a84c;
+  border: 2px solid var(--bg-3);
+  border-top-color: var(--gold);
   border-radius: 50%;
   animation: spin 0.9s linear infinite;
 }
@@ -46,7 +46,7 @@
   background: rgba(22, 27, 37, 0.65);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  border: 1px solid var(--bg-3);
   border-radius: 16px;
   padding: 32px 20px 24px;
   display: flex; flex-direction: column; align-items: center;
@@ -60,13 +60,13 @@
 
 .cl-certified-header {
   position: absolute; top: 0; left: 0; width: 100%;
-  background: linear-gradient(90deg, transparent, #c9a84c, transparent);
+  background: linear-gradient(90deg, transparent, var(--gold), transparent);
   color: #111; font-size: 10px; font-weight: 800;
   text-align: center; padding: 4px 0; letter-spacing: 1.5px;
 }
 
 .cl-pro-badge {
-  background: #c9a84c; color: #000;
+  background: var(--gold); color: var(--text-primary);
   font-size: 9px; font-weight: 900; letter-spacing: 1px;
   padding: 4px 10px; border-radius: 6px; margin-top: 4px;
   display: flex; align-items: center; justify-content: center;
@@ -89,48 +89,48 @@
 }
 .cl-avatar-premium {
   font-size: 24px; font-weight: 800;
-  color: #fff;
+  color: var(--text-primary);
 }
 
-.cl-name { font-size: 19px; font-weight: 800; color: #fff; text-align: center; margin-top: 2px; }
-.cl-title-adv { font-size: 13px; font-weight: 600; color: #c9a84c; margin-top: -6px; margin-bottom: 2px; letter-spacing: 0.5px; opacity: 0.9; }
+.cl-name { font-size: 19px; font-weight: 800; color: var(--text-primary); text-align: center; margin-top: 2px; }
+.cl-title-adv { font-size: 13px; font-weight: 600; color: var(--gold); margin-top: -6px; margin-bottom: 2px; letter-spacing: 0.5px; opacity: 0.9; }
 
 .cl-location {
   display: flex; align-items: center; gap: 6px;
   font-size: 10.5px; font-weight: 700;
-  color: rgba(255,255,255,0.4); letter-spacing: 0.8px; text-transform: uppercase;
+  color: var(--muted); letter-spacing: 0.8px; text-transform: uppercase;
   margin-top: -2px;
 }
-.cl-location svg { width: 12px; height: 12px; stroke: #c9a84c; flex-shrink: 0; }
+.cl-location svg { width: 12px; height: 12px; stroke: var(--gold); flex-shrink: 0; }
 
 /* Experience Section */
 .cl-experience-badge {
   background: rgba(255, 255, 255, 0.04);
-  border: 1px solid rgba(255, 255, 255, 0.08);
+  border: 1px solid var(--bg-3);
   border-radius: 10px;
   padding: 10px 14px;
   display: flex; align-items: center; gap: 12px;
   width: 100%;
 }
-.cl-experience-badge svg { stroke: #c9a84c; }
+.cl-experience-badge svg { stroke: var(--gold); }
 .cl-experience-text { display: flex; flex-direction: column; }
-.cl-exp-label { font-size: 10px; color: rgba(255,255,255,0.3); text-transform: uppercase; font-weight: 700; }
-.cl-exp-value { font-size: 13.5px; color: #fff; font-weight: 700; }
+.cl-exp-label { font-size: 10px; color: var(--muted); text-transform: uppercase; font-weight: 700; }
+.cl-exp-value { font-size: 13.5px; color: var(--text-primary); font-weight: 700; }
 
 /* Detail Items List */
 .cl-details-list {
   width: 100%;
-  border-top: 1px solid rgba(255,255,255,0.06);
+  border-top: 1px solid var(--border);
   padding-top: 10px;
   display: flex; flex-direction: column; gap: 5px;
 }
-.cl-detail-item { font-size: 11.5px; color: rgba(255,255,255,0.55); }
-.cl-detail-item strong { color: #c9a84c; font-weight: 700; }
+.cl-detail-item { font-size: 11.5px; color: var(--muted); }
+.cl-detail-item strong { color: var(--gold); font-weight: 700; }
 
 /* Expiry Section */
 .cl-expiry-block {
   display: flex; justify-content: space-between; width: 100%;
-  font-size: 9px; font-weight: 700; color: rgba(255,255,255,0.3);
+  font-size: 9px; font-weight: 700; color: var(--muted);
   letter-spacing: 0.5px; margin-top: 4px;
 }
 
@@ -144,8 +144,8 @@
   display: flex; align-items: center; justify-content: center; gap: 8px;
   margin-top: 4px;
 }
-.cl-btn-book { background: #c9a84c; color: #000; box-shadow: 0 4px 15px rgba(201,168,76,0.25); }
-.cl-btn-book:hover:not(:disabled) { background: #e8c96a; box-shadow: 0 6px 18px rgba(201,168,76,0.35); }
+.cl-btn-book { background: var(--gold); color: var(--text-primary); box-shadow: 0 4px 15px rgba(201,168,76,0.25); }
+.cl-btn-book:hover:not(:disabled) { background: var(--gold-lite); box-shadow: 0 6px 18px rgba(201,168,76,0.35); }
 .cl-btn-book:disabled { opacity: 0.6; cursor: not-allowed; }
 
 .cl-btn-active {
@@ -162,9 +162,9 @@
 }
 
 .cl-btn-pending {
-  background: rgba(255,255,255,0.03);
-  color: rgba(255,255,255,0.3);
-  border: 1px solid rgba(255,255,255,0.06) !important;
+  background: var(--bg-2);
+  color: var(--muted);
+  border: 1px solid var(--border) !important;
   cursor: not-allowed;
 }
 

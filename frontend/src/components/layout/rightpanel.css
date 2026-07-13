@@ -3,8 +3,8 @@
 .rp-shell {
   width: 270px;
   min-width: 270px;
-  background: #161b25;
-  border-left: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-2);
+  border-left: 1px solid var(--border);
   height: 100vh;
   overflow-y: auto;
   padding: 24px 18px;
@@ -16,7 +16,7 @@
   top: 0;
 }
 .rp-shell::-webkit-scrollbar { width: 3px; }
-.rp-shell::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 3px; }
+.rp-shell::-webkit-scrollbar-thumb { background: var(--border); border-radius: 3px; }
 
 /* Section */
 .rp-section { display: flex; flex-direction: column; gap: 10px; }
@@ -27,16 +27,16 @@
   gap: 8px;
   font-size: 9.5px;
   font-weight: 800;
-  color: rgba(255,255,255,0.25);
+  color: var(--muted-2);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin-bottom: 4px;
 }
-.rp-section-head svg { width: 13px; height: 13px; stroke: #c9a84c; flex-shrink: 0; }
+.rp-section-head svg { width: 13px; height: 13px; stroke: var(--gold); flex-shrink: 0; }
 
 .rp-empty {
   font-size: 12.5px;
-  color: rgba(255,255,255,0.2);
+  color: var(--muted-2);
   padding: 12px 0;
 }
 
@@ -73,7 +73,7 @@
 .rp-alarm-label {
   font-size: 9px;
   font-weight: 800;
-  color: #ef4444;
+  color: var(--danger);
   letter-spacing: 1px;
   text-transform: uppercase;
 }
@@ -81,20 +81,20 @@
 .rp-alarm-countdown {
   font-size: 11px;
   font-weight: 700;
-  color: #c9a84c;
+  color: var(--gold);
   padding: 2px 8px;
   background: rgba(201,168,76,0.1);
   border-radius: 100px;
 }
 .rp-alarm-countdown.urgent {
-  color: #ef4444;
+  color: var(--danger);
   background: rgba(239,68,68,0.1);
 }
 
 .rp-alarm-date {
   font-size: 15px;
   font-weight: 800;
-  color: #f0f0f0;
+  color: var(--text-primary);
   letter-spacing: -0.2px;
 }
 
@@ -103,13 +103,13 @@
   align-items: center;
   gap: 5px;
   font-size: 11.5px;
-  color: rgba(255,255,255,0.38);
+  color: var(--muted);
 }
 .rp-alarm-loc svg { width: 11px; height: 11px; flex-shrink: 0; }
 
 .rp-alarm-title {
   font-size: 12px;
-  color: rgba(255,255,255,0.55);
+  color: var(--muted);
   line-height: 1.4;
   margin-top: 2px;
   display: -webkit-box;
@@ -121,7 +121,7 @@
 /* ── Case Card ── */
 .rp-case-card {
   background: rgba(255,255,255,0.02);
-  border: 1px solid rgba(255,255,255,0.05);
+  border: 1px solid var(--bg-2);
   border-radius: 11px;
   padding: 13px 14px;
   display: flex;
@@ -160,7 +160,7 @@
 .rp-case-title {
   font-size: 12.5px;
   font-weight: 600;
-  color: rgba(255,255,255,0.8);
+  color: var(--muted);
   line-height: 1.4;
   display: -webkit-box;
   -webkit-line-clamp: 2;
@@ -173,7 +173,7 @@
   align-items: center;
   gap: 6px;
   font-size: 11.5px;
-  color: rgba(255,255,255,0.38);
+  color: var(--muted);
   margin-top: 2px;
 }
 
@@ -194,16 +194,16 @@
     min-width: 0;
     height: auto;
     border-left: none;
-    border-top: 1px solid rgba(255,255,255,0.06);
+    border-top: 1px solid var(--border);
     padding: 24px 16px;
     position: relative;
   }
   .rp-empty {
     background: rgba(255,255,255,0.02);
-    border: 1px dashed rgba(255,255,255,0.1);
+    border: 1px dashed var(--bg-3);
     border-radius: 12px;
     padding: 20px;
     text-align: center;
-    color: rgba(255,255,255,0.3);
+    color: var(--muted);
   }
 }

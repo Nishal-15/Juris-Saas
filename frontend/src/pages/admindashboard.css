@@ -1,0 +1,222 @@
+.admin-page {
+  display: flex;
+  height: 100vh;
+  background-color: var(--bg);
+  color: var(--text-main);
+  overflow: hidden;
+}
+
+.admin-body {
+  flex: 1;
+  padding: 40px;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.admin-header .admin-title {
+  font-size: 2.2rem;
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  margin: 0 0 10px 0;
+}
+
+.admin-header .admin-subtitle {
+  color: var(--text-muted);
+  font-size: 1.1rem;
+  margin: 0;
+}
+
+/* METRICS */
+.admin-metrics {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 20px;
+}
+
+.metric-card {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 25px;
+  text-align: center;
+  transition: transform 0.3s ease;
+}
+
+.metric-card:hover {
+  transform: translateY(-5px);
+  border-color: var(--gold);
+  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.05);
+}
+
+.metric-card h3 {
+  margin: 0 0 15px 0;
+  font-size: 1rem;
+  color: var(--text-muted);
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+
+.metric-value {
+  font-size: 3rem;
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  font-weight: bold;
+}
+
+.metric-value.warning {
+  color: #f59e0b; /* Orange for pending */
+}
+
+/* GRID LAYOUT */
+.admin-grid {
+  display: grid;
+  grid-template-columns: 2fr 1fr;
+  gap: 30px;
+}
+
+.admin-side-panels {
+  display: flex;
+  flex-direction: column;
+  gap: 30px;
+}
+
+.admin-panel {
+  background: var(--bg-2);
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  padding: 25px;
+}
+
+.panel-title {
+  font-size: 1.3rem;
+  font-family: 'Playfair Display', serif;
+  color: var(--gold);
+  margin: 0 0 10px 0;
+  border-bottom: 1px solid var(--border);
+  padding-bottom: 15px;
+}
+
+.panel-desc {
+  font-size: 0.9rem;
+  color: var(--text-muted);
+  margin-bottom: 20px;
+  line-height: 1.5;
+}
+
+/* TABLE */
+.table-responsive {
+  overflow-x: auto;
+}
+
+.admin-table {
+  width: 100%;
+  border-collapse: collapse;
+  margin-top: 10px;
+}
+
+.admin-table th {
+  text-align: left;
+  padding: 12px 15px;
+  color: var(--text-muted);
+  font-weight: 500;
+  border-bottom: 1px solid var(--border);
+}
+
+.admin-table td {
+  padding: 15px;
+  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  vertical-align: middle;
+}
+
+.admin-table tr:last-child td {
+  border-bottom: none;
+}
+
+.empty-state {
+  text-align: center;
+  color: var(--text-muted);
+  padding: 30px !important;
+  font-style: italic;
+}
+
+.btn-approve {
+  background: rgba(16, 185, 129, 0.1);
+  color: #10b981;
+  border: 1px solid #10b981;
+  padding: 6px 12px;
+  border-radius: 4px;
+  margin-right: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-approve:hover { background: #10b981; color: white; }
+
+.btn-reject {
+  background: rgba(239, 68, 68, 0.1);
+  color: #ef4444;
+  border: 1px solid #ef4444;
+  padding: 6px 12px;
+  border-radius: 4px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-reject:hover { background: #ef4444; color: white; }
+
+/* FORMS & INPUTS */
+.upload-box {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.upload-box input[type="file"] {
+  background: var(--bg);
+  padding: 10px;
+  border: 1px dashed var(--border);
+  border-radius: 6px;
+  color: var(--text-main);
+}
+
+.btn-upload, .btn-broadcast {
+  background: var(--gold);
+  color: var(--bg);
+  border: none;
+  padding: 12px;
+  border-radius: 6px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
+.btn-upload:hover:not(:disabled), .btn-broadcast:hover {
+  transform: translateY(-2px);
+  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+}
+
+.broadcast-form {
+  display: flex;
+  flex-direction: column;
+  gap: 15px;
+}
+
+.broadcast-form input, .broadcast-form textarea, .broadcast-form select {
+  background: var(--bg);
+  border: 1px solid var(--border);
+  color: var(--text-main);
+  padding: 12px;
+  border-radius: 6px;
+  font-family: 'Inter', sans-serif;
+}
+
+.broadcast-form textarea {
+  resize: none;
+  height: 80px;
+}
+
+.upload-status {
+  margin-top: 15px;
+  font-size: 0.9rem;
+  color: #10b981;
+}

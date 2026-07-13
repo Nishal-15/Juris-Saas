@@ -13,7 +13,8 @@ import GlobalCallNotification from "./components/GlobalCallNotification";
 import CaseDetails from "./pages/CaseDetails";
 import Notifications from "./pages/Notifications";
 import Subscription from "./pages/Subscription";
-
+import DocumentAnalyzer from "./pages/DocumentAnalyzer";
+import LegalDrafter from "./pages/LegalDrafter";
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
   
@@ -103,6 +104,8 @@ export default function App() {
       <Route path="/lawyer/notifications" element={<Notifications />} />
       <Route path="/lawyer/messages" element={<MessagesList />} />
       <Route path="/lawyer/subscription" element={<Subscription />} />
+      <Route path="/lawyer/document-analyzer" element={<DocumentAnalyzer />} />
+      <Route path="/lawyer/drafter" element={<LegalDrafter />} />
       <Route path="/case/:id" element={<CaseDetails />} />
 
       {/* Secure Consultation Console */}

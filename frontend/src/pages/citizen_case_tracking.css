@@ -4,7 +4,7 @@
 .ct-page {
   display: flex;
   min-height: 100vh;
-  background: #0d1117;
+  background: var(--bg);
   font-family: 'Inter', system-ui, sans-serif;
 }
 
@@ -21,7 +21,7 @@
   justify-content: center;
   gap: 16px;
   height: 60vh;
-  color: rgba(255,255,255,0.3);
+  color: var(--muted);
   font-size: 14px;
 }
 
@@ -31,7 +31,7 @@
   gap: 8px;
   background: transparent;
   border: none;
-  color: #c9a84c;
+  color: var(--gold);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;
@@ -73,14 +73,14 @@
 .ct-file-id {
   font-size: 11px;
   font-weight: 600;
-  color: rgba(255,255,255,0.22);
+  color: var(--muted-2);
   letter-spacing: 1px;
 }
 
 .ct-title {
   font-size: 24px;
   font-weight: 800;
-  color: #f0f0f0;
+  color: var(--text-primary);
   letter-spacing: -0.3px;
   line-height: 1.3;
   margin: 0;
@@ -114,18 +114,18 @@
   border-radius: 12px;
   margin-bottom: 24px;
   font-size: 13.5px;
-  color: #c9a84c;
+  color: var(--gold);
   line-height: 1.5;
 }
 .ct-banner.urgent {
   background: rgba(239,68,68,0.06);
   border-color: rgba(239,68,68,0.25);
-  color: #ef4444;
+  color: var(--danger);
 }
 .ct-banner svg { width: 18px; height: 18px; flex-shrink: 0; margin-top: 2px; }
 .ct-banner strong { display: block; font-weight: 700; margin-bottom: 2px; }
-.ct-banner-date { font-size: 12.5px; color: rgba(255,255,255,0.5); }
-.ct-banner-loc { font-size: 12.5px; color: rgba(255,255,255,0.4); }
+.ct-banner-date { font-size: 12.5px; color: var(--muted); }
+.ct-banner-loc { font-size: 12.5px; color: var(--muted); }
 
 /* ── Grid ── */
 .ct-grid {
@@ -137,8 +137,8 @@
 
 /* ── Card ── */
 .ct-card {
-  background: #161b25;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
   border-radius: 14px;
   padding: 24px;
 }
@@ -149,12 +149,12 @@
   gap: 9px;
   font-size: 10px;
   font-weight: 800;
-  color: rgba(255,255,255,0.28);
+  color: var(--muted-2);
   text-transform: uppercase;
   letter-spacing: 1.5px;
   margin-bottom: 18px;
 }
-.ct-card-title svg { width: 15px; height: 15px; stroke: #c9a84c; }
+.ct-card-title svg { width: 15px; height: 15px; stroke: var(--gold); }
 
 /* Next Steps Card */
 .ct-nextsteps-card {
@@ -163,7 +163,7 @@
 }
 .ct-nextsteps-text {
   font-size: 14px;
-  color: rgba(255,255,255,0.75);
+  color: var(--muted);
   line-height: 1.75;
   margin: 0;
 }
@@ -173,7 +173,7 @@
   border-color: rgba(16,185,129,0.15);
   background: rgba(16,185,129,0.04);
 }
-.ct-verdict-card .ct-card-title svg { stroke: #10b981; }
+.ct-verdict-card .ct-card-title svg { stroke: var(--success); }
 
 /* Timeline */
 .ct-timeline { display: flex; flex-direction: column; }
@@ -191,37 +191,37 @@
   top: 16px; left: 6px;
   width: 1px;
   height: calc(100% - 8px);
-  background: rgba(255,255,255,0.06);
+  background: var(--border);
 }
 
 .ct-tl-dot {
   width: 13px; height: 13px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.12);
-  border: 2px solid rgba(255,255,255,0.08);
+  background: var(--border);
+  border: 2px solid var(--bg-3);
   flex-shrink: 0;
   margin-top: 3px;
 }
 .ct-tl-item.active .ct-tl-dot {
-  background: #c9a84c;
-  border-color: #c9a84c;
+  background: var(--gold);
+  border-color: var(--gold);
   box-shadow: 0 0 12px rgba(201,168,76,0.4);
 }
 
 .ct-tl-label {
   font-size: 13.5px;
   font-weight: 600;
-  color: rgba(255,255,255,0.78);
+  color: var(--muted);
   margin: 0 0 3px;
 }
 .ct-tl-date {
   font-size: 11.5px;
-  color: rgba(255,255,255,0.28);
+  color: var(--muted-2);
   margin: 0;
 }
 .ct-tl-empty {
   font-size: 13px;
-  color: rgba(255,255,255,0.25);
+  color: var(--muted-2);
   line-height: 1.6;
   padding-left: 28px;
   margin: 0;
@@ -230,7 +230,7 @@
 /* Description */
 .ct-desc-text {
   font-size: 13.5px;
-  color: rgba(255,255,255,0.55);
+  color: var(--muted);
   line-height: 1.8;
   margin: 0;
 }
@@ -247,14 +247,14 @@
 .ct-info-label {
   font-size: 11px;
   font-weight: 700;
-  color: rgba(255,255,255,0.28);
+  color: var(--muted-2);
   text-transform: uppercase;
   letter-spacing: 0.5px;
 }
 .ct-info-value {
   font-size: 13.5px;
   font-weight: 600;
-  color: rgba(255,255,255,0.78);
+  color: var(--muted);
   text-align: right;
 }
 
@@ -271,7 +271,7 @@
   border-radius: 12px;
   background: rgba(201,168,76,0.1);
   border: 2px solid rgba(201,168,76,0.25);
-  color: #c9a84c;
+  color: var(--gold);
   font-size: 17px;
   font-weight: 800;
   display: flex; align-items: center; justify-content: center;
@@ -280,12 +280,12 @@
 .ct-advocate-name {
   font-size: 15px;
   font-weight: 700;
-  color: #f0f0f0;
+  color: var(--text-primary);
   margin-bottom: 3px;
 }
 .ct-advocate-role {
   font-size: 11px;
-  color: #c9a84c;
+  color: var(--gold);
   font-weight: 600;
 }
 .ct-consult-btn {
@@ -298,7 +298,7 @@
   background: rgba(201,168,76,0.08);
   border: 1px solid rgba(201,168,76,0.2);
   border-radius: 9px;
-  color: #c9a84c;
+  color: var(--gold);
   font-size: 13px;
   font-weight: 700;
   cursor: pointer;
@@ -311,7 +311,7 @@
 .ct-awaiting-card { border-color: rgba(255,255,255,0.04); }
 .ct-awaiting-text {
   font-size: 13px;
-  color: rgba(255,255,255,0.35);
+  color: var(--muted);
   line-height: 1.65;
   margin: 0;
 }

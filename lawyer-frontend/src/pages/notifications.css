@@ -5,18 +5,18 @@
   display: flex; align-items: center; gap: 7px;
   padding: 9px 18px;
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--bg-3);
   border-radius: 9px;
-  color: rgba(255,255,255,0.45);
+  color: var(--muted);
   font-size: 12.5px; font-weight: 600;
   cursor: pointer; font-family: inherit;
   transition: all 0.2s;
 }
-.np-clear-btn:hover { border-color: rgba(239,68,68,0.25); color: #ef4444; background: rgba(239,68,68,0.05); }
+.np-clear-btn:hover { border-color: rgba(239,68,68,0.25); color: var(--danger); background: rgba(239,68,68,0.05); }
 
 .np-empty {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
-  padding: 80px 40px; color: rgba(255,255,255,0.25); font-size: 14px;
+  padding: 80px 40px; color: var(--muted-2); font-size: 14px;
   text-align: center;
 }
 
@@ -24,8 +24,8 @@
 
 .np-card {
   display: flex; align-items: center; gap: 16px;
-  background: #161b25;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
   border-radius: 13px;
   padding: 16px 20px;
   cursor: pointer;
@@ -52,7 +52,7 @@
 .np-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
 .np-unread-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: #c9a84c;
+  background: var(--gold);
   box-shadow: 0 0 8px rgba(201,168,76,0.5);
   animation: pulseDot 1.5s infinite;
 }

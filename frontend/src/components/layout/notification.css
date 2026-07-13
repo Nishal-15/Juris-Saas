@@ -7,7 +7,7 @@
   border: 2px solid var(--gold);
   border-radius: 20px;
   padding: 24px;
-  box-shadow: 0 12px 64px rgba(0,0,0,0.6);
+  box-shadow: 0 12px 64px rgba(0,0,0,0.05);
   z-index: 10000;
   display: flex;
   flex-direction: column;
@@ -34,7 +34,7 @@
   font-size: 24px;
 }
 
-.call-text h4 { font-family: var(--font-display); font-size: 20px; color: #fff; margin-bottom: 4px; }
+.call-text h4 { font-family: var(--font-display); font-size: 20px; color: var(--text-primary); margin-bottom: 4px; }
 .call-text p { font-size: 13px; color: var(--muted); }
 
 .call-actions {
@@ -48,7 +48,7 @@
   background: var(--success);
   border: none;
   border-radius: 10px;
-  color: #fff;
+  color: var(--text-primary);
   font-weight: 700;
   cursor: pointer;
   transition: all 0.2s;
@@ -79,5 +79,5 @@
 
 .btn-ignore:hover {
   background: var(--danger);
-  color: #fff;
+  color: var(--text-primary);
 }

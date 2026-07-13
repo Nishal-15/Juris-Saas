@@ -3,22 +3,22 @@
 :root {
   /* ── Color Tokens ── */
   --bg:         #0d1117;
-  --bg-2:       #161b25;
+  --bg-2:       #161b22;
   --bg-3:       #1c2333;
-  --border:     rgba(255,255,255,0.06);
-  --gold:       #c9a84c;
-  --gold-lite:  #e8c96a;
+  --border:     #30363d;
+  --gold:       #d6b560;
+  --gold-lite:  #e3c254;
   --gold-dim:   rgba(201,168,76,0.09);
-  --white:      #f0f0f0;
-  --muted:      rgba(255,255,255,0.38);
-  --muted-2:    rgba(255,255,255,0.22);
+  --text-primary: #f0f0f0;
+  --muted:      #8b949e;
+  --muted-2:    #475569;
 
   /* ── Typography ── */
   --font-body:    'Inter', system-ui, sans-serif;
   --font-display: 'Outfit', system-ui, sans-serif;
 
   /* ── Misc ── */
-  --shadow:     0 10px 30px -5px rgba(0,0,0,0.5);
+  --shadow:     0 10px 30px -5px rgba(0,0,0,0.05);
   --transition: all 0.28s cubic-bezier(0.4,0,0.2,1);
   --radius:     12px;
 }
@@ -35,7 +35,7 @@ html { font-size: 16px; }
 
 body {
   background: var(--bg);
-  color: var(--white);
+  color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -51,7 +51,7 @@ input, button, select, textarea {
 /* ── Global Dropdown Styling ── */
 select {
   background-color: var(--bg-2);
-  color: var(--white);
+  color: var(--text-primary);
   border: 1px solid var(--border);
   padding: 10px 16px;
   border-radius: 10px;
@@ -73,7 +73,7 @@ select:focus {
 
 option {
   background-color: var(--bg-2);
-  color: var(--white);
+  color: var(--text-primary);
   padding: 12px;
 }
 
@@ -98,7 +98,7 @@ option {
 .tag-warn    { background: rgba(244,167,35,0.1);  color: var(--warn);    border: 1px solid rgba(244,167,35,0.2); }
 .tag-danger  { background: rgba(224,84,84,0.1);   color: var(--danger);  border: 1px solid rgba(224,84,84,0.2); }
 .tag-gold    { background: var(--gold-dim);        color: var(--gold);    border: 1px solid rgba(201,168,76,0.25); }
-.tag-muted   { background: rgba(255,255,255,0.05); color: var(--muted);   border: 1px solid var(--border); }
+.tag-muted   { background: var(--bg-2); color: var(--muted);   border: 1px solid var(--border); }
 
 /* ── Layout ── */
 .layout {

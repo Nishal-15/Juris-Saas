@@ -1,188 +1,197 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap');
+
 .subscription-container {
-    padding: 30px;
-    background: #0f111a;
+    padding: 36px 44px;
+    background: var(--bg);
     min-height: 100vh;
-    color: white;
+    color: var(--text-primary);
+    font-family: 'Inter', sans-serif;
+    flex: 1;
+    overflow-y: auto;
 }
 
-.subscription-header {
-    margin-bottom: 40px;
-}
-
+.subscription-header { margin-bottom: 10px; }
 .subscription-header h1 {
-    font-size: 2.5rem;
-    background: linear-gradient(90deg, #facc15, #eab308);
-    -webkit-background-clip: text;
-    -webkit-text-fill-color: transparent;
-    margin-bottom: 10px;
+    font-size: 26px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 4px;
+    letter-spacing: -0.4px;
 }
+.subscription-header p { font-size: 13px; color: var(--muted); margin: 0; }
 
-/* Status Card */
+/* ── Status Card ── */
 .status-card {
-    background: rgba(255, 255, 255, 0.05);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 20px;
-    padding: 30px;
+    background: var(--bg-2);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+    padding: 24px 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
-    backdrop-filter: blur(10px);
-    margin-bottom: 50px;
-    box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+    margin-bottom: 40px;
 }
+.status-info h2 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 6px; }
+.current-tier { font-size: 22px; font-weight: 800; color: var(--gold); }
+.usage-section { flex: 1; margin: 0 48px; }
+.usage-labels { display: flex; justify-content: space-between; margin-bottom: 8px; font-size: 12px; color: var(--muted); }
+.usage-bar-bg { height: 8px; background: var(--bg-3); border-radius: 4px; overflow: hidden; }
+.usage-bar-fill { height: 100%; background: linear-gradient(90deg, var(--gold), var(--gold-lite)); transition: width 1s ease-in-out; border-radius: 4px; }
+.expiry-info { text-align: right; }
+.expiry-info h2 { font-size: 11px; font-weight: 700; color: var(--muted); text-transform: uppercase; letter-spacing: 1px; margin: 0 0 6px; }
+.expiry-days { font-size: 18px; font-weight: 700; color: var(--danger); }
 
-.status-info h2 {
-    font-size: 1.2rem;
-    color: #94a3b8;
-    margin-bottom: 10px;
-}
-
-.current-tier {
-    font-size: 2rem;
-    font-weight: bold;
-    color: #facc15;
-}
-
-.usage-section {
-    flex: 1;
-    margin: 0 50px;
-}
-
-.usage-labels {
-    display: flex;
-    justify-content: space-between;
-    margin-bottom: 10px;
-    font-size: 0.9rem;
-    color: #94a3b8;
-}
-
-.usage-bar-bg {
-    height: 12px;
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    overflow: hidden;
-}
-
-.usage-bar-fill {
-    height: 100%;
-    background: linear-gradient(90deg, #facc15, #eab308);
-    transition: width 1s ease-in-out;
-    box-shadow: 0 0 15px rgba(250, 204, 21, 0.5);
-}
-
-.expiry-info {
-    text-align: right;
-}
-
-.expiry-days {
-    font-size: 1.5rem;
-    font-weight: bold;
-    color: #ef4444;
-}
-
-/* Pricing Grid */
+/* ── Pricing Grid ── */
 .pricing-grid {
-    display: flex;
-    flex-direction: row;
-    gap: 30px;
-    justify-content: space-between;
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    align-items: start;
 }
 
+/* ── Pricing Card ── */
 .pricing-card {
-    flex: 1;
-    min-width: 0;
-    background: rgba(255, 255, 255, 0.03);
-    border: 1px solid rgba(255, 255, 255, 0.1);
-    border-radius: 24px;
-    padding: 40px;
-    text-align: center;
-    transition: all 0.3s ease;
+    background: var(--bg-2);
+    border: 1px solid var(--bg-3);
+    border-radius: 20px;
+    padding: 28px 24px;
     position: relative;
-    overflow: hidden;
+    transition: transform 0.2s, border-color 0.2s;
+    display: flex;
+    flex-direction: column;
 }
+.pricing-card:hover { transform: translateY(-4px); }
 
-.pricing-card:hover {
-    transform: translateY(-10px);
-    background: rgba(255, 255, 255, 0.06);
-    border-color: #facc15;
-}
-
-.pricing-card.popular {
-    border-color: #facc15;
-    background: rgba(250, 204, 21, 0.05);
+/* Highlighted / recommended card */
+.pricing-card.highlighted {
+    background: #1a2744;
+    border-color: #3b6fd4;
 }
 
 .popular-badge {
     position: absolute;
-    top: 20px;
-    right: -30px;
-    background: #facc15;
-    color: #000;
-    padding: 5px 40px;
-    transform: rotate(45deg);
-    font-weight: bold;
-    font-size: 0.8rem;
+    top: 12px;
+    right: 16px;
+    background: rgba(59,111,212,0.2);
+    color: #7eb3ff;
+    border: 1px solid rgba(59,111,212,0.4);
+    padding: 3px 10px;
+    border-radius: 20px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.5px;
+    text-transform: uppercase;
 }
 
 .plan-name {
-    font-size: 1.5rem;
-    font-weight: bold;
-    margin-bottom: 20px;
+    font-size: 22px;
+    font-weight: 800;
+    color: var(--text-primary);
+    margin: 0 0 18px;
+    line-height: 1.1;
 }
 
 .plan-price {
-    font-size: 3rem;
-    font-weight: 800;
-    margin-bottom: 30px;
-}
-
-.plan-price span {
-    font-size: 1rem;
-    color: #94a3b8;
-    font-weight: normal;
-}
-
-.plan-features {
-    list-style: none;
-    padding: 0;
-    margin-bottom: 40px;
-    text-align: left;
-}
-
-.plan-features li {
-    margin-bottom: 15px;
-    color: #cbd5e1;
+    font-size: 52px;
+    font-weight: 900;
+    color: var(--text-primary);
+    line-height: 1;
+    margin-bottom: 4px;
     display: flex;
-    align-items: center;
+    align-items: flex-start;
+    gap: 2px;
 }
 
-.plan-features li::before {
-    content: "✓";
-    color: #facc15;
-    margin-right: 10px;
-    font-weight: bold;
+.plan-price .rupee-sym {
+    font-size: 28px;
+    font-weight: 700;
+    margin-top: 8px;
+    color: var(--muted);
 }
 
+.plan-price .price-unit {
+    font-size: 13px;
+    font-weight: 400;
+    color: var(--muted);
+    align-self: flex-end;
+    margin-bottom: 8px;
+    margin-left: 4px;
+}
+
+.plan-tagline {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--muted);
+    margin: 0 0 6px;
+    line-height: 1.4;
+    min-height: 36px;
+}
+
+.plan-annual-note {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--success);
+    margin: 0 0 22px;
+}
+
+/* ── CTA Button ── */
 .upgrade-btn {
     width: 100%;
-    padding: 15px;
-    border-radius: 12px;
+    padding: 14px;
+    border-radius: 50px;
     border: none;
-    background: #1e293b;
-    color: white;
-    font-weight: bold;
+    background: #2a2f3e;
+    color: var(--muted);
+    font-weight: 600;
+    font-size: 14px;
     cursor: pointer;
     transition: all 0.2s;
+    margin-bottom: 24px;
+    font-family: inherit;
+}
+.upgrade-btn:hover:not(:disabled) {
+    background: #3b6fd4;
+    color: var(--text-primary);
 }
 
-.upgrade-btn:hover {
-    background: #facc15;
-    color: black;
+.highlighted .upgrade-btn:not(.current-plan-btn) {
+    background: #3b6fd4;
+    color: var(--text-primary);
+}
+.highlighted .upgrade-btn:hover:not(:disabled) {
+    background: #5a8de8;
+    color: var(--text-primary);
 }
 
 .current-plan-btn {
-    background: transparent;
-    border: 1px solid #facc15;
-    color: #facc15;
-    cursor: default;
+    background: transparent !important;
+    border: 1px solid var(--border) !important;
+    color: var(--muted) !important;
+    cursor: default !important;
+}
+
+/* ── Feature List ── */
+.plan-features {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.plan-features li {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    font-size: 13px;
+    color: var(--muted);
+    line-height: 1.4;
+}
+
+.plan-features li .feat-icon {
+    font-size: 15px;
+    flex-shrink: 0;
+    margin-top: 1px;
+    opacity: 0.8;
 }

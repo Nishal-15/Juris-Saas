@@ -1,14 +1,14 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap');
 
 :root {
-  --ld-bg:     #0d1117;
-  --ld-bg2:    #161b25;
-  --ld-bg3:    #1c2333;
-  --ld-border: rgba(255,255,255,0.06);
-  --ld-gold:   #c9a84c;
-  --ld-gold-dim: rgba(201,168,76,0.08);
-  --ld-muted:  rgba(255,255,255,0.38);
-  --ld-text:   rgba(255,255,255,0.88);
+  --ld-bg:     var(--bg);
+  --ld-bg2:    var(--bg-2);
+  --ld-bg3:    var(--bg-3);
+  --ld-border: var(--border);
+  --ld-gold:   var(--gold);
+  --ld-gold-dim: var(--gold-dim);
+  --ld-muted:  var(--muted);
+  --ld-text:   var(--text-primary);
 }
 
 /* ── Page Layout ── */
@@ -27,7 +27,7 @@
 }
 
 .ld-body::-webkit-scrollbar { width: 4px; }
-.ld-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+.ld-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 /* ── Top Bar ── */
 .ld-topbar {
@@ -40,7 +40,7 @@
 .ld-title {
   font-size: 26px;
   font-weight: 800;
-  color: #f0f0f0;
+  color: var(--text-primary);
   letter-spacing: -0.4px;
   margin: 0 0 4px;
 }
@@ -78,7 +78,7 @@
   border-radius: 100px;
   font-size: 11px;
   font-weight: 700;
-  color: #10b981;
+  color: var(--success);
   text-transform: uppercase;
   letter-spacing: 1px;
 }
@@ -86,8 +86,8 @@
 .ld-pulse-dot {
   width: 7px; height: 7px;
   border-radius: 50%;
-  background: #10b981;
-  box-shadow: 0 0 8px #10b981;
+  background: var(--success);
+  box-shadow: 0 0 8px var(--success);
   animation: pulse 2s infinite;
 }
 
@@ -125,7 +125,7 @@
 .ld-stat-value {
   font-size: 36px;
   font-weight: 800;
-  color: #f0f0f0;
+  color: var(--text-primary);
   line-height: 1;
   letter-spacing: -1px;
 }
@@ -183,7 +183,7 @@
 }
 .ld-tab.active .ld-tab-count {
   background: var(--ld-gold);
-  color: #000;
+  color: var(--text-primary);
 }
 
 /* ── Panel ── */
@@ -300,16 +300,16 @@
   letter-spacing: 0.4px;
   display: inline-block;
 }
-.ld-tag.gold  { background: rgba(201,168,76,0.1);  color: #c9a84c; }
-.ld-tag.green { background: rgba(16,185,129,0.1);  color: #10b981; }
+.ld-tag.gold  { background: rgba(201,168,76,0.1);  color: var(--gold); }
+.ld-tag.green { background: rgba(16,185,129,0.1);  color: var(--success); }
 .ld-tag.blue  { background: rgba(59,130,246,0.1);  color: #3b82f6; }
-.ld-tag.red   { background: rgba(239,68,68,0.1);   color: #ef4444; }
+.ld-tag.red   { background: rgba(239,68,68,0.1);   color: var(--danger); }
 
 /* Buttons */
 .ld-btn-primary {
   padding: 7px 16px;
   background: var(--ld-gold);
-  color: #000;
+  color: var(--text-primary);
   border: none;
   border-radius: 8px;
   font-size: 12px;
@@ -319,7 +319,7 @@
   font-family: inherit;
   white-space: nowrap;
 }
-.ld-btn-primary:hover { background: #e8c96a; transform: scale(1.03); }
+.ld-btn-primary:hover { background: var(--gold-lite); transform: scale(1.03); }
 
 .ld-btn-icon {
   width: 33px; height: 33px;
@@ -381,7 +381,7 @@
 .ld-card-client-name {
   font-size: 16px;
   font-weight: 700;
-  color: #f0f0f0;
+  color: var(--text-primary);
 }
 
 .ld-card-case-title {
@@ -405,7 +405,7 @@
 .ld-dot {
   width: 3px; height: 3px;
   border-radius: 50%;
-  background: rgba(255,255,255,0.2);
+  background: var(--muted-2);
   flex-shrink: 0;
 }
 
@@ -443,7 +443,7 @@
   padding: 12px 24px;
   border-radius: 12px;
   margin-bottom: 24px;
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--bg-3);
   font-family: 'Inter', sans-serif;
 }
 
@@ -459,7 +459,7 @@
 
 .ld-sub-bar.Unlimited {
   background: linear-gradient(90deg, rgba(16,185,129,0.12) 0%, rgba(16,185,129,0.05) 100%);
-  border-left: 4px solid #10b981;
+  border-left: 4px solid var(--success);
 }
 
 .ld-sub-info {
@@ -472,7 +472,7 @@
   font-size: 11px;
   font-weight: 800;
   letter-spacing: 1px;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .ld-sub-divider {
@@ -482,13 +482,13 @@
 .ld-sub-usage {
   font-size: 13px;
   font-weight: 500;
-  color: rgba(255,255,255,0.7);
+  color: var(--muted);
 }
 
 .ld-upgrade-btn {
   padding: 6px 14px;
-  background: #fff;
-  color: #000;
+  background: var(--text-primary);
+  color: var(--text-primary);
   border: none;
   border-radius: 6px;
   font-size: 11px;

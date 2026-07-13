@@ -9,7 +9,7 @@
     flex-direction: column; 
     height: 100vh; 
     overflow-y: auto; 
-    background: radial-gradient(circle at top, #1a1c24 0%, #08090d 100%);
+    background: radial-gradient(circle at top, var(--bg-2) 0%, #08090d 100%);
   }
   
   .register-left { 
@@ -67,8 +67,8 @@
   }
 
   .form-input {
-    background: rgba(255,255,255,0.05) !important;
-    border: 1px solid rgba(255,255,255,0.1) !important;
+    background: var(--bg-2) !important;
+    border: 1px solid var(--bg-3) !important;
     backdrop-filter: blur(10px);
   }
 
@@ -128,7 +128,7 @@
 
 .register-logo-name {
   font-family: var(--font-display);
-  font-size: 22px; font-weight: 700; color: var(--white);
+  font-size: 22px; font-weight: 700; color: var(--text-primary);
 }
 
 .register-logo-sub {
@@ -140,7 +140,7 @@
 .register-headline {
   font-family: var(--font-display);
   font-size: 52px; font-weight: 700;
-  line-height: 1.08; color: var(--white);
+  line-height: 1.08; color: var(--text-primary);
   letter-spacing: -1px; margin-bottom: 20px;
 }
 
@@ -210,7 +210,7 @@
 .register-form-title {
   font-family: var(--font-display);
   font-size: 42px; font-weight: 700;
-  color: var(--white); letter-spacing: -1.5px;
+  color: var(--text-primary); letter-spacing: -1.5px;
   margin-bottom: 2px;
   text-transform: lowercase;
 }
@@ -244,7 +244,7 @@
 
 .lang-chip:hover {
   border-color: var(--gold);
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 .lang-chip.active {
@@ -273,10 +273,10 @@
 .form-input {
   width: 100%;
   padding: 14px 18px;
-  background: rgba(255,255,255,0.03);
+  background: var(--bg-2);
   border: 1px solid var(--border);
   border-radius: 12px;
-  color: var(--white);
+  color: var(--text-primary);
   font-size: 15px;
   transition: all 0.25s ease;
 }
@@ -293,11 +293,11 @@ select.form-input {
 
 select.form-input option {
   background: #161820;
-  color: var(--white);
+  color: var(--text-primary);
 }
 
 .form-input:focus {
-  background: rgba(255,255,255,0.05);
+  background: var(--bg-2);
   border-color: var(--gold);
   box-shadow: 0 0 0 4px rgba(201,168,76,0.15);
 }
@@ -364,7 +364,7 @@ select.form-input option {
 .btn-primary {
   width: 100%;
   padding: 16px;
-  background: #c9a84c; /* Solid Gold look */
+  background: var(--gold); /* Solid Gold look */
   color: #08090d;
   border: none;
   border-radius: 12px;

@@ -4,6 +4,7 @@ const path = require("path");
 const fs = require("fs");
 const Document = require("../models/Document");
 const auth = require("../middleware/auth");
+const axios = require("axios");
 
 // 📁 Multer Config for Citizen Vault
 const storage = multer.diskStorage({
@@ -44,6 +45,66 @@ router.post("/upload", auth(), upload.single("file"), async (req, res) => {
 
     await newDoc.save();
     res.json({ message: "Document safely stored in vault!", document: newDoc });
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* POST: Upload to analyze with AI */
+router.post("/analyze", auth(), upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) return res.status(400).json({ message: "No file provided" });
+
+    const absoluteFilePath = path.resolve(req.file.path);
+    console.log(`[Document Analyzer] Analyzing: ${absoluteFilePath}`);
+
+    // Call Python AI Service
+    const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL ? process.env.PYTHON_AI_SERVICE_URL.replace("/chat", "") : "http://127.0.0.1:8088";
+    
+    try {
+      const aiResponse = await axios.post(`${aiServiceUrl}/analyze-document`, {
+        filePath: absoluteFilePath
+      });
+
+      if (aiResponse.data && aiResponse.data.summary) {
+        res.json({ summary: aiResponse.data.summary });
+      } else {
+        res.status(500).json({ message: "AI returned empty summary." });
+      }
+    } catch (aiError) {
+      console.error("[Document Analyzer AI Error]:", aiError.response ? aiError.response.data : aiError.message);
+      res.status(500).json({ message: "Python AI Service failed to analyze the document." });
+    }
+
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+/* POST: AI Legal Drafter */
+router.post("/draft", auth(), async (req, res) => {
+  try {
+    const { docType, facts } = req.body;
+    if (!docType || !facts) return res.status(400).json({ message: "docType and facts are required" });
+
+    const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL ? process.env.PYTHON_AI_SERVICE_URL.replace("/chat", "") : "http://127.0.0.1:8088";
+    
+    try {
+      const aiResponse = await axios.post(`${aiServiceUrl}/draft-document`, {
+        docType,
+        facts
+      });
+
+      if (aiResponse.data && aiResponse.data.draft) {
+        res.json({ draft: aiResponse.data.draft });
+      } else {
+        res.status(500).json({ message: "AI returned empty draft." });
+      }
+    } catch (aiError) {
+      console.error("[Legal Drafter AI Error]:", aiError.response ? aiError.response.data : aiError.message);
+      res.status(500).json({ message: "Python AI Service failed to draft the document." });
+    }
 
   } catch (err) {
     res.status(500).json({ message: err.message });

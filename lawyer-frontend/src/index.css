@@ -5,9 +5,9 @@
   --bg: #0d1117;
   --bg-2: #161b22;
   --bg-3: #21262d;
-  --white: #ffffff;
-  --gold: #fcc419; /* Vibrant Gold */
-  --gold-hover: #ffcc33;
+  --text-primary: #f0f0f0;
+  --gold: #d6b560; /* Matte Luxury Gold */
+  --gold-hover: #e3c254;
   --border: #30363d;
   --muted: #8b949e;
   
@@ -15,7 +15,7 @@
   --font-main: 'Inter', system-ui, sans-serif;
   --font-display: 'Outfit', serif;
   
-  --shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.5);
+  --shadow: 0 10px 30px -5px rgba(0,0,0,0.5);
   --transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
   --radius: 12px;
 }
@@ -25,7 +25,7 @@
 body {
   font-family: var(--font-body);
   background: var(--bg);
-  color: var(--white);
+  color: var(--text-primary);
   min-height: 100vh;
   -webkit-font-smoothing: antialiased;
   overflow-x: hidden;
@@ -96,7 +96,7 @@ body {
 .auth-header h2 {
   font-family: var(--font-display);
   font-size: 28px;
-  color: var(--white);
+  color: var(--text-primary);
   margin: 12px 0;
 }
 
@@ -146,7 +146,7 @@ body {
   background: var(--bg-3);
   border: 1px solid var(--border);
   border-radius: 8px;
-  color: var(--white);
+  color: var(--text-primary);
   transition: var(--transition);
 }
 

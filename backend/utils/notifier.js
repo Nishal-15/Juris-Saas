@@ -1,14 +1,15 @@
 const axios = require("axios");
-const twilio = require("twilio");
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
 
-async function sendAIWhatsApp(phone, userName, caseTitle, context) {
+async function sendAINotification(email, userName, caseTitle, context) {
   try {
     // 1. Generate AI Message
     let prompt = "";
     if (context === "booking_accepted") {
-      prompt = `Write a 1-sentence WhatsApp notification for a client named ${userName} whose legal consultation for "${caseTitle}" was just ACCEPTED by their lawyer. Be professional and encouraging.`;
+      prompt = `Write a 1-sentence notification for a client named ${userName} whose legal consultation for "${caseTitle}" was just ACCEPTED by their lawyer. Be professional and encouraging.`;
     } else if (context === "case_update") {
-      prompt = `Write a 1-sentence WhatsApp alert for ${userName} regarding a new status update on their case "${caseTitle}".`;
+      prompt = `Write a 1-sentence alert for ${userName} regarding a new status update on their case "${caseTitle}".`;
     } else {
       prompt = `Write a short 1-sentence legal notification for ${userName}.`;
     }
@@ -20,26 +21,23 @@ async function sendAIWhatsApp(phone, userName, caseTitle, context) {
 
     const text = aiRes.data.answer || "Your legal consultation has been updated.";
 
-    // 2. Send via Twilio
-    const sid = process.env.TWILIO_ACCOUNT_SID;
-    const token = process.env.TWILIO_AUTH_TOKEN;
-    const from = process.env.TWILIO_WHATSAPP_NUMBER || "+14155238886";
-
-    if (!sid || !token || sid.includes("XXXXX")) {
-      console.log(`[WhatsApp Simulation] To ${phone}: ${text}`);
+    // 2. Send via Resend
+    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes("placeholder")) {
+      console.log(`[Email Simulation] To ${email}: ${text}`);
       return;
     }
 
-    const client = twilio(sid, token);
-    await client.messages.create({
-      from: `whatsapp:${from}`,
-      body: text,
-      to: `whatsapp:${phone.startsWith("+") ? phone : "+91" + phone}`
+    await resend.emails.send({
+      from: "JurisBot Notifications <onboarding@resend.dev>",
+      to: email,
+      subject: `Case Update: ${caseTitle}`,
+      html: `<p>Dear ${userName},</p><p>${text}</p>`
     });
-    console.log(`[WhatsApp Success] Sent to ${phone}`);
+    console.log(`[Email Success] Sent to ${email}`);
   } catch (err) {
     console.error(`[Notifier Error]:`, err.message);
   }
 }
 
-module.exports = { sendAIWhatsApp };
+// We keep the old function name exported so we don't break existing imports, but it now sends emails
+module.exports = { sendAIWhatsApp: sendAINotification };

@@ -1,36 +1,36 @@
 /* Notifications Page */
-.np-page { display: flex; height: 100vh; background: #0d1117; font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
+.np-page { display: flex; height: 100vh; background: var(--bg); font-family: 'Inter', system-ui, sans-serif; overflow: hidden; }
 .np-body { flex: 1; overflow-y: auto; padding: 36px 44px; }
 .np-body::-webkit-scrollbar { width: 4px; }
-.np-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.07); border-radius: 4px; }
+.np-body::-webkit-scrollbar-thumb { background: var(--border); border-radius: 4px; }
 
 .np-header { display: flex; justify-content: space-between; align-items: flex-start; margin-bottom: 28px; }
-.np-title { font-size: 26px; font-weight: 800; color: #f0f0f0; letter-spacing: -0.4px; margin: 0 0 4px; }
-.np-subtitle { font-size: 13.5px; color: rgba(255,255,255,0.35); margin: 0; }
+.np-title { font-size: 26px; font-weight: 800; color: var(--text-primary); letter-spacing: -0.4px; margin: 0 0 4px; }
+.np-subtitle { font-size: 13.5px; color: var(--muted); margin: 0; }
 
 .np-clear-btn {
   display: flex; align-items: center; gap: 7px;
   padding: 9px 18px;
   background: rgba(255,255,255,0.04);
-  border: 1px solid rgba(255,255,255,0.08);
+  border: 1px solid var(--bg-3);
   border-radius: 9px;
-  color: rgba(255,255,255,0.45);
+  color: var(--muted);
   font-size: 12.5px; font-weight: 600;
   cursor: pointer; font-family: inherit;
   transition: all 0.2s;
 }
 .np-clear-btn svg { width: 13px; height: 13px; }
-.np-clear-btn:hover { border-color: rgba(239,68,68,0.25); color: #ef4444; background: rgba(239,68,68,0.05); }
+.np-clear-btn:hover { border-color: rgba(239,68,68,0.25); color: var(--danger); background: rgba(239,68,68,0.05); }
 
 .np-empty {
   display: flex; flex-direction: column; align-items: center; gap: 14px;
-  padding: 80px 40px; color: rgba(255,255,255,0.25); font-size: 14px;
+  padding: 80px 40px; color: var(--muted-2); font-size: 14px;
 }
 .np-empty svg { width: 38px; height: 38px; opacity: 0.2; }
 .np-spinner {
   width: 24px; height: 24px;
-  border: 2px solid rgba(255,255,255,0.08);
-  border-top-color: #c9a84c;
+  border: 2px solid var(--bg-3);
+  border-top-color: var(--gold);
   border-radius: 50%;
   animation: spin 0.9s linear infinite;
 }
@@ -40,8 +40,8 @@
 
 .np-card {
   display: flex; align-items: center; gap: 16px;
-  background: #161b25;
-  border: 1px solid rgba(255,255,255,0.06);
+  background: var(--bg-2);
+  border: 1px solid var(--border);
   border-radius: 13px;
   padding: 16px 20px;
   cursor: pointer;
@@ -72,14 +72,14 @@
   text-transform: uppercase; padding: 2px 8px; border-radius: 100px;
 }
 
-.np-card-title { font-size: 14px; font-weight: 700; color: #f0f0f0; margin: 0; }
-.np-card-msg { font-size: 13px; color: rgba(255,255,255,0.45); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.np-card-title { font-size: 14px; font-weight: 700; color: var(--text-primary); margin: 0; }
+.np-card-msg { font-size: 13px; color: var(--muted); margin: 0; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 
 .np-card-right { display: flex; flex-direction: column; align-items: flex-end; gap: 8px; flex-shrink: 0; }
-.np-time { font-size: 11.5px; color: rgba(255,255,255,0.25); }
+.np-time { font-size: 11.5px; color: var(--muted-2); }
 .np-unread-dot {
   width: 8px; height: 8px; border-radius: 50%;
-  background: #c9a84c;
+  background: var(--gold);
   box-shadow: 0 0 8px rgba(201,168,76,0.5);
   animation: pulseDot 1.5s infinite;
 }

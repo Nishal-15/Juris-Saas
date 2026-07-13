@@ -158,14 +158,25 @@ router.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
 
-    console.log(`Attempting login: ${normalizedEmail} as ${role || "user"}`);
+    console.log(`Attempting login: ${normalizedEmail} as ${role || "unknown (searching both)"}`);
     
-    // 🛡️ DYNAMIC MODEL SELECTION
-    const Model = (role === "lawyer") ? Lawyer : User;
-    
-    const user = await Model.findOne({ email: normalizedEmail });
+    // 🛡️ HYBRID MODEL SELECTION
+    let user = null;
+
+    if (role === "lawyer") {
+      user = await Lawyer.findOne({ email: normalizedEmail });
+    } else if (role === "user" || role === "admin") {
+      user = await User.findOne({ email: normalizedEmail });
+    } else {
+      // Role not provided (unified login) - search both
+      user = await User.findOne({ email: normalizedEmail });
+      if (!user) {
+        user = await Lawyer.findOne({ email: normalizedEmail });
+      }
+    }
+
     if (!user) {
-      console.log(`❌ Account not found in ${role || "user"} collection: ${normalizedEmail}`);
+      console.log(`❌ Account not found: ${normalizedEmail}`);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
@@ -220,7 +231,13 @@ router.put("/update", auth(), async (req, res) => {
     if (phone) updates.phone = phone;
     if (preferredLanguage) updates.preferredLanguage = preferredLanguage;
 
-    const user = await User.findByIdAndUpdate(req.user.id, updates, { new: true });
+    let user;
+    if (req.user.role === "lawyer") {
+      user = await Lawyer.findByIdAndUpdate(req.user.id, updates, { new: true });
+    } else {
+      user = await User.findByIdAndUpdate(req.user.id, updates, { new: true });
+    }
+
     if (!user) return res.status(404).json({ message: "User not found" });
 
     const userResponse = user.toObject();
@@ -232,37 +249,36 @@ router.put("/update", auth(), async (req, res) => {
 });
 
 const axios = require("axios");
+const { Resend } = require("resend");
+const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
 const otpCache = {};
 
 // 📲 1. REQUEST OTP
 router.post("/request-otp", async (req, res) => {
   try {
-    const { phone } = req.body;
-    if (!phone) return res.status(400).json({ message: "Phone number required" });
+    const { email } = req.body;
+    if (!email) return res.status(400).json({ message: "Email is required for OTP" });
 
     // Generate numeric 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
-    otpCache[phone] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 mins expiry
+    const normalizedEmail = email.toLowerCase().trim();
+    otpCache[normalizedEmail] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 mins expiry
 
-    // Normalize phone number for MSG91 (e.g. 917708084027)
-    let cleanPhone = phone.replace(/\D/g, "");
-    if (!cleanPhone.startsWith("91") && cleanPhone.length === 10) {
-      cleanPhone = "91" + cleanPhone;
-    }
+    console.log(`📧 [RESEND OTP SERVICE] Dispatching code for ${normalizedEmail}: ${otp}`);
 
-    console.log(`📱 [MSG91 OTP SERVICE] Dispatching code for ${phone}: ${otp}`);
-
-    // Call real MSG91 SMS/OTP API
     try {
-      const msg91AuthKey = "513203T6qGKIGXOCG69f4a117P1";
-      const msg91Url = `https://control.msg91.com/api/v5/otp?mobile=${cleanPhone}&authkey=${msg91AuthKey}&otp=${otp}`;
-      await axios.post(msg91Url);
-      console.log(`✅ [MSG91 Success] OTP delivered via MSG91 to ${phone}`);
-    } catch (msg91Err) {
-      console.error("❌ [MSG91 API Error]", msg91Err.response?.data || msg91Err.message);
+      await resend.emails.send({
+        from: "JurisBot <onboarding@resend.dev>",
+        to: normalizedEmail,
+        subject: "JurisBot Verification Code",
+        html: `<h2>Your JurisBot OTP</h2><p>Your verification code is: <strong>${otp}</strong></p><p>This code expires in 5 minutes.</p>`
+      });
+      console.log(`✅ [RESEND Success] OTP delivered to ${normalizedEmail}`);
+    } catch (resendErr) {
+      console.error("❌ [RESEND API Error]", resendErr);
     }
 
-    res.json({ message: "Verification code sent to your phone number via MSG91.", otp });
+    res.json({ message: "Verification code sent to your email address via Resend.", otp });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -271,10 +287,12 @@ router.post("/request-otp", async (req, res) => {
 // 📲 2. VERIFY OTP
 router.post("/verify-otp", async (req, res) => {
   try {
-    const { phone, otp } = req.body;
-    if (!phone || !otp) return res.status(400).json({ message: "Phone and OTP are required" });
+    const { email, otp } = req.body;
+    if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" });
 
-    const cached = otpCache[phone];
+    const normalizedEmail = email.toLowerCase().trim();
+    const cached = otpCache[normalizedEmail];
+    
     if (!cached) return res.status(400).json({ message: "OTP expired or invalid" });
 
     if (cached.otp !== otp || Date.now() > cached.expires) {
@@ -282,9 +300,9 @@ router.post("/verify-otp", async (req, res) => {
     }
 
     // Success! Wipe from cache
-    delete otpCache[phone];
+    delete otpCache[normalizedEmail];
 
-    res.json({ message: "Phone number verified successfully!", verified: true });
+    res.json({ message: "Email verified successfully!", verified: true });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }

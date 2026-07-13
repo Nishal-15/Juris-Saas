@@ -3,6 +3,9 @@ import axios from '../api/axios';
 import Sidebar from '../components/Sidebar';
 import './subscription.css';
 
+const SVGCheck = () => <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
+const SVGAI = () => <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"></path></svg>;
+
 export default function Subscription() {
     const [lawyer, setLawyer] = useState(null);
     const [loading, setLoading] = useState(true);
@@ -128,60 +131,103 @@ export default function Subscription() {
                 </div>
 
                 <div className="pricing-grid">
-                    {/* Trial */}
-                    <div className={`pricing-card ${lawyer.subscriptionTier === 'Trial' ? 'popular' : ''}`}>
+
+                    {/* Free Trial */}
+                    <div className="pricing-card">
                         <div className="plan-name">Free Trial</div>
-                        <div className="plan-price">₹0<span>/month</span></div>
-                        <ul className="plan-features">
-                            <li>2 Active Cases</li>
-                            <li>Basic AI Assistant</li>
-                            <li>WhatsApp Alerts for Hearings</li>
-                            <li>Community Support</li>
-                            <li>30 Days Duration</li>
-                        </ul>
+                        <div className="plan-price">
+                            <span className="rupee-sym">₹</span>0
+                            <span className="price-unit">/ 7 days</span>
+                        </div>
+                        <p className="plan-tagline">Try JurisBot with no commitment</p>
+                        <p className="plan-annual-note">&nbsp;</p>
                         {lawyer.subscriptionTier === 'Trial' ? (
-                            <button className="upgrade-btn current-plan-btn">Current Plan</button>
+                            <button className="upgrade-btn current-plan-btn">Your current plan</button>
                         ) : (
                             <button className="upgrade-btn" disabled>Already Used</button>
                         )}
+                        <ul className="plan-features">
+                            <li><span className="feat-icon"><SVGCheck /></span>2 Active Cases</li>
+                            <li><span className="feat-icon"><SVGAI /></span>Basic AI Legal Chat</li>
+                            <li><span className="feat-icon"><SVGAI /></span>1 Document Analysis</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Hearing Reminders</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Community Support</li>
+                        </ul>
                     </div>
 
-                    {/* Starter */}
-                    <div className={`pricing-card ${lawyer.subscriptionTier === 'Starter' ? 'popular' : ''}`}>
-                        <div className="popular-badge">POPULAR</div>
-                        <div className="plan-name">Starter Plan</div>
-                        <div className="plan-price">₹499<span>/month</span></div>
-                        <ul className="plan-features">
-                            <li>5 Active Cases</li>
-                            <li>Priority AI Access</li>
-                            <li>WhatsApp Alerts</li>
-                            <li>Document Auto-Brief</li>
-                        </ul>
+                    {/* Solo Advocate */}
+                    <div className={`pricing-card ${lawyer.subscriptionTier === 'Starter' ? 'highlighted' : ''}`}>
+                        <div className="plan-name">Solo Advocate</div>
+                        <div className="plan-price">
+                            <span className="rupee-sym">₹</span>1,999
+                            <span className="price-unit">/ user / month</span>
+                        </div>
+                        <p className="plan-tagline">For independent practitioners managing their own practice</p>
+                        <p className="plan-annual-note">₹14,999/year · Save ₹9,000</p>
                         {lawyer.subscriptionTier === 'Starter' ? (
-                            <button className="upgrade-btn current-plan-btn" onClick={() => handleOpenPayment("Starter", 499)}>Renew Plan</button>
+                            <button className="upgrade-btn current-plan-btn">Your current plan</button>
                         ) : (
-                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Starter", 499)}>
-                                {lawyer.subscriptionTier === 'Trial' ? 'Upgrade Now' : 'Switch to Starter'}
-                            </button>
+                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Starter", 1999)}>Upgrade</button>
                         )}
+                        <ul className="plan-features">
+                            <li><span className="feat-icon"><SVGCheck /></span>20 Active Cases</li>
+                            <li><span className="feat-icon"><SVGAI /></span>Unlimited AI Legal Chat</li>
+                            <li><span className="feat-icon"><SVGAI /></span>10 Document Analyses/mo</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Video Consultations</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>WhatsApp Hearing Alerts</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Email Support</li>
+                        </ul>
                     </div>
 
-                    {/* Pro */}
-                    <div className={`pricing-card ${lawyer.subscriptionTier === 'Pro' ? 'popular' : ''}`}>
-                        <div className="plan-name">Pro Plan</div>
-                        <div className="plan-price">₹1999<span>/month</span></div>
-                        <ul className="plan-features">
-                            <li>Unlimited Cases</li>
-                            <li>Deep-Dive AI Legal Research</li>
-                            <li>Unlimited Video Consultations</li>
-                            <li>WhatsApp Alerts Suite</li>
-                            <li>Premium Dashboard Analytics</li>
-                        </ul>
+                    {/* Boutique Firm — RECOMMENDED */}
+                    <div className="pricing-card highlighted">
+                        <div className="popular-badge">RECOMMENDED</div>
+                        <div className="plan-name">Boutique Firm</div>
+                        <div className="plan-price">
+                            <span className="rupee-sym">₹</span>4,999
+                            <span className="price-unit">/ month (excl. GST)</span>
+                        </div>
+                        <p className="plan-tagline">A secure workspace built for small legal teams of 3–10 lawyers</p>
+                        <p className="plan-annual-note">₹39,999/year · Save ₹20,000</p>
                         {lawyer.subscriptionTier === 'Pro' ? (
-                            <button className="upgrade-btn current-plan-btn" onClick={() => handleOpenPayment("Pro", 1999)}>Renew Plan</button>
+                            <button className="upgrade-btn current-plan-btn">Your current plan</button>
                         ) : (
-                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Pro", 1999)}>Go Unlimited</button>
+                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Pro", 4999)}>Upgrade</button>
                         )}
+                        <ul className="plan-features">
+                            <li><span className="feat-icon"><SVGCheck /></span>Unlimited Cases</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Up to 10 Lawyer Seats</li>
+                            <li><span className="feat-icon"><SVGAI /></span>Unlimited AI Document Analysis</li>
+                            <li><span className="feat-icon"><SVGAI /></span>Deep-Dive Legal Research</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Unlimited Video Consultations</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>WhatsApp Alert Suite</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Priority Support</li>
+                        </ul>
+                    </div>
+
+                    {/* Enterprise */}
+                    <div className={`pricing-card ${lawyer.subscriptionTier === 'Unlimited' ? 'highlighted' : ''}`}>
+                        <div className="plan-name">Enterprise Firm</div>
+                        <div className="plan-price">
+                            <span className="rupee-sym">₹</span>9,999
+                            <span className="price-unit">/ month (excl. GST)</span>
+                        </div>
+                        <p className="plan-tagline">Custom AI and dedicated support for large legal organisations</p>
+                        <p className="plan-annual-note">₹79,999/year · Save ₹40,000</p>
+                        {lawyer.subscriptionTier === 'Unlimited' ? (
+                            <button className="upgrade-btn current-plan-btn">Your current plan</button>
+                        ) : (
+                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Unlimited", 9999)}>Go Enterprise</button>
+                        )}
+                        <ul className="plan-features">
+                            <li><span className="feat-icon"><SVGCheck /></span>Unlimited Cases &amp; Seats</li>
+                            <li><span className="feat-icon"><SVGAI /></span>Custom AI Model Training</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Bulk Client Data Import</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Dedicated Onboarding Manager</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Admin Analytics Dashboard</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>SLA + 24/7 Support</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Custom Branding</li>
+                        </ul>
                     </div>
                 </div>
 

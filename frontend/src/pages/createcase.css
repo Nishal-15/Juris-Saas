@@ -11,21 +11,21 @@
   padding: 0;
   overflow-y: auto;
   position: relative;
-  background: #ffffff;
+  background: var(--text-primary);
 }
 
 /* 🤖 Advanced AI Header Dock */
 .wizard-ai-dock {
-  background: #1a1c24;
+  background: var(--bg-2);
   padding: 20px 60px;
   display: flex;
   justify-content: space-between;
   align-items: center;
-  border-bottom: 1px solid rgba(255,255,255,0.1);
+  border-bottom: 1px solid var(--bg-3);
   position: sticky;
   top: 0;
   z-index: 100;
-  color: #fff;
+  color: var(--text-primary);
 }
 
 .ai-dock-info {
@@ -36,7 +36,7 @@
 
 .ai-mini-avatar {
   width: 40px; height: 40px;
-  background: #c9a84c;
+  background: var(--gold);
   border-radius: 10px;
   display: flex; align-items: center; justify-content: center;
   font-size: 20px;
@@ -45,33 +45,33 @@
 .ai-dock-label {
   font-size: 10px;
   font-weight: 800;
-  color: #c9a84c;
+  color: var(--gold);
   letter-spacing: 1px;
 }
 
 .ai-dock-msg {
   font-size: 13px;
   margin: 0;
-  color: rgba(255,255,255,0.8);
+  color: var(--muted);
 }
 
 .lang-icon-global {
   font-size: 16px;
-  color: #c9a84c;
+  color: var(--gold);
 }
 
 .language-selector-dock {
   display: flex;
   align-items: center;
   gap: 10px;
-  border-left: 1px solid rgba(255,255,255,0.1);
+  border-left: 1px solid var(--bg-3);
   padding-left: 20px;
 }
 
 .language-selector-dock select {
   background: transparent;
   border: none;
-  color: #fff;
+  color: var(--text-primary);
   padding: 8px 5px;
   font-size: 13px;
   font-weight: 600;
@@ -109,13 +109,13 @@
 }
 
 .wizard-step-node.active .node-circle {
-  background: #c9a84c;
-  border-color: #c9a84c;
-  color: #fff;
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--text-primary);
 }
 
 .node-label { font-size: 11px; font-weight: 700; color: #aaa; text-transform: uppercase; }
-.wizard-step-node.active .node-label { color: #c9a84c; }
+.wizard-step-node.active .node-label { color: var(--gold); }
 
 /* ── Wizard Slide ── */
 .wizard-content {
@@ -124,7 +124,7 @@
   padding: 0 20px;
 }
 
-.wizard-title { font-size: 32px; font-weight: 800; color: #1a1c24; margin-bottom: 10px; }
+.wizard-title { font-size: 32px; font-weight: 800; color: var(--bg-2); margin-bottom: 10px; }
 .wizard-subtitle { color: #777; font-size: 16px; margin-bottom: 30px; }
 
 .req { color: #ff4444; margin-left: 4px; }
@@ -137,7 +137,7 @@
 }
 
 .category-card {
-  background: #fff;
+  background: var(--text-primary);
   border: 1px solid #eef0f2;
   border-radius: 16px;
   padding: 24px;
@@ -149,16 +149,16 @@
 }
 
 .category-card:hover { transform: translateY(-3px); box-shadow: 0 10px 20px rgba(0,0,0,0.05); }
-.category-card.active { border-color: #c9a84c; background: #fdfaf3; box-shadow: 0 0 0 2px #c9a84c; }
+.category-card.active { border-color: var(--gold); background: #fdfaf3; box-shadow: 0 0 0 2px var(--gold); }
 
 .cat-icon { font-size: 30px; }
-.cat-info h3 { font-size: 18px; color: #1a1c24; margin-bottom: 4px; }
+.cat-info h3 { font-size: 18px; color: var(--bg-2); margin-bottom: 4px; }
 .cat-info p { font-size: 13px; color: #777; line-height: 1.4; }
 
 /* ── Form Inputs ── */
-.wizard-form-box { background: #fff; border: 1px solid #eef0f2; border-radius: 20px; padding: 40px; box-shadow: 0 4px 25px rgba(0,0,0,0.03); }
+.wizard-form-box { background: var(--text-primary); border: 1px solid #eef0f2; border-radius: 20px; padding: 40px; box-shadow: 0 4px 25px rgba(0,0,0,0.03); }
 .form-group { margin-bottom: 30px; }
-.form-group label { display: block; font-size: 13px; font-weight: 700; color: #1a1c24; margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
+.form-group label { display: block; font-size: 13px; font-weight: 700; color: var(--bg-2); margin-bottom: 10px; text-transform: uppercase; letter-spacing: 0.5px; }
 
 .wizard-input, .wizard-textarea {
   width: 100%;
@@ -169,7 +169,7 @@
   transition: all 0.2s;
 }
 
-.wizard-input:focus, .wizard-textarea:focus { outline: none; border-color: #c9a84c; box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.1); }
+.wizard-input:focus, .wizard-textarea:focus { outline: none; border-color: var(--gold); box-shadow: 0 0 0 4px rgba(201, 168, 76, 0.1); }
 
 /* 🎤 Advanced Voice Button */
 .label-with-action { display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; }
@@ -189,31 +189,31 @@
 }
 
 .voice-btn-large:hover { background: #e4e6e9; }
-.voice-btn-large.recording { background: #ff4444; border-color: #ff4444; color: #fff; animation: pulse 1.5s infinite; }
+.voice-btn-large.recording { background: #ff4444; border-color: #ff4444; color: var(--text-primary); animation: pulse 1.5s infinite; }
 
 @keyframes pulse { 0% { transform: scale(1); } 50% { transform: scale(1.03); } 100% { transform: scale(1); } }
 
 /* ✨ AI Input Glow */
 .input-container { position: relative; }
-.input-container.glow .wizard-input { border-color: #c9a84c; background: #fdfaf3; animation: glow 2s infinite; }
-.ai-tag { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: #c9a84c; color: #fff; font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
+.input-container.glow .wizard-input { border-color: var(--gold); background: #fdfaf3; animation: glow 2s infinite; }
+.ai-tag { position: absolute; right: 12px; top: 50%; transform: translateY(-50%); background: var(--gold); color: var(--text-primary); font-size: 10px; font-weight: 900; padding: 2px 6px; border-radius: 4px; }
 
 @keyframes glow { 0% { box-shadow: 0 0 5px rgba(201, 168, 76, 0.2); } 50% { box-shadow: 0 0 20px rgba(201, 168, 76, 0.4); } 100% { box-shadow: 0 0 5px rgba(201, 168, 76, 0.2); } }
 
 /* ── Upload & Review ── */
 .upload-zone { border: 2px dashed #ccc; border-radius: 20px; padding: 60px; text-align: center; cursor: pointer; transition: all 0.2s; }
-.upload-zone:hover { border-color: #c9a84c; background: #fdfaf3; }
+.upload-zone:hover { border-color: var(--gold); background: #fdfaf3; }
 .upload-icon { font-size: 40px; display: block; margin-bottom: 10px; }
 
-.review-card { background: #fff; border: 1px solid #eee; border-radius: 16px; padding: 30px; }
+.review-card { background: var(--text-primary); border: 1px solid #eee; border-radius: 16px; padding: 30px; }
 .review-item { padding: 15px 0; border-bottom: 1px solid #f5f5f5; font-size: 15px; line-height: 1.6; }
-.review-item strong { color: #c9a84c; margin-right: 15px; font-size: 12px; }
+.review-item strong { color: var(--gold); margin-right: 15px; font-size: 12px; }
 
 /* ── Actions ── */
 .wizard-actions { display: flex; justify-content: space-between; margin-top: 40px; }
-.wizard-btn-next, .wizard-btn-submit { background: #c9a84c; color: #fff; border: none; padding: 16px 40px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3); }
+.wizard-btn-next, .wizard-btn-submit { background: var(--gold); color: var(--text-primary); border: none; padding: 16px 40px; border-radius: 12px; font-weight: 800; font-size: 15px; cursor: pointer; box-shadow: 0 4px 20px rgba(201, 168, 76, 0.3); }
 .wizard-btn-next:disabled { background: #eee; color: #aaa; box-shadow: none; cursor: not-allowed; }
-.wizard-btn-back { background: #fff; color: #666; border: 1px solid #ddd; padding: 16px 30px; border-radius: 12px; font-weight: 700; cursor: pointer; }
+.wizard-btn-back { background: var(--text-primary); color: #666; border: 1px solid #ddd; padding: 16px 30px; border-radius: 12px; font-weight: 700; cursor: pointer; }
 
 .fade-in { animation: fadeIn 0.4s ease-out; }
 @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
@@ -221,7 +221,7 @@
 /* ── MOBILE OPTIMIZATION OVERRIDES (No effect on Desktop) ── */
 @media (max-width: 768px) {
   .wizard-page {
-    background: #ffffff;
+    background: var(--text-primary);
     flex-direction: column;
   }
 
@@ -235,7 +235,7 @@
   /* 🤖 Mobile AI Dock (Floating Top) */
   .wizard-ai-dock {
     padding: 15px 20px;
-    background: #1a1c24;
+    background: var(--bg-2);
     position: sticky;
     top: 0;
     box-shadow: 0 4px 15px rgba(0,0,0,0.1);
@@ -306,7 +306,7 @@
   .wizard-actions {
     position: fixed;
     bottom: 0; left: 0; right: 0;
-    background: #fff;
+    background: var(--text-primary);
     padding: 20px;
     box-shadow: 0 -10px 30px rgba(0,0,0,0.05);
     z-index: 1000;
@@ -342,8 +342,8 @@
 }
 
 .material-date-trigger:hover {
-  border-color: #6200ee;
-  background: #fff;
+  border-color: var(--gold);
+  background: var(--text-primary);
   box-shadow: 0 4px 12px rgba(98, 0, 238, 0.08);
 }
 
@@ -365,7 +365,7 @@
 }
 
 .expert-modal-card {
-  background: #fff;
+  background: var(--text-primary);
   width: 100%;
   max-width: 450px;
   border-radius: 24px;
@@ -381,7 +381,7 @@
 }
 
 .modal-confetti { font-size: 50px; margin-bottom: 10px; }
-.modal-title { font-size: 24px; color: #1a1c24; margin-bottom: 8px; }
+.modal-title { font-size: 24px; color: var(--bg-2); margin-bottom: 8px; }
 .modal-subtitle { font-size: 14px; color: #666; margin-bottom: 30px; }
 
 .matched-lawyers-list {
@@ -404,8 +404,8 @@
 }
 
 .matched-lawyer-item:hover {
-  border-color: #6200ee;
-  background: #fff;
+  border-color: var(--gold);
+  background: var(--text-primary);
   box-shadow: 0 4px 15px rgba(98, 0, 238, 0.08);
 }
 
@@ -420,14 +420,14 @@
   border-radius: 12px;
 }
 
-.lawyer-details h4 { font-size: 16px; color: #1a1c24; margin-bottom: 2px; }
+.lawyer-details h4 { font-size: 16px; color: var(--bg-2); margin-bottom: 2px; }
 .lawyer-details p { font-size: 12px; color: #888; margin-bottom: 4px; }
-.lawyer-meta { display: flex; gap: 10px; font-size: 11px; color: #6200ee; font-weight: 600; }
+.lawyer-meta { display: flex; gap: 10px; font-size: 11px; color: var(--gold); font-weight: 600; }
 
 .connect-btn {
   margin-left: auto;
-  background: #6200ee;
-  color: #fff;
+  background: var(--gold);
+  color: var(--text-primary);
   border: none;
   padding: 8px 16px;
   border-radius: 8px;

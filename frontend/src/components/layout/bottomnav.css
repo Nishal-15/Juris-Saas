@@ -4,13 +4,13 @@
   height: 72px;
   background: rgba(18, 18, 22, 0.95);
   backdrop-filter: blur(20px);
-  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  border-top: 1px solid var(--bg-3);
   display: none;
   justify-content: space-around;
   align-items: center;
   padding-bottom: env(safe-area-inset-bottom);
   z-index: 2000;
-  box-shadow: 0 -10px 40px rgba(0,0,0,0.5);
+  box-shadow: 0 -10px 40px rgba(0,0,0,0.05);
 }
 
 .nav-item {
@@ -20,7 +20,7 @@
   gap: 4px;
   background: transparent;
   border: none;
-  color: rgba(255, 255, 255, 0.3);
+  color: var(--muted);
   cursor: pointer;
   transition: all 0.25s cubic-bezier(0.4, 0, 0.2, 1);
   padding: 8px 12px;
@@ -40,7 +40,7 @@
 }
 
 .nav-item.active {
-  color: #c9a84c;
+  color: var(--gold);
 }
 
 .nav-item.active svg {

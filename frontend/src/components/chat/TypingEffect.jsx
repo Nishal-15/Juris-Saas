@@ -10,10 +10,10 @@ export default function TypingEffect({ text }) {
     setOutput("");
 
     const timer = setInterval(() => {
-      setOutput(prev => prev + text.charAt(i));
-      i++;
+      setOutput(prev => prev + text.substring(i, i + 3));
+      i += 3;
       if (i >= text.length) clearInterval(timer);
-    }, 20);
+    }, 5);
 
     return () => clearInterval(timer);
   }, [text]);

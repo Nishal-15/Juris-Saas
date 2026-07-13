@@ -20,6 +20,7 @@ import GlobalCallNotification from "./components/layout/GlobalCallNotification";
 import Terms from "./pages/Terms";
 import CaseDetails from "./pages/CaseDetails";
 import Alerts from "./pages/Alerts";
+import AdminDashboard from "./pages/AdminDashboard";
 
 import { primeAudio } from "./api/socket";
 
@@ -120,6 +121,10 @@ export default function App() {
 
       <Route path="/dashboard" element={
         <ProtectedRoute allowedRoles={["user", "admin"]}><DashboardHome /></ProtectedRoute>
+      }/>
+
+      <Route path="/admin" element={
+        <ProtectedRoute allowedRoles={["admin"]}><AdminDashboard /></ProtectedRoute>
       }/>
 
     <Route path="/create-case" element={

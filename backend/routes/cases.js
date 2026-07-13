@@ -228,10 +228,10 @@ router.patch("/:id/management", auth(["lawyer"]), async (req, res) => {
       });
     }
 
-    // 📱 WHATSAPP: Send AI alert for status update
+    // 📧 EMAIL: Send AI alert for status update
     const citizen = await User.findById(targetCase.user?._id);
-    if (citizen && citizen.phone) {
-       sendAIWhatsApp(citizen.phone, citizen.name, targetCase.title, "case_update");
+    if (citizen && citizen.email) {
+       sendAIWhatsApp(citizen.email, citizen.name, targetCase.title, "case_update");
     }
 
     res.json({ message: "Case information updated!", targetCase });
@@ -274,7 +274,10 @@ router.get("/:id/ai-brief", auth(["lawyer", "admin"]), async (req, res) => {
 
     // Send to Python AI Service
     const axios = require("axios");
-    const aiRes = await axios.post("http://127.0.0.1:8000/brief", {
+    const aiUrl = process.env.PYTHON_AI_SERVICE_URL 
+      ? process.env.PYTHON_AI_SERVICE_URL.replace('/chat', '/brief')
+      : "http://127.0.0.1:8088/brief";
+    const aiRes = await axios.post(aiUrl, {
        description: targetCase.description
     });
 
@@ -603,10 +606,10 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
       });
     }
 
-    // 📱 WHATSAPP: Send AI alert for case acceptance
+    // 📧 EMAIL: Send AI alert for case acceptance
     const citizen = await User.findById(acceptedCase.user?._id);
-    if (citizen && citizen.phone) {
-       sendAIWhatsApp(citizen.phone, citizen.name, acceptedCase.title, "case_update");
+    if (citizen && citizen.email) {
+       sendAIWhatsApp(citizen.email, citizen.name, acceptedCase.title, "case_update");
     }
 
     console.log(`Case Accepted: ${caseId} by Lawyer ${req.user.id}`);

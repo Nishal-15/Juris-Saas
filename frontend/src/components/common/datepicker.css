@@ -15,8 +15,8 @@
 
 .datepicker-input {
   width: 100%;
-  background: #ffffff;
-  border: 1px solid #cbd5e1;
+  background: var(--text-primary);
+  border: 1px solid var(--muted-2);
   border-radius: 12px;
   padding: 14px 18px; /* Slightly smaller padding */
   color: #1e293b;
@@ -35,7 +35,7 @@
 }
 
 .datepicker-input:hover {
-  border-color: #c9a84c;
+  border-color: var(--gold);
 }
 
 /* CALENDAR MODAL - SCALED DOWN */
@@ -44,7 +44,7 @@
   top: calc(100% + 8px);
   left: 0;
   width: 270px; /* Reduced from 320px */
-  background: #ffffff;
+  background: var(--text-primary);
   border-radius: 8px;
   box-shadow: 0 10px 30px rgba(0,0,0,0.12);
   z-index: 1000;
@@ -58,9 +58,9 @@
 }
 
 .calendar-header {
-  background: #6200ee;
+  background: var(--gold);
   padding: 16px 20px; /* Reduced padding */
-  color: #ffffff;
+  color: var(--text-primary);
 }
 
 .header-label {
@@ -140,7 +140,7 @@
   grid-template-columns: repeat(7, 1fr);
   text-align: center;
   font-size: 11px;
-  color: #94a3b8;
+  color: var(--muted-2);
   margin-bottom: 6px;
   font-weight: 600;
 }
@@ -168,14 +168,14 @@
 }
 
 .calendar-day.selected {
-  background: #6200ee !important;
-  color: #ffffff !important;
+  background: var(--gold) !important;
+  color: var(--text-primary) !important;
   font-weight: 600;
   box-shadow: 0 4px 10px rgba(98, 0, 238, 0.3);
 }
 
 .calendar-day.today {
-  color: #6200ee;
+  color: var(--gold);
   font-weight: 700;
   position: relative;
 }
@@ -186,7 +186,7 @@
   bottom: 4px;
   width: 4px;
   height: 4px;
-  background: #6200ee;
+  background: var(--gold);
   border-radius: 50%;
 }
 
@@ -204,7 +204,7 @@
   padding: 6px 12px;
   font-size: 13px;
   font-weight: 700;
-  color: #6200ee;
+  color: var(--gold);
   cursor: pointer;
   border-radius: 6px;
   transition: background 0.2s;

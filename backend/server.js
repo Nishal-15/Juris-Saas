@@ -4,6 +4,9 @@ const express = require("express");
 const http = require("http");
 const cors = require("cors");
 const socketio = require("socket.io");
+const helmet = require("helmet");
+const mongoSanitize = require("express-mongo-sanitize");
+const rateLimit = require("express-rate-limit");
 
 const connectDB = require("./config/db");
 require("./utils/scheduler"); // 🔔 Initialize hearing notification scheduler
@@ -35,6 +38,7 @@ connectDB();
    MIDDLEWARE
 ======================= */
 // Apply dynamic CORS to Express API routes as well
+// Apply dynamic CORS to Express API routes as well
 app.use(cors({
   origin: function (origin, callback) {
     // Allow any origin
@@ -43,10 +47,26 @@ app.use(cors({
   credentials: true
 }));
 
+// 🛡️ SECURITY: HTTP Headers Protection
+app.use(helmet({
+  crossOriginResourcePolicy: false, // Allow images to load across domains
+}));
+
+// 🛡️ SECURITY: Data Sanitization against NoSQL query injection
+app.use(mongoSanitize());
+
+// 🛡️ SECURITY: DDoS & Brute Force Protection (Rate Limiting)
+const limiter = rateLimit({
+  windowMs: 15 * 60 * 1000, // 15 minutes
+  max: 300, // Limit each IP to 300 requests per windowMs
+  message: "Too many requests from this IP, please try again after 15 minutes."
+});
+app.use("/api", limiter);
+
 const fs = require("fs");
 const path = require("path");
 
-app.use(express.json());
+app.use(express.json({ limit: "10kb" })); // Limit payload size against DDoS
 app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
 /* =======================
