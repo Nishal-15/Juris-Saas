@@ -5,22 +5,6 @@ import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Toolti
 
 const API_BASE = "http://localhost:5000/api/admin"; // Updated to local backend
 
-const mockBarData = [
-  { name: 'Mon', queries: 4000, latency: 240 },
-  { name: 'Tue', queries: 3000, latency: 139 },
-  { name: 'Wed', queries: 2000, latency: 980 },
-  { name: 'Thu', queries: 2780, latency: 390 },
-  { name: 'Fri', queries: 1890, latency: 480 },
-  { name: 'Sat', queries: 2390, latency: 380 },
-  { name: 'Sun', queries: 3490, latency: 430 },
-];
-
-const mockPieData = [
-  { name: 'Civil Law', value: 400 },
-  { name: 'Criminal Law', value: 300 },
-  { name: 'Corporate Law', value: 300 },
-  { name: 'Family Law', value: 200 },
-];
 const COLORS = ['#c9a84c', '#1e293b', '#64748b', '#f1f5f9'];
 
 export default function Dashboard() {
@@ -30,6 +14,9 @@ export default function Dashboard() {
     pending: 0,
     laws: 0
   });
+  
+  const [barData, setBarData] = useState([]);
+  const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -49,6 +36,10 @@ export default function Dashboard() {
         pending: res.data.pending,
         laws: res.data.laws
       });
+      
+      setBarData(res.data.barData || []);
+      setPieData(res.data.pieData || []);
+      
       setLoading(false);
     } catch (err) {
       console.error("Dashboard Stats Fetch Error:", err);
@@ -124,7 +115,7 @@ export default function Dashboard() {
             <h4 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '15px' }}>Weekly Query Volume & Latency</h4>
             <div style={{ width: '100%', height: 300 }}>
               <ResponsiveContainer width="100%" height="100%">
-                <BarChart data={mockBarData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
+                <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
@@ -147,7 +138,7 @@ export default function Dashboard() {
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
-                    data={mockPieData}
+                    data={pieData}
                     cx="50%"
                     cy="50%"
                     innerRadius={60}
@@ -156,7 +147,7 @@ export default function Dashboard() {
                     dataKey="value"
                     stroke="none"
                   >
-                    {mockPieData.map((entry, index) => (
+                    {pieData.map((entry, index) => (
                       <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
                     ))}
                   </Pie>
