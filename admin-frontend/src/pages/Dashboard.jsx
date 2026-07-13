@@ -22,18 +22,13 @@ export default function Dashboard() {
       const token = localStorage.getItem("token");
       const config = { headers: { Authorization: `Bearer ${token}` } };
       
-      const [citRes, lawRes, pendRes, lawsRes] = await Promise.all([
-        axios.get(`${API_BASE}/citizens`, config),
-        axios.get(`${API_BASE}/lawyers`, config),
-        axios.get(`${API_BASE}/pending-lawyers`, config),
-        axios.get(`${API_BASE}/laws`, config)
-      ]);
+      const res = await axios.get(`${API_BASE}/stats`, config);
 
       setStats({
-        citizens: citRes.data.length,
-        lawyers: lawRes.data.length,
-        pending: pendRes.data.length,
-        laws: lawsRes.data.length
+        citizens: res.data.citizens,
+        lawyers: res.data.lawyers,
+        pending: res.data.pending,
+        laws: res.data.laws
       });
       setLoading(false);
     } catch (err) {

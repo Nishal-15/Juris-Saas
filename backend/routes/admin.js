@@ -9,6 +9,31 @@ const path = require("path");
 const fs = require("fs");
 const auth = require("../middleware/auth");
 
+// 📊 GET DASHBOARD STATS (OPTIMIZED)
+router.get("/stats", auth(["admin"]), async (req, res) => {
+  try {
+    const citizensCount = await User.countDocuments({ role: "user" });
+    const lawyersCount = await Lawyer.countDocuments({ isVerified: true });
+    const pendingCount = await Lawyer.countDocuments({ verificationStatus: "pending" });
+    
+    let lawsCount = 0;
+    const aiServicePath = path.join(__dirname, "../ai-service/laws");
+    if (fs.existsSync(aiServicePath)) {
+      lawsCount = fs.readdirSync(aiServicePath).filter(f => f.endsWith(".pdf")).length;
+    }
+
+    res.json({
+      citizens: citizensCount,
+      lawyers: lawyersCount,
+      pending: pendingCount,
+      laws: lawsCount
+    });
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+
 // 🏛️ GET PENDING LAWYERS
 router.get("/pending-lawyers", auth(["admin"]), async (req, res) => {
   try {
