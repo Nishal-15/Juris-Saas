@@ -1,11 +1,8 @@
 import { io } from "socket.io-client";
 
-const isLocal = window.location.hostname.includes("localhost") || 
-                  window.location.hostname.includes("127.0.0.1") || 
-                  window.location.hostname.startsWith("192.168.");
-const SOCKET_URL = isLocal 
-  ? "http://localhost:5000" 
-  : "https://armed-wavy-carwash.ngrok-free.dev";
+const SOCKET_URL = import.meta.env.VITE_API_URL 
+  ? import.meta.env.VITE_API_URL.replace("/api", "") 
+  : "http://localhost:5000";
 
 const socket = io(SOCKET_URL, {
   transports: ["polling", "websocket"],

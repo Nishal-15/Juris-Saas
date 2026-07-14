@@ -38,6 +38,7 @@ export default function VideoCall() {
         configOverwrite: {
           startWithAudioMuted: false,
           startWithVideoMuted: false,
+          prejoinPageEnabled: false,
         },
         interfaceConfigOverwrite: {
           SHOW_CHROME_EXTENSION_BANNER: false,
@@ -61,7 +62,7 @@ export default function VideoCall() {
       apiRef.current = null;
     }
     socket.emit("end-call", roomId);
-    navigate("/user/dashboard");
+    navigate("/dashboard");
   };
 
   return (

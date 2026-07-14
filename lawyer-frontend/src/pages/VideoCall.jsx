@@ -38,6 +38,7 @@ export default function VideoCall() {
         configOverwrite: {
           startWithAudioMuted: false,
           startWithVideoMuted: false,
+          prejoinPageEnabled: false,
         },
         interfaceConfigOverwrite: {
           SHOW_CHROME_EXTENSION_BANNER: false,
