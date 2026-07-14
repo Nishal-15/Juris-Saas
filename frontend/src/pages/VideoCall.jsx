@@ -18,39 +18,41 @@ export default function VideoCall() {
     };
   }, [roomId]);
 
-  const initJitsi = () => {
-    if (!window.JitsiMeetExternalAPI) {
-      alert("Jitsi API not loaded. Please check your internet connection.");
-      return;
+  useEffect(() => {
+    if (isJoined && jitsiContainerRef.current && !apiRef.current) {
+      if (!window.JitsiMeetExternalAPI) {
+        alert("Jitsi API not loaded. Please check your internet connection.");
+        return;
+      }
+
+      const user = JSON.parse(localStorage.getItem("user") || "{}");
+      const domain = "meet.jit.si";
+      const options = {
+        roomName: `jurisbot-consultation-${roomId}`,
+        width: "100%",
+        height: "100%",
+        parentNode: jitsiContainerRef.current,
+        userInfo: {
+          displayName: user.name || "Citizen Client",
+        },
+        configOverwrite: {
+          startWithAudioMuted: false,
+          startWithVideoMuted: false,
+        },
+        interfaceConfigOverwrite: {
+          SHOW_CHROME_EXTENSION_BANNER: false,
+        },
+      };
+
+      apiRef.current = new window.JitsiMeetExternalAPI(domain, options);
+      apiRef.current.addListener("videoConferenceLeft", () => {
+        leaveCall();
+      });
     }
+  }, [isJoined, roomId]);
 
+  const initJitsi = () => {
     setIsJoined(true);
-
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-
-    const domain = "meet.jit.si";
-    const options = {
-      roomName: `jurisbot-consultation-${roomId}`,
-      width: "100%",
-      height: "100%",
-      parentNode: jitsiContainerRef.current,
-      userInfo: {
-        displayName: user.name || "Citizen Client",
-      },
-      configOverwrite: {
-        startWithAudioMuted: false,
-        startWithVideoMuted: false,
-      },
-      interfaceConfigOverwrite: {
-        SHOW_CHROME_EXTENSION_BANNER: false,
-      },
-    };
-
-    apiRef.current = new window.JitsiMeetExternalAPI(domain, options);
-
-    apiRef.current.addListener("videoConferenceLeft", () => {
-      leaveCall();
-    });
   };
 
   const leaveCall = () => {
