@@ -21,7 +21,7 @@ const server = http.createServer(app);
 // ✅ DYNAMIC CORS: Fixes the Localhost -> Vercel cross-domain blocking for Video & Chat
 const io = socketio(server, {
   cors: {
-    origin: "*", // Accepts connections from ANY domain (Vercel, Netlify, Custom Domains)
+    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "https://jurisbot.vercel.app"],
     methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
     credentials: true
   }
