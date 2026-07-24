@@ -102,17 +102,6 @@ npm run dev # Runs on http://localhost:5175
 
 ---
 
-## 🔑 Seeding Default Data
-To quickly populate the platform for a local development demonstration, you can run the provided seed scripts. Ensure you check the scripts for the default credentials generated.
-
-```bash
-# Go to /backend
-node seed_admin.js
-node seed_lawyer.js 
-```
-
----
-
 ## 🌍 Real-Time Communication Workflow
 
 1.  **Discovery:** Citizen finds a Lawyer and requests a consultation.
