@@ -6,19 +6,19 @@
 
 ## 🌟 Platform Overview
 
-JurisBot is divided into two specialized workspaces, seamlessly connected by a high-speed real-time engine:
+JurisBot is divided into three specialized workspaces, completely overhauled with a unified, enterprise-grade dark glassmorphic design system:
 
 ### 🏙️ 1. Citizen Portal (User Frontend)
-*   **AI Legal Assistant:** 24/7 IPC-grounded chat with multi-language support (Tamil, Hindi, Telugu, Malayalam, English).
-*   **Case Filing Suite:** A simplified multi-step workflow for citizens to submit legal matters.
+*   **AI Legal Assistant:** 24/7 IPC-grounded chat with multi-language support (Tamil, Hindi, Telugu, Malayalam, English). Features a new premium, floating chat interface.
+*   **Case Filing Suite:** A guided, dark-mode multi-step wizard for citizens to submit legal matters securely.
 *   **Consultation Hub:** Private chat channels with matched lawyers featuring full message history.
-*   **Global Video Notifications:** Integrated "Expert Calling" alerts that appear regardless of which page the user is viewing.
+*   **Secure Video Consultation:** Integrated "Expert Calling" alerts drop citizens into the *JurisVault*, a military-grade encrypted video wrapper.
 
 ### 👨‍⚖️ 2. Professional Workspace (Lawyer Frontend)
-*   **Executive Dashboard:** Real-time analytics for active clients, pending requests, and legal files.
-*   **Queue Management:** One-click acceptance/rejection of citizen consultation requests.
+*   **Executive Dashboard:** Completely redesigned with Kanban-style glass cards featuring glowing priority badges (Emergency, High, Normal).
+*   **Queue Management:** One-click acceptance/rejection of citizen consultation requests directly from the Case Cards.
 *   **Secure Consultation Console:** A dedicated, premium workspace for handling cases and chatting with clients.
-*   **Video Consultation Suite:** Peer-to-peer video calling with camera/mic controls and session metadata.
+*   **Video Consultation Suite:** Peer-to-peer secure video calling with a synchronized "Live Timer" and professional lawyer metadata.
 
 ### 🛠️ 3. Regulatory Control (Admin Dashboard)
 *   **Platform Analytics:** Global oversight of user growth, lawyer registrations, and emergency frequency.
@@ -32,12 +32,13 @@ JurisBot is divided into two specialized workspaces, seamlessly connected by a h
 graph TD
     User((User)) -->|Port 5173| Frontend[User React App]
     Lawyer((Lawyer)) -->|Port 5174| ExpertApp[Lawyer React App]
+    Admin((Admin)) -->|Port 5175| AdminApp[Admin React App]
     Frontend -->|Socket.io / REST| Backend[Node.js API]
     ExpertApp -->|Socket.io / REST| Backend
-    Backend -->|Mongoose| Atlas[(MongoDB Atlas)]
+    AdminApp -->|REST| Backend
+    Backend -->|Mongoose| Atlas[(MongoDB Database)]
     Backend -->|HTTPS| AI[Python AI Engine]
     AI -->|RAG| FAISS[(FAISS Vector DB)]
-    AI -->|LLM| Ollama(Mistral AI)
 ```
 
 ---
@@ -46,12 +47,12 @@ graph TD
 
 | Component | Technology |
 | :--- | :--- |
-| **User Interface** | React 18, Vite, CSS3 (Glassmorphism), Google Fonts (Outfit, Cormorant) |
+| **User Interface** | React 18, Vite, CSS3 (Glassmorphism), Google Fonts (Playfair Display, Inter) |
 | **Logic & State** | Context API, Axios, React Router 6 |
 | **Real-Time Engine** | Socket.IO (Signaling & Notifications) |
 | **Backend Core** | Node.js, Express, JWT, Multer |
-| **AI Infrastructure** | Python 3.9+, Flask, FAISS, Sentence-Transformers, Ollama |
-| **Storage** | MongoDB Atlas, Local PDF Vault |
+| **AI Infrastructure** | Python 3.9+, Flask, FAISS, Sentence-Transformers, NVIDIA NIM Integration |
+| **Storage** | Document Database, Local PDF Vault |
 
 ---
 
@@ -60,17 +61,13 @@ graph TD
 ### 1. Prerequisites
 - **Node.js** (v18+)
 - **Python** (3.9+)
-- **MongoDB** (Local or Atlas)
-- **Ollama** (Ensure `mistral` model is pulled)
+- **Database Environment** (MongoDB instance required)
 
 ### 2. Backend Initialization
 ```bash
 cd backend
 npm install
-# Configure your .env:
-# MONGO_URI=your_uri
-# JWT_SECRET=your_secret
-# PORT=5000
+# Ensure you configure your environment variables securely in a .env file
 npm start
 ```
 
@@ -96,32 +93,39 @@ npm install
 npm run dev # Runs on http://localhost:5174
 ```
 
+**Admin Portal:**
+```bash
+cd admin-frontend
+npm install
+npm run dev # Runs on http://localhost:5175
+```
+
 ---
 
 ## 🔑 Seeding Default Data
-To quickly populate the platform for a demonstration:
+To quickly populate the platform for a local development demonstration, you can run the provided seed scripts. Ensure you check the scripts for the default credentials generated.
 
 ```bash
 # Go to /backend
-node seed_admin.js   # Admin: nishal-admin@jurisbot.com / admin123
-node seed_lawyer.js  # Lawyer: nishal@jurisbot.com / password123
+node seed_admin.js
+node seed_lawyer.js 
 ```
 
 ---
 
 ## 🌍 Real-Time Communication Workflow
 
-1.  **Discovery:** Citizen finds Lawyer Nishal and requests a consultation.
-2.  **Acceptance:** Lawyer receives a notification on their dashboard and accepts.
-3.  **Messaging:** Both parties enter a private chat where history is persisted via MongoDB.
-4.  **Expert Call:** Lawyer clicks the 📹 icon. 
-    *   A `video-call-request` event is emitted.
-    *   The User sees a popup: **"Expert Nishal is calling..."**.
-5.  **Consultation:** Both enter the `/video/:roomId` room to conduct the session.
+1.  **Discovery:** Citizen finds a Lawyer and requests a consultation.
+2.  **Acceptance:** Lawyer receives a notification on their Kanban dashboard and accepts.
+3.  **Messaging:** Both parties enter a private chat where history is persisted securely.
+4.  **Expert Call:** Lawyer clicks the Consultation icon. 
+    *   A `video-call-request` event is emitted over WebSocket.
+    *   The User sees a popup: **"Expert is calling..."**.
+5.  **JurisVault:** Both enter the highly secure `JurisVault` video room to conduct the session.
 
 ---
 
 ## 📄 License & Design
-Designed for the **Indian Legal Ecosystem**. Developed with a focus on trust, accessibility, and professional excellence.
+Designed for the **Indian Legal Ecosystem**. Developed with a focus on trust, accessibility, and professional enterprise excellence.
 
 **JurisBot — Empowering every citizen with the power of the law.**
