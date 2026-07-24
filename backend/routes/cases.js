@@ -8,6 +8,102 @@ const axios = require("axios");
 const checkSub = require("../middleware/checkSubscription");
 const { sendAIWhatsApp } = require("../utils/notifier");
 
+function detectComplexity(legalType,
+  urgency, type) {
+  const text = (
+    (legalType||"")+" "+(type||"")+" "+
+    (urgency||"")
+  ).toLowerCase()
+  if (
+    urgency==="Emergency"||
+    text.includes("murder")||
+    text.includes("rape")||
+    text.includes("constitutional")||
+    text.includes("corporate")||
+    text.includes("terrorism")
+  ) return "High"
+  if (
+    text.includes("consumer")||
+    text.includes("tenant")||
+    text.includes("rent")||
+    text.includes("maintenance")||
+    text.includes("cheque bounce")||
+    text.includes("insurance")||
+    text.includes("neighbour")
+  ) return "Low"
+  return "Mid"
+}
+
+function detectCourtLevel(legalType,
+  type, complexity) {
+  const text = (
+    (legalType||"")+" "+(type||"")
+  ).toLowerCase()
+  if (
+    text.includes("supreme")||
+    text.includes("constitutional")||
+    text.includes("fundamental right")||
+    text.includes("writ")
+  ) return "Supreme Court"
+  if (
+    text.includes("high court")||
+    text.includes("corporate")||
+    text.includes("taxation")||
+    text.includes("gst")||
+    text.includes("income tax")||
+    (text.includes("property")&&
+     complexity==="High")
+  ) return "High Court"
+  if (
+    text.includes("consumer")||
+    text.includes("deficiency")
+  ) return "Consumer Forum"
+  if (
+    text.includes("family")||
+    text.includes("divorce")||
+    text.includes("custody")||
+    text.includes("matrimonial")
+  ) return "Family Court"
+  if (
+    text.includes("labour")||
+    text.includes("employment")||
+    text.includes("industrial")
+  ) return "Tribunal"
+  return "District Court"
+}
+
+function detectFeeRange(incomeTier,
+  complexity) {
+  const ranges = {
+    low: {
+      Low:  {min:500,   max:5000   },
+      Mid:  {min:1000,  max:10000  },
+      High: {min:2000,  max:15000  }
+    },
+    mid: {
+      Low:  {min:2000,  max:15000  },
+      Mid:  {min:5000,  max:50000  },
+      High: {min:10000, max:100000 }
+    },
+    high: {
+      Low:  {min:10000, max:50000  },
+      Mid:  {min:25000, max:200000 },
+      High: {min:50000, max:999999 }
+    }
+  }
+  return ranges[incomeTier]?.[complexity]||
+    {min:0, max:999999}
+}
+
+function mapIncomeToLawyerTier(incomeTier) {
+  const map = {
+    low:  ["tier3"],
+    mid:  ["tier2","tier3"],
+    high: ["tier1","tier2"]
+  }
+  return map[incomeTier]||["tier2","tier3"]
+}
+
 /* Create Case */
 router.post("/", auth(), async (req, res) => {
   try {
@@ -28,19 +124,146 @@ router.post("/", auth(), async (req, res) => {
     await newCase.save();
 
     // EXPERT MATCHING
-    let matchedLawyers = [];
+    let matchedLawyers  = []
+    let mediationResult = null
     try {
+      const citizen = await User.findById(
+        req.user.id
+      ).select("incomeTier state city name phone")
+      const incomeTier =
+        citizen?.incomeTier || "mid"
+      const complexity  = detectComplexity(
+        legalType, urgency, type
+      )
+      const courtLevel  = detectCourtLevel(
+        legalType, type, complexity
+      )
+      const feeRange    = detectFeeRange(
+        incomeTier, complexity
+      )
+      const lawyerTiers =
+        mapIncomeToLawyerTier(incomeTier)
+
+      newCase.complexity        = complexity
+      newCase.courtLevel        = courtLevel
+      newCase.clientIncomeTier  = incomeTier
+      newCase.estimatedFeeRange = feeRange
+      await newCase.save()
+
+      /* PRIMARY MATCH */
       matchedLawyers = await Lawyer.find({
-        specialization: { $regex: legalType || "", $options: "i" }
-      }).limit(3).select("name specialization rating experience photo");
-    } catch (e) {}
+        isVerified: true,
+        isBlocked:  false,
+        tier:       { $in: lawyerTiers },
+        specialization: {
+          $regex:   legalType || type || "",
+          $options: "i"
+        }
+      })
+      .sort({ rating: -1, casesClaimedCount: 1 })
+      .limit(5)
+      .select("name specialization rating " +
+        "experience tier minFeePerCase " +
+        "maxFeePerCase courtLevels city " +
+        "state photo")
+
+      /* FALLBACK 1 — relax tier */
+      if (matchedLawyers.length < 3) {
+        matchedLawyers = await Lawyer.find({
+          isVerified: true,
+          isBlocked:  false,
+          specialization: {
+            $regex:   legalType || type || "",
+            $options: "i"
+          }
+        })
+        .sort({ rating: -1 })
+        .limit(5)
+        .select("name specialization rating " +
+          "experience tier minFeePerCase " +
+          "maxFeePerCase courtLevels city " +
+          "state photo")
+      }
+
+      /* FALLBACK 2 — any verified lawyer */
+      if (matchedLawyers.length === 0) {
+        matchedLawyers = await Lawyer.find({
+          isVerified: true,
+          isBlocked:  false
+        })
+        .sort({ rating: -1 })
+        .limit(3)
+        .select("name specialization rating " +
+          "experience tier minFeePerCase " +
+          "maxFeePerCase photo")
+      }
+
+      /* MEDIATION CHECK */
+      try {
+        const AI_URL = process.env
+          .PYTHON_AI_SERVICE_URL ||
+          "http://127.0.0.1:8088"
+        const medRes = await axios.post(
+          `${AI_URL}/mediation-video`,
+          {
+            caseTitle:   newCase.title,
+            caseType:    newCase.type ||
+                         newCase.legalType || "",
+            citizenName: citizen?.name || "User",
+            lang:        req.body.lang || "auto",
+            userInput:   newCase.description || ""
+          },
+          { timeout: 30000 }
+        )
+        if (medRes.data.eligible) {
+          newCase.isMediationEligible =
+            true
+          newCase.mediationScript =
+            medRes.data.script
+          newCase.mediationVideoUrl =
+            medRes.data.videoUrl
+          await newCase.save()
+          mediationResult = medRes.data
+
+          /* WhatsApp alert to citizen */
+          if (citizen?.phone) {
+            const {
+              sendMediationAlert
+            } = require("../utils/whatsapp")
+            sendMediationAlert({
+              to:          citizen.phone,
+              citizenName: citizen.name,
+              caseTitle:   newCase.title
+            })
+          }
+        }
+      } catch (medErr) {
+        console.error(
+          "Mediation check error:", medErr.message
+        )
+      }
+
+    } catch (matchErr) {
+      console.error(
+        "Tier Matching Error:", matchErr
+      )
+    }
 
     const io = req.app.get("io");
     if (io) io.emit("marketplace-needs-refresh");
 
-    res.json({ 
-      case: newCase, 
-      suggestedLawyers: matchedLawyers 
+    res.json({
+      case: newCase,
+      suggestedLawyers: matchedLawyers,
+      matchingInfo: {
+        complexity:   newCase.complexity,
+        courtLevel:   newCase.courtLevel,
+        incomeTier:   newCase.clientIncomeTier,
+        feeRange:     newCase.estimatedFeeRange
+      },
+      mediationEligible:
+        newCase.isMediationEligible,
+      mediationInfo: mediationResult || null
     });
 
   } catch (err) {
@@ -297,6 +520,7 @@ router.post("/analyze-story", auth(), async (req, res) => {
     }
 
     // COURTROOM-READY LEGAL TRIAGE (Groq Llama 3.3 with Detailed Taxonomy)
+    const GROQ_KEY = process.env.GROQ_API_KEY;
     const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
     const GEMINI_KEY = process.env.GEMINI_API_KEY;
     
@@ -425,12 +649,45 @@ router.post("/analyze-story", auth(), async (req, res) => {
     1. "title": You MUST use the EXACT formal title from the mapping above if the story matches a sub-topic. If no match, create a similar formal title.
     2. "category": The high-level matter (e.g., "Job & Salary").
     3. "legalType": Select the parent category from the mapping (Civil, Criminal, etc.).
+    4. "sections": An array of 2-3 specific Indian laws/sections (e.g. ["Sec 420 IPC", "Sec 354 BNS"]).
+    5. "court": The specific Indian court jurisdiction (e.g. "District Court", "Family Court").
+    6. "draft": A very short 2-sentence formal legal petition draft based on the story.
     
     STORY: ${description}
     
-    RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "..."}`;
+    RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "...", "sections": ["..."], "court": "...", "draft": "..."}`;
 
     try {
+      if (GROQ_KEY) {
+        console.log("[AI TRIAGE] Attempting Groq Analysis...");
+        try {
+          const groqRes = await axios.post(
+            "https://api.groq.com/openai/v1/chat/completions",
+            {
+              model: "llama-3.3-70b-versatile",
+              messages: [{ role: "user", content: analysisPrompt }],
+              response_format: { type: "json_object" },
+              temperature: 0.1
+            },
+            { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 10000 }
+          );
+          let rawContent = groqRes.data.choices[0].message.content;
+          rawContent = rawContent.replace(/```json|```/g, "").trim();
+          const data = JSON.parse(rawContent);
+          console.log("[AI TRIAGE] Groq Success:", data.title);
+          return res.json({ 
+            title: data.title, 
+            category: data.category, 
+            legalType: data.legalType,
+            sections: data.sections || [],
+            court: data.court || "",
+            draft: data.draft || ""
+          });
+        } catch (err) {
+          console.error("[AI TRIAGE] Groq Failed:", err.response?.data || err.message);
+        }
+      }
+
       if (NVIDIA_KEY) {
         console.log("[AI TRIAGE] Attempting NVIDIA Analysis...");
         try {
@@ -444,12 +701,17 @@ router.post("/analyze-story", auth(), async (req, res) => {
             },
             { headers: { Authorization: `Bearer ${NVIDIA_KEY}` }, timeout: 10000 }
           );
-          const data = JSON.parse(nvidiaRes.data.choices[0].message.content);
+          let rawContent = nvidiaRes.data.choices[0].message.content;
+          rawContent = rawContent.replace(/```json|```/g, "").trim();
+          const data = JSON.parse(rawContent);
           console.log("[AI TRIAGE] NVIDIA Success:", data.title);
           return res.json({ 
             title: data.title, 
             category: data.category, 
-            legalType: data.legalType
+            legalType: data.legalType,
+            sections: data.sections || [],
+            court: data.court || "",
+            draft: data.draft || ""
           });
         } catch (err) {
           console.error("[AI TRIAGE] NVIDIA Failed:", err.response?.data || err.message);
@@ -473,7 +735,10 @@ router.post("/analyze-story", auth(), async (req, res) => {
           return res.json({ 
             title: data.title, 
             category: data.category, 
-            legalType: data.legalType
+            legalType: data.legalType,
+            sections: data.sections || [],
+            court: data.court || "",
+            draft: data.draft || ""
           });
         } catch (err) {
           console.error("[AI TRIAGE] Gemini Failed:", err.response?.data || err.message);
@@ -619,5 +884,79 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+router.get(
+  "/mediation-video/status/:videoId",
+  auth(),
+  async (req, res) => {
+    try {
+      const AI_URL = process.env
+        .PYTHON_AI_SERVICE_URL ||
+        "http://127.0.0.1:8088"
+      const response = await axios.get(
+        `${AI_URL}/mediation-video/status/` +
+        req.params.videoId,
+        { timeout: 10000 }
+      )
+      res.json(response.data)
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+router.get(
+  "/matched-lawyers/:caseId",
+  auth(),
+  async (req, res) => {
+    try {
+      const targetCase =
+        await Case.findById(req.params.caseId)
+      if (!targetCase) {
+        return res.status(404).json({
+          message: "Case not found"
+        })
+      }
+      const lawyerTiers =
+        mapIncomeToLawyerTier(
+          targetCase.clientIncomeTier || "mid"
+        )
+      const lawyers = await Lawyer.find({
+        isVerified: true,
+        isBlocked:  false,
+        tier: { $in: lawyerTiers },
+        specialization: {
+          $regex: targetCase.legalType ||
+            targetCase.type || "",
+          $options: "i"
+        }
+      })
+      .sort({ rating: -1, casesClaimedCount: 1 })
+      .limit(10)
+      .select("name specialization rating " +
+        "experience tier minFeePerCase " +
+        "maxFeePerCase courtLevels city " +
+        "state photo")
+
+      res.json({
+        lawyers,
+        matchingInfo: {
+          complexity:  targetCase.complexity,
+          courtLevel:  targetCase.courtLevel,
+          incomeTier:
+            targetCase.clientIncomeTier,
+          feeRange:
+            targetCase.estimatedFeeRange
+        }
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
 
 module.exports = router;

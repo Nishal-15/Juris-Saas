@@ -9,3 +9,5 @@ sentence-transformers
 numpy
 pymupdf
 faiss-cpu
+pymongo
+bson

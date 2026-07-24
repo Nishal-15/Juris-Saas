@@ -41,7 +41,10 @@ export default function FilingConsole() {
     legalType: "Civil",
     incidentDate: "",
     oppositeParty: "",
-    urgency: "Normal"
+    urgency: "Normal",
+    sections: [],
+    court: "",
+    draft: ""
   });
   const [aiMessage, setAiMessage] = useState("Ready to help. I can assist you with your legal case filing!");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -87,9 +90,12 @@ export default function FilingConsole() {
         ...prev, 
         title: res.data.title || prev.title,
         category: res.data.category || prev.category,
-        legalType: res.data.legalType || prev.legalType
+        legalType: res.data.legalType || prev.legalType,
+        sections: res.data.sections || [],
+        court: res.data.court || "",
+        draft: res.data.draft || ""
       }));
-      setAiMessage("✨ Magic! I've suggested a Title and Category for you based on your story.");
+      setAiMessage("✨ Pipeline Complete! Title, Sections, and Draft generated.");
     } catch (err) {
       setAiMessage("I've captured your story. Please review the details below.");
     } finally {
@@ -239,6 +245,26 @@ export default function FilingConsole() {
                     <option value="Cyber">Cyber</option>
                   </select>
                 </div>
+
+                {formData.sections && formData.sections.length > 0 && (
+                  <div className="form-group">
+                    <label>Applicable Law Sections</label>
+                    <div className="wizard-input" style={{ background: '#f8fafc', display: 'flex', gap: '8px', flexWrap: 'wrap' }}>
+                      {formData.sections.map((sec, idx) => (
+                        <span key={idx} style={{ background: '#e0e7ff', color: '#4f46e5', padding: '4px 8px', borderRadius: '4px', fontSize: '12px', fontWeight: 'bold' }}>{sec}</span>
+                      ))}
+                    </div>
+                  </div>
+                )}
+
+                {formData.court && (
+                  <div className="form-group">
+                    <label>Recommended Court Jurisdiction</label>
+                    <div className="wizard-input" style={{ background: '#f8fafc', fontWeight: 'bold', color: '#334155' }}>
+                      🏛️ {formData.court}
+                    </div>
+                  </div>
+                )}
 
                 <div className="form-group">
                   <label>Date of Incident <span className="req">*</span></label>

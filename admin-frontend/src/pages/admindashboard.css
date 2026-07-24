@@ -47,7 +47,7 @@
 .metric-card:hover {
   transform: translateY(-5px);
   border-color: var(--gold);
-  box-shadow: 0 10px 20px rgba(212, 175, 55, 0.05);
+  box-shadow: var(--shadow-gold);
 }
 
 .metric-card h3 {
@@ -66,7 +66,7 @@
 }
 
 .metric-value.warning {
-  color: #f59e0b; /* Orange for pending */
+  color: var(--amber); /* Orange for pending */
 }
 
 /* GRID LAYOUT */
@@ -126,7 +126,7 @@
 
 .admin-table td {
   padding: 15px;
-  border-bottom: 1px solid rgba(255, 255, 255, 0.05);
+  border-bottom: 1px solid var(--border-dark);
   vertical-align: middle;
 }
 
@@ -142,27 +142,27 @@
 }
 
 .btn-approve {
-  background: rgba(16, 185, 129, 0.1);
-  color: #10b981;
-  border: 1px solid #10b981;
+  background: var(--green-dim);
+  color: var(--green);
+  border: 1px solid var(--green);
   padding: 6px 12px;
   border-radius: 4px;
   margin-right: 10px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
-.btn-approve:hover { background: #10b981; color: white; }
+.btn-approve:hover { background: var(--green); color: white; }
 
 .btn-reject {
-  background: rgba(239, 68, 68, 0.1);
-  color: #ef4444;
-  border: 1px solid #ef4444;
+  background: var(--red-dim);
+  color: var(--red);
+  border: 1px solid var(--red);
   padding: 6px 12px;
   border-radius: 4px;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
-.btn-reject:hover { background: #ef4444; color: white; }
+.btn-reject:hover { background: var(--red); color: white; }
 
 /* FORMS & INPUTS */
 .upload-box {
@@ -187,12 +187,12 @@
   border-radius: 6px;
   font-weight: bold;
   cursor: pointer;
-  transition: all 0.2s;
+  transition: var(--transition);
 }
 .btn-upload:disabled { opacity: 0.5; cursor: not-allowed; }
 .btn-upload:hover:not(:disabled), .btn-broadcast:hover {
   transform: translateY(-2px);
-  box-shadow: 0 4px 12px rgba(212, 175, 55, 0.3);
+  box-shadow: var(--shadow-gold);
 }
 
 .broadcast-form {
@@ -218,5 +218,5 @@
 .upload-status {
   margin-top: 15px;
   font-size: 0.9rem;
-  color: #10b981;
+  color: var(--green);
 }

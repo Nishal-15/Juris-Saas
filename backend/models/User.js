@@ -12,6 +12,20 @@ module.exports = mongoose.model("User",
   preferredLanguage: { type: String, default: "en" },
   isBlocked: { type: Boolean, default: false },
   
+  incomeTier: {
+    type: String,
+    enum: ["low", "mid", "high"],
+    default: "mid"
+  },
+  monthlyIncome: { type: Number, default: null },
+  state:  { type: String, default: null },
+  city:   { type: String, default: null },
+
+  // 🔒 Security
+  twoFactorOtp: { type: String, default: null },
+  twoFactorExpires: { type: Date, default: null },
+  
+  
   createdAt: { type: Date, default: Date.now }
  })
 );

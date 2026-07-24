@@ -1,9 +1,9 @@
 import React, { useState, useEffect } from 'react';
-import axios from 'axios';
-import { Users, Scale, FileText, Activity } from 'lucide-react';
+import API from '../api/axios';
+import { io } from 'socket.io-client';
+import { useToast } from '../components/Toast';
+import { Users, Scale, FileText, Activity, Clock, BookOpen, RefreshCw, Download } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
-
-const API_BASE = "http://localhost:5000/api/admin"; // Updated to local backend
 
 const COLORS = ['#c9a84c', '#1e293b', '#64748b', '#f1f5f9'];
 
@@ -18,32 +18,60 @@ export default function Dashboard() {
   const [barData, setBarData] = useState([]);
   const [pieData, setPieData] = useState([]);
   const [loading, setLoading] = useState(true);
+  
+  const [lastSync, setLastSync] = useState(null);
+  const [lastActivity, setLastActivity] = useState(null);
+  const [tierData, setTierData] = useState(null);
+  const toast = useToast();
 
   useEffect(() => {
     fetchStats();
+    fetchTierData();
+
+    const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
+    
+    socket.on("marketplace-needs-refresh", () => {
+      fetchStats();
+    });
+    
+    socket.on("new-verification-request", () => {
+      fetchStats();
+    });
+    
+    socket.on("platform-activity", (data) => {
+      setLastActivity(data.message || "New activity detected");
+      setTimeout(() => setLastActivity(null), 5000);
+    });
+    
+    return () => socket.disconnect();
   }, []);
 
   const fetchStats = async () => {
     try {
-      const token = localStorage.getItem("token");
-      const config = { headers: { Authorization: `Bearer ${token}` } };
-      
-      const res = await axios.get(`${API_BASE}/stats`, config);
-
+      const res = await API.get('/admin/stats');
       setStats({
         citizens: res.data.citizens,
         lawyers: res.data.lawyers,
         pending: res.data.pending,
         laws: res.data.laws
       });
-      
       setBarData(res.data.barData || []);
       setPieData(res.data.pieData || []);
-      
+      setLastSync(new Date());
       setLoading(false);
     } catch (err) {
       console.error("Dashboard Stats Fetch Error:", err);
+      toast.error("Failed to load dashboard stats");
       setLoading(false);
+    }
+  };
+
+  const fetchTierData = async () => {
+    try {
+      const res = await API.get('/admin/tier-analytics');
+      setTierData(res.data);
+    } catch (err) {
+      console.error("Tier Analytics Error:", err);
     }
   };
 
@@ -54,10 +82,7 @@ export default function Dashboard() {
       + `Total Citizens,${stats.citizens}\n`
       + `Verified Legal Experts,${stats.lawyers}\n`
       + `Pending Verifications,${stats.pending}\n`
-      + `Indexed Legal Acts,${stats.laws}\n\n`
-      + `SYSTEM HEALTH\n`
-      + `AI Synthesis Latency,450ms\n`
-      + `Database Integrity,99.98%\n`;
+      + `Indexed Legal Acts,${stats.laws}\n`;
 
     const encodedUri = encodeURI(csvContent);
     const link = document.createElement("a");
@@ -70,36 +95,92 @@ export default function Dashboard() {
 
   return (
     <div>
-      <header className="page-header">
-        <h2>Institutional Overview</h2>
-        <button className="btn-primary" onClick={handleExportReport} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
-          <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
-          Export Audit Report
-        </button>
+      <header className="page-header" style={{ marginBottom: '30px', display: 'flex', justifyContent: 'space-between' }}>
+        <div>
+          <h2>Institutional Overview</h2>
+          <div style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginTop: '6px' }}>
+            {lastSync ? `Last synced ${lastSync.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })}` : 'Syncing...'}
+          </div>
+        </div>
+        <div style={{ display: 'flex', gap: '15px' }}>
+          <button className="btn-outline" onClick={fetchStats} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <RefreshCw size={16} className={loading ? 'animate-spin' : ''} />
+            Refresh
+          </button>
+          <button className="btn-primary" onClick={handleExportReport} style={{ display: 'flex', gap: '8px', alignItems: 'center' }}>
+            <Download size={16} />
+            Export Audit Report
+          </button>
+        </div>
       </header>
 
+      {/* System Status Strip */}
+      <div style={{ display: 'flex', alignItems: 'center', padding: '12px 20px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '14px', marginBottom: '15px', gap: '20px', overflowX: 'auto' }}>
+        <style>{`
+          .sys-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; white-space: nowrap; }
+          .pulse-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 0 rgba(16,185,129,0.4); animation: pulse 2s infinite; }
+          @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
+          .sys-div { width: 1px; height: 16px; background: rgba(16,185,129,0.2); }
+          .sys-lbl { color: var(--text-muted); font-weight: 500; }
+          .sys-stat { color: var(--green); font-weight: 700; }
+          .animate-spin { animation: spin 1s linear infinite; }
+          @keyframes spin { 100% { transform: rotate(360deg); } }
+        `}</style>
+        <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">AI Engine</span><span className="sys-stat">Nominal</span></div><div className="sys-div"></div>
+        <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">Database</span><span className="sys-stat">Connected</span></div><div className="sys-div"></div>
+        <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">WhatsApp</span><span className="sys-stat">Active</span></div><div className="sys-div"></div>
+        <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">Video Bridge</span><span className="sys-stat">Ready</span></div><div className="sys-div"></div>
+        <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">Scheduler</span><span className="sys-stat">Running</span></div>
+      </div>
+
+      {lastActivity && (
+        <div style={{ display: 'flex', alignItems: 'center', padding: '10px 16px', background: 'var(--gold-dim)', borderRadius: '10px', marginBottom: '25px', gap: '10px', animation: 'fadeInUp 0.3s ease' }}>
+          <div className="pulse-dot" style={{ background: 'var(--gold)', boxShadow: 'none' }}></div>
+          <span style={{ color: 'var(--gold)', fontSize: '0.85rem', fontWeight: 600 }}>{lastActivity}</span>
+        </div>
+      )}
+
+      {!lastActivity && <div style={{ marginBottom: '25px' }}></div>}
+
       <div className="stats-grid">
-        <div className="stat-card">
+        <div className="stat-card" style={{ padding: '24px' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #3b82f6, transparent)' }}></div>
+          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(59,130,246,0.10)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Users size={22} />
+          </div>
           <div className="stat-label">Total Citizens</div>
           <div className="stat-value">{stats.citizens.toLocaleString()}</div>
-          <div className="stat-trend trend-up">↑ 2.4% from last month</div>
+          <div className="stat-trend trend-up">↑ Active Users</div>
         </div>
-        <div className="stat-card">
+        
+        <div className="stat-card" style={{ padding: '24px' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)' }}></div>
+          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(201,168,76,0.10)', color: '#c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Scale size={22} />
+          </div>
           <div className="stat-label">Legal Experts</div>
           <div className="stat-value">{stats.lawyers.toLocaleString()}</div>
-          <div className="stat-trend trend-up">↑ 12 new this week</div>
+          <div className="stat-trend trend-up">↑ Verified network</div>
         </div>
-        <div className="stat-card">
-          <div className="stat-label">Pending Verifications</div>
-          <div className="stat-value" style={{ color: stats.pending > 0 ? '#eab308' : '#1e293b' }}>
-            {stats.pending}
+        
+        <div className="stat-card" style={{ padding: '24px' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #f59e0b, transparent)' }}></div>
+          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: stats.pending > 0 ? 'rgba(245,158,11,0.10)' : 'rgba(148,163,184,0.1)', color: stats.pending > 0 ? '#f59e0b' : '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <Clock size={22} />
           </div>
-          <div className="stat-trend">Action required in queue</div>
+          <div className="stat-label">Pending Verifications</div>
+          <div className="stat-value" style={{ color: stats.pending > 0 ? 'var(--amber)' : 'inherit' }}>{stats.pending}</div>
+          <div className="stat-trend" style={{ color: stats.pending > 0 ? 'var(--amber)' : 'inherit' }}>{stats.pending > 0 ? '→ Action required in queue' : 'Queue is clear'}</div>
         </div>
-        <div className="stat-card">
+        
+        <div className="stat-card" style={{ padding: '24px' }}>
+          <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #10b981, transparent)' }}></div>
+          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <BookOpen size={22} />
+          </div>
           <div className="stat-label">AI Legal Index</div>
           <div className="stat-value">{stats.laws}</div>
-          <div className="stat-trend">Indexed Legal Acts</div>
+          <div className="stat-trend trend-up">↑ Indexed Legal Acts</div>
         </div>
       </div>
 
@@ -161,7 +242,89 @@ export default function Dashboard() {
             </div>
           </div>
         </div>
+      </div>
 
+      {/* Tier Analytics */}
+      <div className="content-section" style={{ marginTop: '30px' }}>
+        <h3 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '1.1rem' }}>Intelligent Matching Analytics</h3>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
+          
+          {/* Lawyers */}
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Lawyer Tiers</h4>
+            {[
+              { label: 'Tier 1 Senior', key: 'tier1', color: '#c9a84c' },
+              { label: 'Tier 2 Experienced', key: 'tier2', color: '#3b82f6' },
+              { label: 'Tier 3 Junior', key: 'tier3', color: '#10b981' }
+            ].map(item => {
+              const count = tierData?.lawyers?.[item.key] || 0;
+              const max = Math.max(...Object.values(tierData?.lawyers || {a:1}));
+              const width = max > 0 ? (count / max) * 100 : 0;
+              return (
+                <div key={item.key} style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
+                    <span>{item.label}</span>
+                    <span style={{ fontWeight: 600 }}>{count}</span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--bg-light)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: item.color, width: `${width}%`, transition: 'width 0.8s ease' }}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Citizens */}
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Citizen Income</h4>
+            {[
+              { label: 'High Income', key: 'high', color: '#c9a84c' },
+              { label: 'Mid Income', key: 'mid', color: '#3b82f6' },
+              { label: 'Low Income', key: 'low', color: '#10b981' }
+            ].map(item => {
+              const count = tierData?.citizens?.[item.key] || 0;
+              const max = Math.max(...Object.values(tierData?.citizens || {a:1}));
+              const width = max > 0 ? (count / max) * 100 : 0;
+              return (
+                <div key={item.key} style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
+                    <span>{item.label}</span>
+                    <span style={{ fontWeight: 600 }}>{count}</span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--bg-light)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: item.color, width: `${width}%`, transition: 'width 0.8s ease' }}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Courts */}
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Cases by Court</h4>
+            {[
+              { label: 'Supreme', key: 'supreme', color: '#c9a84c' },
+              { label: 'High', key: 'high', color: '#3b82f6' },
+              { label: 'District', key: 'district', color: '#10b981' },
+              { label: 'Consumer', key: 'consumer', color: '#8b5cf6' }
+            ].map(item => {
+              const count = tierData?.courts?.[item.key] || 0;
+              const max = Math.max(...Object.values(tierData?.courts || {a:1}));
+              const width = max > 0 ? (count / max) * 100 : 0;
+              return (
+                <div key={item.key} style={{ marginBottom: '12px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
+                    <span>{item.label}</span>
+                    <span style={{ fontWeight: 600 }}>{count}</span>
+                  </div>
+                  <div style={{ height: '8px', background: 'var(--bg-light)', borderRadius: '4px', overflow: 'hidden' }}>
+                    <div style={{ height: '100%', background: item.color, width: `${width}%`, transition: 'width 0.8s ease' }}></div>
+                  </div>
+                </div>
+              );
+            })}
+          </div>
+        </div>
       </div>
     </div>
   );

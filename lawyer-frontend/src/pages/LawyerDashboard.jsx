@@ -296,41 +296,40 @@ export default function LawyerDashboard() {
                 No pending consultation requests.
               </div>
             ) : (
-              <div className="ld-table">
-                <div className="ld-table-head">
-                  <span className="ld-client-cell">Client</span>
-                  <span className="ld-matter-cell">Matter</span>
-                  <span className="ld-scheduled-cell">Scheduled</span>
-                  <span className="ld-status-cell">Status</span>
-                  <span className="ld-actions-cell">Actions</span>
-                </div>
+              <div className="ld-kanban-grid">
                 {pending.map((p) => (
-                  <div key={p._id} className="ld-table-row">
-                    <div className="ld-client-cell">
-                      <div className="ld-avatar" style={{ background: "var(--ld-gold-dim)", color: "var(--ld-gold)", border: "1px solid var(--ld-gold)" }}>
-                        {(p.userId?.name?.[0] || "A").toUpperCase()}
+                  <div key={p._id} className="ld-case-card">
+                    <div className="ld-card-header">
+                      <div className={`ld-priority-badge ${p.caseId?.urgency?.toLowerCase() || 'normal'}`}>
+                        {p.caseId?.urgency || 'Consultation'}
                       </div>
-                      <span className="ld-client-name">{p.userId?.name || "Anonymous"}</span>
+                      <div className="ld-card-date">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {p.date} • {p.time}
+                      </div>
                     </div>
-                    <div className="ld-matter-cell">
-                      {p.caseId ? (
-                        <>
-                          <div className="ld-matter-title" style={{ fontWeight: 700 }}>{p.caseId.title}</div>
-                          <div className="ld-filing-date">Filed: {new Date(p.caseId.createdAt).toLocaleDateString('en-GB')}</div>
-                        </>
-                      ) : (
-                        <span className="ld-muted-text">General Inquiry</span>
-                      )}
+                    
+                    <h3 className="ld-card-title">{p.caseId ? p.caseId.title : "General Legal Consultation"}</h3>
+                    
+                    <div className="ld-card-meta">
+                      <div className="ld-client-pill">
+                        <div className="ld-client-avatar">{(p.userId?.name?.[0] || "A").toUpperCase()}</div>
+                        <span className="ld-client-name">{p.userId?.name || "Anonymous Client"}</span>
+                      </div>
                     </div>
-                    <div className="ld-scheduled-cell ld-muted-text">{p.date} - {p.time}</div>
-                    <div className="ld-status-cell">
-                      <span className={`ld-tag gold`}>{p.status.toUpperCase()}</span>
-                    </div>
-                    <div className="ld-actions-cell">
-                      <button className="ld-btn-primary" onClick={() => handleStatusUpdate(p._id, "Accepted", p.itemType)}>Accept Request</button>
-                      <button className="ld-btn-icon" onClick={() => p.caseId && navigate(`/case/${p.caseId._id}`)} title="View Brief">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </button>
+
+                    <div className="ld-card-footer">
+                      <div className="ld-card-actions">
+                        <button className="ld-card-btn primary" onClick={() => handleStatusUpdate(p._id, "Accepted", p.itemType)}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><polyline points="20 6 9 17 4 12"/></svg>
+                          Accept
+                        </button>
+                        {p.caseId && (
+                          <button className="ld-card-btn secondary" onClick={() => navigate(`/case/${p.caseId._id}`)}>
+                            Review Brief
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -348,41 +347,40 @@ export default function LawyerDashboard() {
                 No active consultations at the moment.
               </div>
             ) : (
-              <div className="ld-table">
-                <div className="ld-table-head">
-                  <span className="ld-client-cell">Client</span>
-                  <span className="ld-matter-cell">Matter</span>
-                  <span className="ld-scheduled-cell">Scheduled</span>
-                  <span className="ld-status-cell">Status</span>
-                  <span className="ld-actions-cell">Actions</span>
-                </div>
+              <div className="ld-kanban-grid">
                 {activeWorkspace.map((p) => (
-                  <div key={p._id} className="ld-table-row">
-                    <div className="ld-client-cell">
-                      <div className="ld-avatar" style={{ background: "var(--ld-gold)", color: "#000", fontWeight: 800 }}>
-                        {(p.userId?.name?.[0] || "A").toUpperCase()}
+                  <div key={p._id} className="ld-case-card" style={{ borderColor: 'rgba(16, 185, 129, 0.3)' }}>
+                    <div className="ld-card-header">
+                      <div className="ld-priority-badge normal" style={{ background: 'var(--gold)', color: '#0f111a', border: 'none' }}>
+                        ACTIVE
                       </div>
-                      <span className="ld-client-name">{p.userId?.name || "Anonymous"}</span>
+                      <div className="ld-card-date">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="4" width="18" height="18" rx="2" ry="2"/><line x1="16" y1="2" x2="16" y2="6"/><line x1="8" y1="2" x2="8" y2="6"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
+                        {p.date} • {p.time}
+                      </div>
                     </div>
-                    <div className="ld-matter-cell">
-                      {p.caseId ? (
-                        <>
-                          <div className="ld-matter-title" style={{ fontWeight: 700 }}>{p.caseId.title}</div>
-                          <div className="ld-filing-date">Filed: {new Date(p.caseId.createdAt).toLocaleDateString('en-GB')}</div>
-                        </>
-                      ) : (
-                        <span className="ld-muted-text">Direct Consultation</span>
-                      )}
+                    
+                    <h3 className="ld-card-title">{p.caseId ? p.caseId.title : "Direct Consultation"}</h3>
+                    
+                    <div className="ld-card-meta">
+                      <div className="ld-client-pill">
+                        <div className="ld-client-avatar" style={{ background: '#3b82f6', color: '#fff' }}>{(p.userId?.name?.[0] || "A").toUpperCase()}</div>
+                        <span className="ld-client-name">{p.userId?.name || "Anonymous Client"}</span>
+                      </div>
                     </div>
-                    <div className="ld-scheduled-cell ld-muted-text">{p.date} - {p.time}</div>
-                    <div className="ld-status-cell">
-                      <span className={`ld-tag green`}>ACCEPTED</span>
-                    </div>
-                    <div className="ld-actions-cell">
-                      <button className="ld-btn-primary" onClick={() => navigate(`/chat/${p.userId?._id}`)}>Consult</button>
-                      <button className="ld-btn-icon" onClick={() => p.caseId && navigate(`/case/${p.caseId._id}`)} title="View Brief">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </button>
+
+                    <div className="ld-card-footer">
+                      <div className="ld-card-actions">
+                        <button className="ld-card-btn primary" onClick={() => navigate(`/chat/${p.userId?._id}`)}>
+                          <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><path d="M21 11.5a8.38 8.38 0 0 1-.9 3.8 8.5 8.5 0 0 1-7.6 4.7 8.38 8.38 0 0 1-3.8-.9L3 21l1.9-5.7a8.38 8.38 0 0 1-.9-3.8 8.5 8.5 0 0 1 4.7-7.6 8.38 8.38 0 0 1 3.8-.9h.5a8.48 8.48 0 0 1 8 8v.5z"/></svg>
+                          Consult
+                        </button>
+                        {p.caseId && (
+                          <button className="ld-card-btn secondary" onClick={() => navigate(`/case/${p.caseId._id}`)}>
+                            Brief
+                          </button>
+                        )}
+                      </div>
                     </div>
                   </div>
                 ))}
@@ -400,21 +398,38 @@ export default function LawyerDashboard() {
                 No open cases matching your specialization.
               </div>
             ) : (
-              <div className="ld-table">
-                <div className="ld-table-head">
-                  <span>Case Title</span><span>Category</span><span>Urgency</span><span>Filed By</span><span>Actions</span>
-                </div>
+              <div className="ld-kanban-grid">
                 {openCases.map((c) => (
-                  <div key={c._id} className="ld-table-row">
-                    <div className="ld-matter-title">{c.title}</div>
-                    <div><span className="ld-tag blue">{c.type}</span></div>
-                    <div style={{ color: urgencyColor(c.urgency), fontWeight: 600, fontSize: "13px" }}>{c.urgency}</div>
-                    <div className="ld-muted-text">{c.user?.name || "Anonymous"}</div>
-                    <div className="ld-actions-cell">
-                      <button className="ld-btn-primary" onClick={() => handleTakeCase(c._id)}>Claim</button>
-                      <button className="ld-btn-icon" onClick={() => navigate(`/case/${c._id}`)} title="View Brief">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/><circle cx="12" cy="12" r="3"/></svg>
-                      </button>
+                  <div key={c._id} className="ld-case-card">
+                    <div className="ld-card-header">
+                      <div className={`ld-priority-badge ${c.urgency?.toLowerCase() || 'normal'}`}>
+                        {c.urgency || 'Normal'} Priority
+                      </div>
+                      <div className="ld-card-date">
+                        <svg viewBox="0 0 24 24" width="14" height="14" fill="none" stroke="currentColor" strokeWidth="2"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                        Open Pool
+                      </div>
+                    </div>
+                    
+                    <h3 className="ld-card-title">{c.title}</h3>
+                    
+                    <div className="ld-card-meta">
+                      <div className="ld-client-pill">
+                        <div className="ld-client-avatar">{(c.user?.name?.[0] || "A").toUpperCase()}</div>
+                        <span className="ld-client-name">{c.user?.name || "Anonymous Client"}</span>
+                      </div>
+                      <span style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '700', padding: '4px 8px', background: 'rgba(201,168,76,0.1)', borderRadius: '6px' }}>{c.type}</span>
+                    </div>
+
+                    <div className="ld-card-footer">
+                      <div className="ld-card-actions">
+                        <button className="ld-card-btn primary" onClick={() => handleTakeCase(c._id)}>
+                          Claim Case
+                        </button>
+                        <button className="ld-card-btn secondary" onClick={() => navigate(`/case/${c._id}`)}>
+                          View Brief
+                        </button>
+                      </div>
                     </div>
                   </div>
                 ))}

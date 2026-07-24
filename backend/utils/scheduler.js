@@ -2,6 +2,8 @@ const cron = require("node-cron");
 const Case = require("../models/Case");
 const axios = require("axios");
 const twilio = require("twilio");
+const { spawn } = require("child_process")
+const path      = require("path")
 
 // 🕒 Check every morning at 8:00 AM
 cron.schedule("0 8 * * *", async () => {
@@ -83,3 +85,169 @@ async function sendWhatsApp(phone, text) {
     console.error(`[WhatsApp Failure] To ${phone}:`, err.message);
   }
 }
+
+/* WEEKLY LAW AUTO-SYNC — Sunday 2AM */
+cron.schedule("0 2 * * 0", async () => {
+  console.log(
+    "⚖️ [LawSync] Weekly sync starting..."
+  )
+  try {
+    const LawSync =
+      require("../models/LawSync")
+    const syncRecord = await LawSync.create({
+      source:      "IndianKanoon",
+      triggeredBy: "scheduler",
+      status:      "partial"
+    })
+    const scriptPath = path.join(
+      __dirname,
+      "../ai-service/auto_fetch.py"
+    )
+    const py = spawn("python", [
+      scriptPath,
+      "--source", "all",
+      "--sync-id",
+      syncRecord._id.toString()
+    ])
+    py.stdout.on("data", d =>
+      console.log(
+        "[LawSync Weekly]", d.toString()
+      )
+    )
+    py.stderr.on("data", d =>
+      console.error(
+        "[LawSync Error]", d.toString()
+      )
+    )
+    py.on("close", async code => {
+      await LawSync.findByIdAndUpdate(
+        syncRecord._id,
+        {
+          status: code === 0 ?
+            "success" : "failed",
+          errorMessage: code !== 0 ?
+            `Exit code ${code}` : null
+        }
+      )
+      console.log(
+        `[LawSync] Weekly done. Code: ${code}`
+      )
+    })
+  } catch (err) {
+    console.error(
+      "[LawSync] Scheduler error:", err
+    )
+  }
+})
+
+/* MONTHLY FAISS REBUILD — 1st of month 3AM */
+cron.schedule("0 3 1 * *", async () => {
+  console.log(
+    "🔄 [FAISS] Monthly rebuild starting..."
+  )
+  try {
+    const scriptPath = path.join(
+      __dirname,
+      "../ai-service/build_index.py"
+    )
+    const py = spawn("python", [scriptPath])
+    py.stdout.on("data", d =>
+      console.log(
+        "[FAISS Rebuild]", d.toString()
+      )
+    )
+    py.on("close", code =>
+      console.log(
+        `[FAISS Rebuild] Done. Code: ${code}`
+      )
+    )
+  } catch (err) {
+    console.error(
+      "[FAISS Rebuild] Error:", err
+    )
+  }
+})
+
+/* 14-DAY TRIAL NUDGES — Daily 9AM */
+cron.schedule("0 9 * * *", async () => {
+  try {
+    const Lawyer = require("../models/Lawyer")
+    const now    = new Date()
+
+    const nudgeLawyers = await Lawyer.find({
+      subscriptionTier: "Trial",
+      subscriptionExpiresAt: {
+        $gte: now,
+        $lte: new Date(
+          now.getTime() +
+          4 * 24 * 60 * 60 * 1000
+        )
+      }
+    })
+
+    for (const lawyer of nudgeLawyers) {
+      const daysLeft = Math.ceil(
+        (lawyer.subscriptionExpiresAt - now) /
+        (1000 * 60 * 60 * 24)
+      )
+      if (!lawyer.phone) continue
+
+      if (daysLeft <= 1) {
+        sendWhatsApp(
+          lawyer.phone,
+          `Hi ${lawyer.name}, your JurisBot ` +
+          `trial ends TOMORROW. Upgrade to ` +
+          `Starter at ₹499/month to keep your ` +
+          `cases active: jurisbot.in/upgrade`
+        )
+      } else if (daysLeft <= 4) {
+        sendWhatsApp(
+          lawyer.phone,
+          `Hi ${lawyer.name}, ${daysLeft} days ` +
+          `left on your JurisBot trial. Upgrade ` +
+          `to continue receiving cases: ` +
+          `jurisbot.in/upgrade`
+        )
+      }
+    }
+  } catch (err) {
+    console.error("[Trial Nudge] Error:", err)
+  }
+})
+
+/* EMERGENCY CASE ESCALATION — Every 30 min */
+cron.schedule("*/30 * * * *", async () => {
+  try {
+    const Case   = require("../models/Case")
+    const twoHrs = new Date(
+      Date.now() - 2 * 60 * 60 * 1000
+    )
+    const urgent = await Case.find({
+      urgency:        "Emergency",
+      assignedLawyer: null,
+      createdAt:      { $lte: twoHrs }
+    }).populate("user", "name")
+
+    for (const c of urgent) {
+      const io = require("../server")
+        ?.app?.get?.("io")
+      if (io) {
+        io.emit("emergency-unassigned", {
+          caseId:    c._id,
+          caseTitle: c.title,
+          message:
+            `URGENT: Case "${c.title}" ` +
+            `has been unassigned for 2+ hours`
+        })
+      }
+      console.log(
+        `[Emergency Escalation] ` +
+        `Case ${c._id} unassigned 2hrs+`
+      )
+    }
+  } catch (err) {
+    console.error(
+      "[Emergency Escalation] Error:", err
+    )
+  }
+})

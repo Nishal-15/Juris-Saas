@@ -1,6 +1,7 @@
 const User = require("../models/User");
 const Lawyer = require("../models/Lawyer"); // 👈 Added
 const Case = require("../models/Case");
+const LawSync = require("../models/LawSync");
 const bcrypt = require("bcryptjs");
 const router = require("express").Router();
 const multer = require("multer");
@@ -242,5 +243,273 @@ router.post("/broadcast", auth(["admin"]), async (req, res) => {
     res.status(500).json({ message: "Signal transmission failed." });
   }
 });
+/* TRIGGER LAW AUTO-SYNC */
+router.post(
+  "/trigger-law-sync",
+  auth(["admin"]),
+  async (req, res) => {
+    try {
+      const { spawn } = require("child_process")
+      const path      = require("path")
+      const syncRecord = await LawSync.create({
+        source:      req.body.source ||
+                     "IndianKanoon",
+        status:      "partial",
+        triggeredBy: "admin",
+        documentTitle:"Admin manual sync"
+      })
+      const scriptPath = path.join(
+        __dirname,
+        "../ai-service/auto_fetch.py"
+      )
+      const py = spawn("python", [
+        scriptPath,
+        "--source",
+        req.body.source || "all",
+        "--sync-id",
+        syncRecord._id.toString()
+      ])
+      py.stdout.on("data", d =>
+        console.log("[LawSync]", d.toString())
+      )
+      py.stderr.on("data", d =>
+        console.error(
+          "[LawSync Error]", d.toString()
+        )
+      )
+      res.json({
+        message: "Law sync triggered.",
+        syncId:  syncRecord._id,
+        status:  "running"
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+/* GET LAW SYNC STATUS */
+router.get(
+  "/law-sync-status",
+  auth(["admin"]),
+  async (req, res) => {
+    try {
+      const history = await LawSync
+        .find()
+        .sort({ createdAt: -1 })
+        .limit(20)
+      const lastSuccess = await LawSync
+        .findOne({ status: "success" })
+        .sort({ createdAt: -1 })
+      const totals = await LawSync.aggregate([{
+        $group: {
+          _id:   null,
+          sects: { $sum: "$sectionsAdded" },
+          docs:  { $sum: "$documentsAdded" }
+        }
+      }])
+      res.json({
+        lastSync:
+          lastSuccess?.createdAt || null,
+        lastStatus:
+          lastSuccess?.status || "never",
+        totalSections:
+          totals[0]?.sects || 0,
+        totalDocuments:
+          totals[0]?.docs  || 0,
+        history
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+/* GET TIER ANALYTICS */
+router.get(
+  "/tier-analytics",
+  auth(["admin"]),
+  async (req, res) => {
+    try {
+      const [
+        t1,t2,t3,
+        low,mid,high,
+        dist,hc,sc,
+        lc,mc,hx
+      ] = await Promise.all([
+        Lawyer.countDocuments({tier:"tier1"}),
+        Lawyer.countDocuments({tier:"tier2"}),
+        Lawyer.countDocuments({tier:"tier3"}),
+        User.countDocuments({
+          role:"user",incomeTier:"low"
+        }),
+        User.countDocuments({
+          role:"user",incomeTier:"mid"
+        }),
+        User.countDocuments({
+          role:"user",incomeTier:"high"
+        }),
+        Case.countDocuments({
+          courtLevel:"District Court"
+        }),
+        Case.countDocuments({
+          courtLevel:"High Court"
+        }),
+        Case.countDocuments({
+          courtLevel:"Supreme Court"
+        }),
+        Case.countDocuments({
+          complexity:"Low"
+        }),
+        Case.countDocuments({
+          complexity:"Mid"
+        }),
+        Case.countDocuments({
+          complexity:"High"
+        })
+      ])
+      res.json({
+        lawyers:    {tier1:t1,tier2:t2,tier3:t3},
+        citizens:   {low,mid,high},
+        courts:     {
+          district:dist,
+          high:hc,
+          supreme:sc
+        },
+        complexity: {low:lc,mid:mc,high:hx}
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+/* BLOCK / UNBLOCK LAWYER */
+router.patch(
+  "/block-lawyer/:id",
+  auth(
+  ["admin"]),
+  async (req, res) => {
+    try {
+      const { isBlocked } = req.body
+      const lawyer =
+        await Lawyer.findByIdAndUpdate(
+          req.params.id,
+          { isBlocked: !!isBlocked },
+          { new: true }
+        ).select("-password")
+      if (!lawyer) {
+        return res.status(404).json({
+          message: "Lawyer not found"
+        })
+      }
+      res.json({
+        message: `Lawyer ${isBlocked ?
+          "blocked" : "unblocked"} successfully`,
+        lawyer
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+/* CLEANUP ROUTE */
+router.post(
+  "/cleanup",
+  auth(["admin"]),
+  async (req, res) => {
+    try {
+      const result = await User.updateMany(
+        {},
+        {
+          $unset: {
+            barCouncilId:      "",
+            subscriptionTier:  "",
+            caseLimit:         "",
+            casesClaimedCount: ""
+          }
+        }
+      )
+      res.json({
+        message:
+          `Cleanup complete. ` +
+          `${result.modifiedCount} ` +
+          `documents updated.`,
+        modifiedCount: result.modifiedCount
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+/* CASE FEEDBACK */
+router.post(
+  "/cases/:id/feedback",
+  auth(),
+  async (req, res) => {
+    try {
+      const { rating, comment } = req.body
+      if (!rating || rating < 1 || rating > 5) {
+        return res.status(400).json({
+          message: "Rating must be 1 to 5"
+        })
+      }
+      const targetCase =
+        await Case.findById(req.params.id)
+          .populate("assignedLawyer")
+      if (!targetCase) {
+        return res.status(404).json({
+          message: "Case not found"
+        })
+      }
+      if (targetCase.user.toString() !==
+          req.user.id) {
+        return res.status(403).json({
+          message: "Only the case owner " +
+            "can submit feedback"
+        })
+      }
+      const lawyer = await Lawyer.findById(
+        targetCase.assignedLawyer
+      )
+      if (lawyer) {
+        const totalCases =
+          lawyer.casesClaimedCount || 1
+        const current =
+          lawyer.rating || 4.5
+        const newRating = parseFloat(
+          (
+            (current * (totalCases - 1) +
+              rating) / totalCases
+          ).toFixed(2)
+        )
+        await Lawyer.findByIdAndUpdate(
+          lawyer._id,
+          { rating: newRating }
+        )
+      }
+      res.json({
+        message: "Feedback submitted.",
+        newRating: lawyer?.rating
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
 
 module.exports = router;

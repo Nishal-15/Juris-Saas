@@ -8,6 +8,7 @@ const multer = require("multer");
 const path = require("path");
 const fs = require("fs");
 const { verifyLawyerCredentials } = require("../utils/aiVerifier");
+const { sendOtpEmail } = require("../utils/notifier");
 
 // 📁 UPLOAD CONFIG (Multi-field)
 const storage = multer.diskStorage({
@@ -69,7 +70,7 @@ router.post("/register-lawyer", upload.fields([
       avatar: avatarUrl,
       verificationStatus: "pending",
       subscriptionTier: "trial",
-      subscriptionExpiresAt: new Date(+new Date() + 30 * 24 * 60 * 60 * 1000)
+      subscriptionExpiresAt: new Date(+new Date() + 14 * 24 * 60 * 60 * 1000)
     });
 
     // 🤖 START BACKGROUND AI VERIFICATION
@@ -187,6 +188,19 @@ router.post("/login", async (req, res) => {
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
+    // 🔒 2FA OTP LOGIC FOR ADMIN
+    if (user.role === "admin") {
+      const otp = Math.floor(100000 + Math.random() * 900000).toString(); // 6 digit OTP
+      user.twoFactorOtp = otp;
+      user.twoFactorExpires = Date.now() + 10 * 60 * 1000; // 10 mins
+      await user.save();
+      
+      await sendOtpEmail(user.email, otp);
+      
+      console.log(`[2FA] OTP generated for Admin ${user.email}`);
+      return res.json({ requireOtp: true, email: user.email, message: "OTP sent to email" });
+    }
+
     console.log("Generating JWT...");
     const token = jwt.sign(
       { id: user._id, role: user.role },
@@ -203,6 +217,44 @@ router.post("/login", async (req, res) => {
 
   } catch (err) {
     console.error("❌ LOGIN ERROR:", err);
+    res.status(500).json({ message: "Server error" });
+  }
+});
+
+/* ===========================
+VERIFY ADMIN OTP
+=========================== */
+router.post("/verify-otp", async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+    const user = await User.findOne({ email });
+
+    if (!user || user.role !== "admin") {
+      return res.status(400).json({ message: "Invalid request" });
+    }
+
+    if (!user.twoFactorOtp || user.twoFactorOtp !== otp || Date.now() > user.twoFactorExpires) {
+      return res.status(400).json({ message: "Invalid or expired OTP" });
+    }
+
+    // Clear OTP
+    user.twoFactorOtp = null;
+    user.twoFactorExpires = null;
+    await user.save();
+
+    console.log(`✅ [2FA] Admin ${user.email} verified successfully.`);
+    const token = jwt.sign(
+      { id: user._id, role: user.role },
+      process.env.JWT_SECRET,
+      { expiresIn: "1d" }
+    );
+
+    const userResponse = user.toObject();
+    delete userResponse.password;
+
+    res.json({ token, user: userResponse });
+  } catch (err) {
+    console.error("❌ OTP ERROR:", err);
     res.status(500).json({ message: "Server error" });
   }
 });
@@ -267,15 +319,15 @@ router.post("/request-otp", async (req, res) => {
     console.log(`📧 [RESEND OTP SERVICE] Dispatching code for ${normalizedEmail}: ${otp}`);
 
     try {
-      await resend.emails.send({
-        from: "JurisBot <onboarding@resend.dev>",
-        to: normalizedEmail,
-        subject: "JurisBot Verification Code",
-        html: `<h2>Your JurisBot OTP</h2><p>Your verification code is: <strong>${otp}</strong></p><p>This code expires in 5 minutes.</p>`
-      });
-      console.log(`✅ [RESEND Success] OTP delivered to ${normalizedEmail}`);
-    } catch (resendErr) {
-      console.error("❌ [RESEND API Error]", resendErr);
+      /* Gmail API — configured in mailer.js */
+      const { sendEmail, otpTemplate } = require("../utils/mailer");
+      const { subject, html } = otpTemplate(otp, normalizedEmail);
+      await sendEmail({ to: normalizedEmail, subject, html });
+      console.log(`✅ [Gmail] OTP sent to ${normalizedEmail}`);
+    } catch (mailErr) {
+      console.error("❌ [Gmail] OTP email failed:", mailErr);
+      /* Continue — OTP still works even if
+         email fails in development */
     }
 
     res.json({ message: "Verification code sent to your email address via Resend.", otp });

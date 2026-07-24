@@ -1,8 +1,13 @@
 import React, { useState } from 'react';
-import axios from 'axios';
-import { Radio, Megaphone, ShieldAlert, Send, CheckCircle } from 'lucide-react';
+import API from '../api/axios';
+import { useToast } from '../components/Toast';
+import { Megaphone, ShieldAlert, Send, CheckCircle, Terminal, AlertTriangle, Info, Zap, Loader2 } from 'lucide-react';
 
-const API_BASE = "http://localhost:5000/api/admin";
+const initialBroadcasts = [
+  { id: 1, title: 'System Maintenance Window', message: 'The primary database will undergo maintenance between 02:00 AM and 04:00 AM IST. Please expect minor latency.', target: 'all', priority: 'update', date: new Date(Date.now() - 86400000).toISOString() },
+  { id: 2, title: 'New Penal Code Enacted', message: 'BNS 2026 has been successfully indexed into the AI core. All lawyers must refer to the updated guidelines.', target: 'lawyer', priority: 'emergency', date: new Date(Date.now() - 172800000).toISOString() },
+  { id: 3, title: 'Welcome to JurisBot 2.0', message: 'The new institutional portal is now live across the nation.', target: 'all', priority: 'success', date: new Date(Date.now() - 500000000).toISOString() }
+];
 
 export default function Broadcast() {
   const [formData, setFormData] = useState({
@@ -12,129 +17,172 @@ export default function Broadcast() {
     priority: 'normal'
   });
   const [sending, setSending] = useState(false);
-  const [success, setSuccess] = useState(false);
+  const [history, setHistory] = useState(initialBroadcasts);
+  const toast = useToast();
 
   const handleTransmit = async () => {
-    if (!formData.title || !formData.message) return alert("Please complete the signal content.");
+    if (!formData.title || !formData.message) {
+      toast.error("Please complete the signal content.");
+      return;
+    }
     
     setSending(true);
     try {
-      const token = localStorage.getItem("token");
-      await axios.post(`${API_BASE}/broadcast`, formData, {
-        headers: { Authorization: `Bearer ${token}` }
-      });
-      setSuccess(true);
-      setTimeout(() => setSuccess(false), 3000);
+      await API.post('/admin/broadcast', formData);
+      toast.success("Signal transmitted successfully.");
+      
+      const newEntry = {
+        id: Date.now(),
+        title: formData.title,
+        message: formData.message,
+        target: formData.target,
+        priority: formData.priority,
+        date: new Date().toISOString()
+      };
+      setHistory([newEntry, ...history]);
+      
       setFormData({ ...formData, title: '', message: '' });
     } catch (err) {
-      alert("Signal failed to transmit.");
+      toast.error("Signal failed to transmit.");
     } finally {
       setSending(false);
     }
   };
 
+  const getPriorityStyle = (priority) => {
+    switch(priority) {
+      case 'emergency': return { bg: 'var(--red-dim)', color: 'var(--red)', icon: <AlertTriangle size={14} />, label: 'alert' };
+      case 'update': return { bg: 'var(--gold-dim)', color: 'var(--gold)', icon: <Zap size={14} />, label: 'update' };
+      case 'success': return { bg: 'var(--green-dim)', color: 'var(--green)', icon: <CheckCircle size={14} />, label: 'success' };
+      default: return { bg: 'var(--blue-dim)', color: 'var(--blue)', icon: <Info size={14} />, label: 'info' };
+    }
+  };
+
   return (
     <div>
-      <header className="page-header">
-        <h2>Institutional Signal Tower</h2>
+      <header className="page-header" style={{ marginBottom: '30px' }}>
+        <div>
+          <h2 style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Megaphone color="var(--gold)" /> Signal Tower
+          </h2>
+        </div>
       </header>
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 350px', gap: '30px' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '30px' }}>
         
-        <div className="content-section">
+        {/* TRANSMIT CONSOLE */}
+        <div className="content-section" style={{ background: 'var(--bg-card)', padding: '30px' }}>
           <div className="section-title">
-            <h3>Compose Broadcast</h3>
-          </div>
-          
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>Target Audience</label>
-            <div style={{ display: 'flex', gap: '15px' }}>
-              {['all', 'lawyer', 'user'].map((t) => (
-                <button 
-                  key={t}
-                  onClick={() => setFormData({...formData, target: t})}
-                  style={{ 
-                    flex: 1, padding: '12px', borderRadius: '12px', border: '1px solid #e2e8f0',
-                    background: formData.target === t ? '#0f111a' : 'white',
-                    color: formData.target === t ? 'white' : '#64748b',
-                    cursor: 'pointer', fontWeight: '600', textTransform: 'capitalize'
-                  }}
-                >
-                  {t === 'user' ? 'Citizens' : t}
-                </button>
-              ))}
+            <h3>Transmit Command</h3>
+            <div className="badge badge-verified" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)' }}>
+              <ShieldAlert size={12} /> Root Access
             </div>
           </div>
+          <p style={{ color: 'var(--text-secondary)', fontSize: '0.85rem', marginBottom: '24px' }}>
+            Broadcasts bypass standard notification layers and are pushed instantly to the chosen network sector via websockets.
+          </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
+            
+            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Target Sector</label>
+                <select 
+                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)' }}
+                  value={formData.target}
+                  onChange={e => setFormData({...formData, target: e.target.value})}
+                >
+                  <option value="all">Global Network (All Users)</option>
+                  <option value="lawyer">Legal Experts Only</option>
+                  <option value="citizen">Citizens Only</option>
+                </select>
+              </div>
+              
+              <div>
+                <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Signal Priority</label>
+                <select 
+                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)' }}
+                  value={formData.priority}
+                  onChange={e => setFormData({...formData, priority: e.target.value})}
+                >
+                  <option value="normal">Normal / Informational</option>
+                  <option value="update">Update / Feature</option>
+                  <option value="success">Success / Milestone</option>
+                  <option value="emergency">Emergency / Alert</option>
+                </select>
+              </div>
+            </div>
 
-          <div style={{ marginBottom: '20px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>Signal Title</label>
-            <input 
-              type="text" 
-              placeholder="e.g. New Penal Code Amendment 2026"
-              value={formData.title}
-              onChange={(e) => setFormData({...formData, title: e.target.value})}
-              style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0' }} 
-            />
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Signal Title</label>
+              <input 
+                type="text" 
+                placeholder="e.g., Scheduled Core Maintenance"
+                style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)', boxSizing: 'border-box' }}
+                value={formData.title}
+                onChange={e => setFormData({...formData, title: e.target.value})}
+              />
+            </div>
+            
+            <div>
+              <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Signal Payload</label>
+              <textarea 
+                rows="4"
+                placeholder="Enter detailed broadcast message..."
+                style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)', resize: 'vertical', fontFamily: 'Inter', boxSizing: 'border-box' }}
+                value={formData.message}
+                onChange={e => setFormData({...formData, message: e.target.value})}
+              ></textarea>
+            </div>
+
+            <button 
+              className={formData.priority === 'emergency' ? 'btn-danger' : 'btn-primary'}
+              onClick={handleTransmit}
+              disabled={sending}
+              style={{ width: '100%', padding: '14px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '10px', fontSize: '0.95rem', borderRadius: '10px', opacity: sending ? 0.7 : 1, cursor: sending ? 'not-allowed' : 'pointer' }}
+            >
+              {sending ? (
+                <><Loader2 className="animate-spin" size={18} /> Transmitting to network...</>
+              ) : (
+                <><Send size={18} /> Execute Transmission</>
+              )}
+            </button>
+            
           </div>
-
-          <div style={{ marginBottom: '30px' }}>
-            <label style={{ display: 'block', fontSize: '0.85rem', color: '#64748b', marginBottom: '8px' }}>Message Body</label>
-            <textarea 
-              rows="6"
-              placeholder="Detailed instructions or alert text..."
-              value={formData.message}
-              onChange={(e) => setFormData({...formData, message: e.target.value})}
-              style={{ width: '100%', padding: '15px', borderRadius: '12px', border: '1px solid #e2e8f0', resize: 'none' }}
-            />
-          </div>
-
-          <button 
-            disabled={sending}
-            onClick={handleTransmit}
-            className="btn-primary" 
-            style={{ width: '100%', padding: '18px', fontSize: '1.1rem', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '12px' }}
-          >
-            {success ? <CheckCircle /> : <Send />}
-            {sending ? 'Transmitting...' : success ? 'Signal Sent!' : 'Transmit Institutional Signal'}
-          </button>
         </div>
 
-        <div className="content-section" style={{ background: '#f8fafc' }}>
-          <div className="section-title">
-             <h3>Signal Priority</h3>
+        {/* TRANSMISSION LOG */}
+        <div className="content-section" style={{ background: '#0a0d16', padding: '24px', border: '1px solid #1e293b' }}>
+          <div className="section-title" style={{ borderBottom: '1px solid #1e293b', paddingBottom: '15px', marginBottom: '20px' }}>
+            <h3 style={{ color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}><Terminal size={18} color="#94a3b8" /> Network Log</h3>
           </div>
-          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px' }}>
-            <label style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', borderRadius: '12px', 
-              background: 'white', border: formData.priority === 'normal' ? '2px solid #3b82f6' : '1px solid #e2e8f0', cursor: 'pointer' 
-            }}>
-              <input type="radio" checked={formData.priority === 'normal'} onChange={() => setFormData({...formData, priority: 'normal'})} />
-              <div>
-                <div style={{ fontWeight: '700', fontSize: '0.9rem' }}>Normal Alert</div>
-                <div style={{ fontSize: '0.75rem', color: '#64748b' }}>Standard platform notification.</div>
-              </div>
-            </label>
-
-            <label style={{ 
-              display: 'flex', alignItems: 'center', gap: '12px', padding: '15px', borderRadius: '12px', 
-              background: '#fff1f2', border: formData.priority === 'emergency' ? '2px solid #ef4444' : '1px solid #fecaca', cursor: 'pointer' 
-            }}>
-              <input type="radio" checked={formData.priority === 'emergency'} onChange={() => setFormData({...formData, priority: 'emergency'})} />
-              <div>
-                <div style={{ fontWeight: '700', fontSize: '0.9rem', color: '#ef4444' }}>🔴 Emergency</div>
-                <div style={{ fontSize: '0.75rem', color: '#991b1b' }}>High-priority legal alert.</div>
-              </div>
-            </label>
-          </div>
-
-          <div style={{ marginTop: '40px', padding: '20px', background: '#eff6ff', borderRadius: '16px' }}>
-            <h4 style={{ display: 'flex', alignItems: 'center', gap: '8px', marginBottom: '10px' }}>
-              <ShieldAlert size={18} color="#3b82f6" />
-              Protocol Info
-            </h4>
-            <p style={{ fontSize: '0.75rem', color: '#1e40af', lineHeight: '1.5' }}>
-              Signals are distributed via real-time WebSocket tunnels. Active users will see an immediate institutional popup.
-            </p>
+          
+          <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '500px', overflowY: 'auto', paddingRight: '5px' }}>
+            {history.map((log) => {
+              const pStyle = getPriorityStyle(log.priority);
+              return (
+                <div key={log.id} style={{ background: '#0f172a', borderLeft: `3px solid ${pStyle.color}`, borderRadius: '6px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <div style={{ color: '#f8fafc', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                      <span style={{ color: pStyle.color, display: 'flex' }}>{pStyle.icon}</span>
+                      {log.title}
+                    </div>
+                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{new Date(log.date).toLocaleDateString()}</span>
+                  </div>
+                  
+                  <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>{log.message}</p>
+                  
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                    <span style={{ fontSize: '0.65rem', background: '#1e293b', color: '#94a3b8', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      Target: {log.target}
+                    </span>
+                    <span style={{ fontSize: '0.65rem', background: pStyle.bg, color: pStyle.color, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                      {pStyle.label}
+                    </span>
+                  </div>
+                </div>
+              );
+            })}
           </div>
         </div>
 

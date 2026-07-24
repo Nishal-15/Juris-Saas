@@ -102,6 +102,9 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/branding", require("./routes/branding"));
 
+const paymentRoutes = require("./routes/payments");
+app.use("/api/payments", paymentRoutes);
+
 // 🖼️ GLOBAL BRANDING ASSETS
 app.use("/branding", express.static(path.join(__dirname, "public/branding")));
 

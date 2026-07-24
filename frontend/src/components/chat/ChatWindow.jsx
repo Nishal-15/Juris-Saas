@@ -18,7 +18,7 @@ export default function ChatWindow() {
   const [loading, setLoading] = useState(false);
   const endRef = useRef(null);
 
-  const [sidebarOpen, setSidebarOpen] = useState(() => window.innerWidth > 768);
+  const [sidebarOpen, setSidebarOpen] = useState(false);
 
   const [sessions, setSessions] = useState(() => {
     const saved = localStorage.getItem("jurisbot_chat_sessions");
@@ -161,41 +161,28 @@ export default function ChatWindow() {
     <div style={{ display: 'flex', height: '100%', width: '100%', overflow: 'hidden' }}>
       {/* ChatGPT-like Left Sidebar */}
       {sidebarOpen && (
-        <div className="chat-sidebar" style={{
-          width: '280px', background: '#111418', borderRight: '1px solid rgba(255,255,255,0.06)',
-          padding: '20px', display: 'flex', flexDirection: 'column', gap: '15px', height: '100%', flexShrink: 0
-        }}>
+        <div className="chat-sidebar">
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
-            <button onClick={handleNewChat} style={{
-              flex: 1, background: 'rgba(201,168,76,0.1)', border: '1px solid rgba(201,168,76,0.3)',
-              borderRadius: '10px', color: '#c9a84c', padding: '12px', cursor: 'pointer', display: 'flex',
-              alignItems: 'center', justifyContent: 'center', gap: '8px', fontWeight: '600', fontSize: '14px',
-              transition: 'all 0.2s ease', outline: 'none'
-            }}>
+            <button onClick={handleNewChat} className="new-chat-btn">
               ➕ New Chat
             </button>
             <button onClick={() => setSidebarOpen(false)} title="Close sidebar" style={{
-              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px',
-              color: '#8b949e', width: '42px', height: '42px', cursor: 'pointer', display: 'flex', alignItems: 'center',
-              justifyContent: 'center', transition: 'all 0.2s', outline: 'none'
+              background: 'rgba(255,255,255,0.05)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '12px',
+              color: '#8b949e', width: '46px', height: '46px', cursor: 'pointer', display: 'flex', alignItems: 'center',
+              justifyContent: 'center', transition: 'all 0.2s', outline: 'none', flexShrink: 0
             }}>
               <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"/><line x1="9" y1="3" x2="9" y2="21"/></svg>
             </button>
           </div>
 
-          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+          <div style={{ flex: 1, overflowY: 'auto', display: 'flex', flexDirection: 'column', gap: '8px', paddingRight: '4px' }}>
             {sessions.map(s => (
-              <div key={s.id} onClick={() => handleSelectChat(s.id)} style={{
-                padding: '12px 14px', background: s.id === currentSessionId ? 'rgba(255,255,255,0.05)' : 'rgba(255,255,255,0.02)',
-                border: s.id === currentSessionId ? '1px solid rgba(255,255,255,0.15)' : '1px solid rgba(255,255,255,0.03)',
-                borderRadius: '8px', color: s.id === currentSessionId ? '#fff' : '#8b949e', cursor: 'pointer',
-                display: 'flex', justifyContent: 'space-between', alignItems: 'center', transition: 'all 0.2s', fontSize: '13px'
-              }}>
-                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', maxWidth: '180px' }}>
+              <div key={s.id} onClick={() => handleSelectChat(s.id)} className={`chat-history-item ${s.id === currentSessionId ? 'active' : ''}`}>
+                <span style={{ textOverflow: 'ellipsis', overflow: 'hidden', whiteSpace: 'nowrap', flex: 1 }}>
                   💬 {s.title}
                 </span>
-                <span onClick={(e) => handleDeleteChat(e, s.id)} style={{ color: '#ff5555', cursor: 'pointer', fontSize: '14px', padding: '2px 6px', borderRadius: '4px' }}>
-                  🗑️
+                <span onClick={(e) => handleDeleteChat(e, s.id)} className="delete-btn" title="Delete Chat">
+                  <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2"><path d="M3 6h18M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6m3 0V4a2 2 0 012-2h4a2 2 0 012 2v2M10 11v6M14 11v6"/></svg>
                 </span>
               </div>
             ))}

@@ -33,3 +33,7 @@ backend/ai-service/faiss.index
 backend/ai-service/meta.npy
 backend/ai-service/*.log
 backend/ai-service/laws/
+
+# Ignore Markdown except README
+*.md
+!README.md

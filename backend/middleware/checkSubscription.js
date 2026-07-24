@@ -24,7 +24,7 @@ const checkSubscription = async (req, res, next) => {
     if (req.url.includes("/assign") || req.url.includes("/accept") || req.url.includes("/connect")) {
       const limits = {
         "Trial": 2,
-        "Starter": 5,    // ₹499 Plan
+        "Starter": 10,    // ₹499 Plan
         "Pro": Infinity  // ₹1999 Plan
       };
 

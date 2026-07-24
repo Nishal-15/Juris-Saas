@@ -19,6 +19,209 @@ try:
 except ImportError:
     fitz = None
 
+SUPPORTED_LANGUAGES = {
+  "hi":  "Hindi",      "bn":  "Bengali",
+  "te":  "Telugu",     "mr":  "Marathi",
+  "ta":  "Tamil",      "gu":  "Gujarati",
+  "kn":  "Kannada",    "ml":  "Malayalam",
+  "or":  "Odia",       "pa":  "Punjabi",
+  "as":  "Assamese",   "ur":  "Urdu",
+  "mai": "Maithili",   "sat": "Santali",
+  "kok": "Konkani",    "sd":  "Sindhi",
+  "doi": "Dogri",      "ks":  "Kashmiri",
+  "mni": "Manipuri",   "brx": "Bodo",
+  "ne":  "Nepali",     "sa":  "Sanskrit",
+  "en":  "English"
+}
+
+MEDIATION_ELIGIBLE = [
+  "property dispute","boundary dispute",
+  "property","family dispute","matrimonial",
+  "maintenance","consumer complaint",
+  "consumer","product defect",
+  "commercial dispute","business dispute",
+  "contract","landlord tenant","rent dispute",
+  "eviction","partnership dispute",
+  "employment dispute","neighbourhood dispute",
+  "money recovery","cheque bounce",
+  "insurance claim","medical negligence",
+  "school fees","society dispute",
+  "co-operative","intellectual property",
+  "trademark","divorce","child custody",
+  "domestic violence","deficiency in service"
+]
+
+MEDIATION_EXCLUSIONS = [
+  "murder","rape","dacoity","terrorism",
+  "national security","fir","arrest",
+  "custody","bail","kidnapping","robbery"
+]
+
+def detect_language(text):
+  """Auto-detect language using Google Cloud"""
+  if not text or len(text) < 3:
+    return "en"
+  GKEY = os.getenv("GOOGLE_CLOUD_API_KEY","")
+  if not GKEY:
+    return "en"
+  try:
+    resp = requests.get(
+      "https://translation.googleapis.com"
+      "/language/translate/v2/detect",
+      params={"q": text[:200], "key": GKEY},
+      timeout=5
+    )
+    if resp.status_code == 200:
+      detected = (resp.json()
+        .get("data",{})
+        .get("detections",[[{}]])[0][0]
+        .get("language","en"))
+      return detected if detected in \
+        SUPPORTED_LANGUAGES else "en"
+  except Exception as e:
+    print(f"Lang detect error: {e}",flush=True)
+  return "en"
+
+def is_mediation_eligible(user_input,
+  case_type=""):
+  text = (
+    (user_input or "") + " " +
+    (case_type or "")
+  ).lower()
+  for excl in MEDIATION_EXCLUSIONS:
+    if excl in text:
+      return False
+  return any(
+    kw in text for kw in MEDIATION_ELIGIBLE
+  )
+
+def get_mediation_script(case_summary,
+  lang, citizen_name="User"):
+  lang_name = SUPPORTED_LANGUAGES.get(
+    lang, "English"
+  )
+  system_prompt = f"""You are a professional
+legal narrator for an AI video avatar.
+Write a warm, clear, personalized spoken
+script explaining mediation to a citizen.
+
+Write ONLY the spoken words.
+No stage directions. No brackets.
+No formatting markers.
+
+Language: {lang_name}
+Citizen Name: {citizen_name}
+Case Summary: {case_summary}
+
+Structure:
+1. Greeting using citizen name (1 sentence)
+2. Acknowledge their specific case (1-2 sentences)
+3. What mediation is in plain language (2-3 sentences)
+4. Why it applies to their case (1-2 sentences)
+5. Benefits spoken naturally:
+   - Faster: 30-90 days vs 3-5 years
+   - Cheaper: fraction of court costs
+   - Private: nothing becomes public record
+   - You stay in control
+6. Mediation Act 2023 in one plain sentence
+7. Closing: "Would you like me to connect you
+   with a certified mediator, or would you
+   prefer a verified lawyer first?"
+
+Total: 150-200 words maximum.
+Tone: Warm, reassuring, not robotic.
+No legal jargon."""
+
+  NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
+  GROQ_API_KEY   = os.getenv("GROQ_API_KEY")
+
+  if NVIDIA_API_KEY:
+    try:
+      url = ("https://integrate.api.nvidia.com"
+             "/v1/chat/completions")
+      payload = {
+        "model": "meta/llama-3.1-8b-instruct",
+        "messages": [
+          {"role":"system","content":system_prompt},
+          {"role":"user","content":
+           f"Generate the mediation script for: "
+           f"{case_summary}"}
+        ],
+        "temperature": 0.3,
+        "max_tokens": 400
+      }
+      res = requests.post(
+        url,
+        headers={"Authorization":
+          f"Bearer {NVIDIA_API_KEY}"},
+        json=payload, timeout=20
+      )
+      data = res.json()
+      if "choices" in data:
+        return (data["choices"][0]
+          ["message"]["content"])
+    except Exception as e:
+      print(f"NVIDIA mediation error: {e}",
+            flush=True)
+
+  if GROQ_API_KEY:
+    try:
+      url = ("https://api.groq.com"
+             "/openai/v1/chat/completions")
+      payload = {
+        "model": "llama-3.1-8b-instant",
+        "messages": [
+          {"role":"system","content":system_prompt},
+          {"role":"user","content":
+           f"Generate the mediation script for: "
+           f"{case_summary}"}
+        ],
+        "temperature": 0.3,
+        "max_tokens": 400
+      }
+      res = requests.post(
+        url,
+        headers={"Authorization":
+          f"Bearer {GROQ_API_KEY}"},
+        json=payload, timeout=15
+      )
+      data = res.json()
+      if "choices" in data:
+        return (data["choices"][0]
+          ["message"]["content"])
+    except Exception as e:
+      print(f"Groq mediation error: {e}",
+            flush=True)
+
+  return (
+    f"Namaste {citizen_name}. Your case may "
+    f"qualify for mediation under the Mediation "
+    f"Act 2023. This means faster, cheaper, and "
+    f"private resolution without going to court. "
+    f"Would you like to connect with a mediator "
+    f"or a verified lawyer?"
+  )
+
+def get_heygen_voice_id(lang):
+  VOICE_MAP = {
+    "hi": "hindi_female_1",
+    "ta": "tamil_female_1",
+    "te": "telugu_female_1",
+    "bn": "bengali_female_1",
+    "mr": "marathi_female_1",
+    "gu": "gujarati_female_1",
+    "kn": "kannada_female_1",
+    "ml": "malayalam_female_1",
+    "pa": "punjabi_female_1",
+    "or": "odia_female_1",
+    "ur": "urdu_female_1",
+    "as": "assamese_female_1",
+    "en": "en-IN-NeerjaNeural"
+  }
+  return VOICE_MAP.get(
+    lang, "en-IN-NeerjaNeural"
+  )
+
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
@@ -111,6 +314,7 @@ def get_legal_answer(user_input, lang="en"):
             print(f"RAG Retrieval Error: {e}", flush=True)
 
     # 3. STRICT SYSTEM PROMPT
+    lang_name = SUPPORTED_LANGUAGES.get(lang, "English")
     if is_notification:
         system_instruction = "You are a professional Legal Expert. Write a short, professional 1-sentence legal notification for WhatsApp. Be concise."
     else:
@@ -146,7 +350,7 @@ MANDATORY RESPONSE FORMAT:
 **Simple Example**
 - Relatable scenario (max 3 lines).
 
-Answer in {lang}.
+Answer in {lang_name}. Use {lang_name} vocabulary appropriate for a common citizen unfamiliar with legal terminology.
 """
 
     # 4. NVIDIA — First Priority
@@ -223,13 +427,19 @@ def chat():
         data = request.json
         user_input = data.get("message", "")
         lang = data.get("lang", "en")
+        if lang == "auto" or not lang:
+            lang = detect_language(user_input)
         user_name = data.get("userName", "User")
 
         greeting = handle_greeting(user_input, user_name)
         if greeting: return jsonify({"answer": greeting})
 
         answer = get_legal_answer(user_input, lang)
-        return jsonify({"answer": answer})
+        return jsonify({
+            "answer": answer,
+            "detectedLang": lang,
+            "detectedLangName": SUPPORTED_LANGUAGES.get(lang, "English")
+        })
 
     except Exception as e:
         print(f"CRITICAL ERROR: {str(e)}", flush=True)
@@ -413,6 +623,154 @@ Generate the document using Markdown formatting. Use bold for headings and parti
     except Exception as e:
         print(f"Drafting Error: {str(e)}", flush=True)
         return jsonify({"error": "Internal AI server error during drafting"}), 500
+
+@app.route("/mediation-video", methods=["POST"])
+def mediation_video():
+  try:
+    data         = request.json
+    case_title   = data.get("caseTitle","")
+    case_type    = data.get("caseType","")
+    citizen_name = data.get("citizenName","User")
+    lang         = data.get("lang","auto")
+    user_input   = data.get("userInput","")
+
+    if lang == "auto" or not lang:
+      lang = detect_language(
+        user_input or case_title
+      )
+
+    eligible = is_mediation_eligible(
+      user_input + " " + case_type,
+      case_type
+    )
+
+    if not eligible:
+      return jsonify({
+        "eligible":  False,
+        "script":    None,
+        "videoUrl":  None,
+        "lang":      lang,
+        "langName":  SUPPORTED_LANGUAGES.get(
+          lang,"English"
+        )
+      })
+
+    script = get_mediation_script(
+      case_summary = case_title or user_input,
+      lang         = lang,
+      citizen_name = citizen_name
+    )
+
+    video_url      = None
+    video_id_only  = None
+    HEYGEN_KEY     = os.getenv("HEYGEN_API_KEY")
+    HEYGEN_AVATAR  = os.getenv(
+      "HEYGEN_AVATAR_ID","")
+
+    if HEYGEN_KEY and HEYGEN_AVATAR and script:
+      try:
+        payload = {
+          "video_inputs": [{
+            "character": {
+              "type":         "avatar",
+              "avatar_id":    HEYGEN_AVATAR,
+              "avatar_style": "normal"
+            },
+            "voice": {
+              "type":       "text",
+              "input_text": script,
+              "voice_id":   get_heygen_voice_id(
+                lang
+              )
+            },
+            "background": {
+              "type":  "color",
+              "value": "#0d0f1a"
+            }
+          }],
+          "aspect_ratio": "16:9",
+          "test": True
+        }
+        hres = requests.post(
+          "https://api.heygen.com/v2/video/generate",
+          headers={
+            "X-Api-Key":     HEYGEN_KEY,
+            "Content-Type":  "application/json"
+          },
+          json=payload, timeout=30
+        )
+        if hres.status_code == 200:
+          hdata     = hres.json()
+          video_url = (hdata.get("data",{})
+            .get("video_url"))
+          vid_id    = (hdata.get("data",{})
+            .get("video_id"))
+          if not video_url and vid_id:
+            video_url = f"pending:{vid_id}"
+            video_id_only = vid_id
+      except Exception as e:
+        print(f"HeyGen error: {e}", flush=True)
+
+    return jsonify({
+      "eligible":     True,
+      "script":       script,
+      "videoUrl":     video_url,
+      "videoId":      video_id_only,
+      "lang":         lang,
+      "langName":     SUPPORTED_LANGUAGES.get(
+        lang, "English"
+      ),
+      "mediationAct": {
+        "actName":
+          "The Mediation Act, 2023",
+        "enforcedDate":
+          "9 October 2023",
+        "keyBenefit":
+          "Faster and private dispute "
+          "resolution without court"
+      }
+    })
+
+  except Exception as e:
+    print(f"Mediation video error: {e}",
+          flush=True)
+    return jsonify({
+      "error": str(e)
+    }), 500
+
+@app.route(
+  "/mediation-video/status/<video_id>",
+  methods=["GET"]
+)
+def check_video_status(video_id):
+  HEYGEN_KEY = os.getenv("HEYGEN_API_KEY")
+  if not HEYGEN_KEY:
+    return jsonify({
+      "status": "error",
+      "message": "No HeyGen API key"
+    }), 400
+  try:
+    res = requests.get(
+      f"https://api.heygen.com/v1/"
+      f"video_status.get?video_id={video_id}",
+      headers={"X-Api-Key": HEYGEN_KEY},
+      timeout=10
+    )
+    data      = res.json()
+    status    = (data.get("data",{})
+      .get("status","processing"))
+    video_url = (data.get("data",{})
+      .get("video_url"))
+    return jsonify({
+      "status":   status,
+      "videoUrl": video_url,
+      "videoId":  video_id
+    })
+  except Exception as e:
+    return jsonify({
+      "status": "error",
+      "message": str(e)
+    }), 500
 
 if __name__ == "__main__":
     app.run(host="127.0.0.1", port=8088)

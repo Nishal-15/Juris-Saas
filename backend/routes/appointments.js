@@ -89,4 +89,92 @@ router.patch("/:id/status", auth(["lawyer"]), async (req, res) => {
   }
 });
 
+router.post(
+  "/:id/start-call",
+  auth(["lawyer"]),
+  async (req, res) => {
+    try {
+      const appointment =
+        await Appointment.findById(
+          req.params.id
+        )
+        .populate("userId", "name phone")
+        .populate("lawyerId", "name phone")
+
+      if (!appointment) {
+        return res.status(404).json({
+          message: "Appointment not found"
+        })
+      }
+
+      const citizen = appointment.userId
+      const lawyer  = appointment.lawyerId
+
+      if (!lawyer?.phone) {
+        return res.status(400).json({
+          message:
+            "Lawyer phone number not set. " +
+            "Cannot initiate WhatsApp call."
+        })
+      }
+
+      const callLink =
+        `https://wa.me/${
+          lawyer.phone.replace(
+            /[^0-9]/g, ""
+          )
+        }`
+
+      const {
+        sendCallInvite
+      } = require("../utils/whatsapp")
+
+      await sendCallInvite({
+        to:         citizen.phone,
+        lawyerName: lawyer.name,
+        callLink
+      })
+
+      const io = req.app.get("io")
+      if (io) {
+        if (citizen?._id) {
+          io.to(
+            citizen._id.toString()
+          ).emit("call-ready", {
+            type:       "whatsapp",
+            lawyerName: lawyer.name,
+            callLink,
+            message:
+              `${lawyer.name} is ready. ` +
+              `Tap to connect on WhatsApp.`
+          })
+        }
+        if (lawyer?._id) {
+          io.to(
+            lawyer._id.toString()
+          ).emit("call-ready", {
+            type:        "whatsapp",
+            citizenName: citizen?.name,
+            message:
+              "WhatsApp call invite " +
+              "sent to citizen."
+          })
+        }
+      }
+
+      res.json({
+        success:    true,
+        callMethod: "whatsapp",
+        callLink,
+        message:
+          "WhatsApp call invite sent."
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
 module.exports = router;

@@ -11,6 +11,28 @@ const LawyerSchema = new mongoose.Schema({
   rating: { type: Number, default: 4.5 },
   location: { type: String, default: "NEW DELHI, INDIA" },
   isVerified: { type: Boolean, default: false },
+  phone: { type: String, default: null },
+  tier: {
+    type: String,
+    enum: ["tier1","tier2","tier3"],
+    default: "tier3"
+  },
+  minFeePerCase: { type: Number, default: 0 },
+  maxFeePerCase: { type: Number, default: 0 },
+  courtLevels: [{
+    type: String,
+    enum: [
+      "District Court","High Court",
+      "Supreme Court","Consumer Forum",
+      "Tribunal","Family Court"
+    ]
+  }],
+  caseComplexity: [{
+    type: String,
+    enum: ["Low","Mid","High"]
+  }],
+  state: { type: String, default: null },
+  city:  { type: String, default: null },
   subscriptionTier: { 
     type: String, 
     enum: ["Trial", "Starter", "Pro", "Expired"], 
@@ -21,7 +43,7 @@ const LawyerSchema = new mongoose.Schema({
   subscriptionStartedAt: { type: Date, default: Date.now },
   subscriptionExpiresAt: { 
     type: Date, 
-    default: () => new Date(Date.now() + 30 * 24 * 60 * 60 * 1000) // 30 days from now
+    default: () => new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
   },
   isBlocked: { type: Boolean, default: false },
   createdAt: { type: Date, default: Date.now },

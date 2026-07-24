@@ -33,7 +33,36 @@ const CaseSchema = new mongoose.Schema({
   hearingDate: Date,
   courtLocation: String,
   nextSteps: String,
-  verdict: String
+  verdict: String,
+  courtLevel: {
+    type: String,
+    enum: [
+      "District Court","High Court",
+      "Supreme Court","Consumer Forum",
+      "Tribunal","Family Court"
+    ],
+    default: null
+  },
+  complexity: {
+    type: String,
+    enum: ["Low","Mid","High"],
+    default: "Mid"
+  },
+  estimatedFeeRange: {
+    min: { type: Number, default: 0 },
+    max: { type: Number, default: 0 }
+  },
+  clientIncomeTier: {
+    type: String,
+    enum: ["low","mid","high"],
+    default: "mid"
+  },
+  isMediationEligible: {
+    type: Boolean,
+    default: false
+  },
+  mediationScript:  { type: String, default: null },
+  mediationVideoUrl:{ type: String, default: null }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Case", CaseSchema);

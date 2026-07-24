@@ -39,5 +39,29 @@ async function sendAINotification(email, userName, caseTitle, context) {
   }
 }
 
+async function sendOtpEmail(email, otp) {
+  try {
+    if (!process.env.RESEND_API_KEY || process.env.RESEND_API_KEY.includes("placeholder")) {
+      console.log(`[OTP Simulation] To ${email}: Your OTP is ${otp}`);
+      return;
+    }
+
+    // ALWAYS log it for dev/hackathon fallback in case Resend blocks the email
+    console.log(`[OTP Generated for ${email}]: ${otp}`);
+
+    await resend.emails.send({
+      from: "JurisBot Security <onboarding@resend.dev>",
+      to: email,
+      subject: `Your Admin Login OTP: ${otp}`,
+      html: `<p>You are attempting to log into the JurisBot Admin Dashboard.</p>
+             <h2>${otp}</h2>
+             <p>This code expires in 10 minutes. If you did not request this, please change your password immediately.</p>`
+    });
+    console.log(`[OTP Success] Sent to ${email}`);
+  } catch (err) {
+    console.error(`[OTP Error]:`, err.message);
+  }
+}
+
 // We keep the old function name exported so we don't break existing imports, but it now sends emails
-module.exports = { sendAIWhatsApp: sendAINotification };
+module.exports = { sendAIWhatsApp: sendAINotification, sendOtpEmail };

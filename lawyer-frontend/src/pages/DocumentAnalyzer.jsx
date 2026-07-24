@@ -141,7 +141,7 @@ export default function DocumentAnalyzer() {
             className="da-analyze-btn" 
             onClick={handleClear} 
             disabled={isAnalyzing || (!file && !summary)}
-            style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', flex: 'none', padding: '0 20px' }}
+            style={{ background: 'transparent', border: '1px solid var(--border)', color: 'var(--text-primary)', flex: 'none' }}
             title="Clear analysis"
           >
             Clear

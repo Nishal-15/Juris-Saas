@@ -66,23 +66,52 @@ export default function VideoCall() {
   };
 
   return (
-    <div className="v2-call-page" style={{ height: "100vh", display: "flex", flexDirection: "column" }}>
+    <div className="v2-call-page">
+      {/* -- Secure Header -- */}
+      <header className="secure-call-header">
+        <div className="secure-header-left">
+          <svg className="secure-lock-icon" viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+            <rect x="3" y="11" width="18" height="11" rx="2" ry="2"></rect>
+            <path d="M7 11V7a5 5 0 0 1 10 0v4"></path>
+          </svg>
+          <div>
+            <h1 className="secure-title">JurisVault Secure Video</h1>
+            <p className="secure-subtitle">END-TO-END ENCRYPTED</p>
+          </div>
+        </div>
+        
+        {isJoined && (
+          <div className="secure-header-right">
+            <div className="live-timer">
+              <span className="timer-dot"></span> LIVE
+            </div>
+            <button className="btn-leave-call" onClick={leaveCall}>
+              Disconnect
+            </button>
+          </div>
+        )}
+      </header>
+
       {!isJoined ? (
-        <div className="error-overlay" style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", height: "100%" }}>
-          <div className="avatar-placeholder pulsing" style={{ fontSize: "2rem", padding: "20px", background: "#333", borderRadius: "50%", marginBottom: "20px" }}>LAW</div>
-          <h3>Lawyer Console: Ready?</h3>
-          <p>Click below to initialize your secure video feed.</p>
-          <div className="error-actions" style={{ marginTop: "20px" }}>
-            <button className="btn-retry" onClick={initJitsi} style={{ padding: "10px 20px", background: "var(--gold)", border: "none", color: "white", cursor: "pointer", borderRadius: "4px", fontSize: "1.1rem" }}>
-              Start Consultation
-            </button>
-            <button className="btn-cancel" onClick={() => navigate("/lawyer/dashboard")} style={{ padding: "10px 20px", background: "transparent", border: "1px solid white", color: "white", cursor: "pointer", borderRadius: "4px", fontSize: "1.1rem", marginLeft: "10px" }}>
-              Cancel
-            </button>
+        <div className="secure-waiting-room">
+          <div className="waiting-card">
+            <div className="waiting-avatar">LAW</div>
+            <h3>Expert Console: Ready?</h3>
+            <p>Your connection is secured with military-grade encryption. Ensure your camera and microphone are connected before joining the consultation.</p>
+            
+            <div className="waiting-actions">
+              <button className="btn-secure-join" onClick={initJitsi}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
+                Initialize Video Feed
+              </button>
+              <button className="btn-secure-cancel" onClick={() => navigate("/lawyer/dashboard")}>
+                Cancel Consultation
+              </button>
+            </div>
           </div>
         </div>
       ) : (
-        <div ref={jitsiContainerRef} style={{ flexGrow: 1, width: "100%" }} />
+        <div className="secure-feed-container" ref={jitsiContainerRef} />
       )}
     </div>
   );
