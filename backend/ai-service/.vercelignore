@@ -1,0 +1,10 @@
+faiss.index
+meta.npy
+faiss_index.bin
+faiss_meta.pkl
+laws/
+__pycache__/
+*.log
+.venv/
+venv/
+*.pdf
