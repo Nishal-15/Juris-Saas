@@ -25,7 +25,15 @@ const storage = multer.diskStorage({
     cb(null, `${prefix}_${Date.now()}_${file.originalname}`);
   }
 });
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  const allowed = ["image/jpeg", "image/png", "application/pdf"];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only JPG, PNG, and PDF allowed."), false);
+  }
+};
+const upload = multer({ storage, fileFilter, limits: { fileSize: 5 * 1024 * 1024 } });
 
 /* ===========================
 LAWYER REGISTER
@@ -40,6 +48,43 @@ router.post("/register-lawyer", upload.fields([
     if (!name || !email || !password || !phone || !barId) {
       return res.status(400).json({ message: "Mandatory fields missing." });
     }
+
+/* Email format */
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    message: "Invalid email format."
+  })
+}
+
+/* Password strength */
+if (password.length < 8) {
+  return res.status(400).json({
+    message:
+      "Password must be at least " +
+      "8 characters long."
+  })
+}
+
+/* Phone format */
+const phoneRegex = /^[6-9]\d{9}$/
+if (phone && !phoneRegex.test(
+  phone.replace(/[\s\-\+]/g, "")
+)) {
+  return res.status(400).json({
+    message:
+      "Enter a valid 10-digit " +
+      "Indian mobile number."
+  })
+}
+
+/* Name length */
+if (name.trim().length < 2) {
+  return res.status(400).json({
+    message: "Name must be at least " +
+      "2 characters."
+  })
+}
 
     const normalizedEmail = email.toLowerCase().trim();
     
@@ -101,14 +146,42 @@ router.post("/register", async (req, res) => {
       return res.status(400).json({ message: "All fields are required" });
     }
 
-    if (password.length < 6) {
-      return res.status(400).json({ message: "Password must be at least 6 characters long" });
-    }
+/* Email format */
+const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/
+if (!emailRegex.test(email)) {
+  return res.status(400).json({
+    message: "Invalid email format."
+  })
+}
 
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    if (!emailRegex.test(email)) {
-      return res.status(400).json({ message: "Invalid email format" });
-    }
+/* Password strength */
+if (password.length < 8) {
+  return res.status(400).json({
+    message:
+      "Password must be at least " +
+      "8 characters long."
+  })
+}
+
+/* Phone format */
+const phoneRegex = /^[6-9]\d{9}$/
+if (phone && !phoneRegex.test(
+  phone.replace(/[\s\-\+]/g, "")
+)) {
+  return res.status(400).json({
+    message:
+      "Enter a valid 10-digit " +
+      "Indian mobile number."
+  })
+}
+
+/* Name length */
+if (name.trim().length < 2) {
+  return res.status(400).json({
+    message: "Name must be at least " +
+      "2 characters."
+  })
+}
 
     // ✅ NORMALIZE EMAIL
     const normalizedEmail = email.toLowerCase().trim();
@@ -197,7 +270,10 @@ router.post("/login", async (req, res) => {
       
       await sendOtpEmail(user.email, otp);
       
-      console.log(`[2FA] OTP generated for Admin ${user.email}`);
+      // Always print OTP in terminal when not in production (dev/test/local)
+      if (process.env.NODE_ENV !== "production") {
+        console.log(`[2FA] Admin OTP for ${user.email}: \x1b[33m${otp}\x1b[0m`);
+      }
       return res.json({ requireOtp: true, email: user.email, message: "OTP sent to email" });
     }
 
@@ -209,11 +285,26 @@ router.post("/login", async (req, res) => {
     );
     console.log("✅ JWT Generated");
 
+const refreshToken = jwt.sign(
+  { id: user._id, role: user.role },
+  process.env.JWT_REFRESH_SECRET ||
+    process.env.JWT_SECRET + "_refresh",
+  { expiresIn: "30d" }
+)
+
+/* Save refresh token to DB */
+user.refreshToken = refreshToken
+await user.save()
+
     const userResponse = user.toObject();
     delete userResponse.password;
 
     console.log("🚀 Sending success response...");
-    res.json({ token, user: userResponse });
+    res.json({
+  token,
+  refreshToken,
+  user: userResponse
+});
 
   } catch (err) {
     console.error("❌ LOGIN ERROR:", err);
@@ -249,10 +340,25 @@ router.post("/verify-otp", async (req, res) => {
       { expiresIn: "1d" }
     );
 
+const refreshToken = jwt.sign(
+  { id: user._id, role: user.role },
+  process.env.JWT_REFRESH_SECRET ||
+    process.env.JWT_SECRET + "_refresh",
+  { expiresIn: "30d" }
+)
+
+/* Save refresh token to DB */
+user.refreshToken = refreshToken
+await user.save()
+
     const userResponse = user.toObject();
     delete userResponse.password;
 
-    res.json({ token, user: userResponse });
+    res.json({
+  token,
+  refreshToken,
+  user: userResponse
+});
   } catch (err) {
     console.error("❌ OTP ERROR:", err);
     res.status(500).json({ message: "Server error" });
@@ -302,7 +408,9 @@ router.put("/update", auth(), async (req, res) => {
 
 const axios = require("axios");
 const { Resend } = require("resend");
-const resend = new Resend(process.env.RESEND_API_KEY || "re_123");
+const resend = process.env.RESEND_API_KEY
+  ? new Resend(process.env.RESEND_API_KEY)
+  : null;
 const otpCache = {};
 
 // 📲 1. REQUEST OTP
@@ -316,8 +424,6 @@ router.post("/request-otp", async (req, res) => {
     const normalizedEmail = email.toLowerCase().trim();
     otpCache[normalizedEmail] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 mins expiry
 
-    console.log(`📧 [RESEND OTP SERVICE] Dispatching code for ${normalizedEmail}: ${otp}`);
-
     try {
       /* Gmail API — configured in mailer.js */
       const { sendEmail, otpTemplate } = require("../utils/mailer");
@@ -326,11 +432,10 @@ router.post("/request-otp", async (req, res) => {
       console.log(`✅ [Gmail] OTP sent to ${normalizedEmail}`);
     } catch (mailErr) {
       console.error("❌ [Gmail] OTP email failed:", mailErr);
-      /* Continue — OTP still works even if
-         email fails in development */
+      return res.status(500).json({ message: "Failed to send verification email. Please check email address." });
     }
 
-    res.json({ message: "Verification code sent to your email address via Resend.", otp });
+    res.json({ message: "Verification code sent to your email address." });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -359,5 +464,80 @@ router.post("/verify-otp", async (req, res) => {
     res.status(500).json({ message: err.message });
   }
 });
+
+router.post("/refresh-token",
+  async (req, res) => {
+    try {
+      const { refreshToken } = req.body
+      if (!refreshToken) {
+        return res.status(401).json({
+          message: "Refresh token required"
+        })
+      }
+
+      /* Verify the refresh token */
+      let decoded
+      try {
+        decoded = jwt.verify(
+          refreshToken,
+          process.env.JWT_REFRESH_SECRET ||
+            process.env.JWT_SECRET + "_refresh"
+        )
+      } catch {
+        return res.status(401).json({
+          message: "Invalid or expired " +
+            "refresh token. Please login again."
+        })
+      }
+
+      /* Find user in correct collection */
+      let user = null
+      if (decoded.role === "lawyer") {
+        user = await Lawyer.findOne({
+          _id:          decoded.id,
+          refreshToken: refreshToken
+        })
+      } else {
+        user = await User.findOne({
+          _id:          decoded.id,
+          refreshToken: refreshToken
+        })
+      }
+
+      if (!user) {
+        return res.status(401).json({
+          message: "Refresh token not " +
+            "recognized. Please login again."
+        })
+      }
+
+      /* Issue new access token */
+      const newToken = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_SECRET,
+        { expiresIn: "1d" }
+      )
+
+      /* Rotate refresh token */
+      const newRefresh = jwt.sign(
+        { id: user._id, role: user.role },
+        process.env.JWT_REFRESH_SECRET ||
+          process.env.JWT_SECRET + "_refresh",
+        { expiresIn: "30d" }
+      )
+      user.refreshToken = newRefresh
+      await user.save()
+
+      res.json({
+        token:        newToken,
+        refreshToken: newRefresh
+      })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
 
 module.exports = router;

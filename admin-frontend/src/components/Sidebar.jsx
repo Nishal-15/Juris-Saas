@@ -25,6 +25,7 @@ export default function Sidebar({ pendingCount = 0 }) {
     { name: 'Verification Queue', path: '/verification', icon: <UserCheck size={20} /> },
     { name: 'Legal Experts', path: '/lawyers', icon: <Scale size={20} /> },
     { name: 'Global Matters', path: '/cases', icon: <FileText size={20} /> },
+    { name: 'Mediation Cases', path: '/mediation', icon: <Scale size={20} /> },
     { name: 'Signal Tower', path: '/broadcast', icon: <Megaphone size={20} /> },
     { name: 'Citizens', path: '/citizens', icon: <Users size={20} /> },
     { name: 'Knowledge Hub', path: '/knowledge', icon: <Database size={20} /> },

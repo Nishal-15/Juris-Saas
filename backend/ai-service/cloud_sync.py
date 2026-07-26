@@ -8,7 +8,7 @@ from tqdm import tqdm
 # CONFIG
 # =========================
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "jurisbot-index")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
 FAISS_INDEX_FILE = "faiss.index"
 META_FILE = "meta.npy"

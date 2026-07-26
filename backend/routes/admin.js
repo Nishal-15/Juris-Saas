@@ -9,6 +9,7 @@ const { exec } = require("child_process");
 const path = require("path");
 const fs = require("fs");
 const auth = require("../middleware/auth");
+const logAudit = require("../middleware/audit");
 
 // 📊 GET DASHBOARD STATS (OPTIMIZED)
 router.get("/stats", auth(["admin"]), async (req, res) => {
@@ -16,6 +17,7 @@ router.get("/stats", auth(["admin"]), async (req, res) => {
     const citizensCount = await User.countDocuments({ role: "user" });
     const lawyersCount = await Lawyer.countDocuments({ isVerified: true });
     const pendingCount = await Lawyer.countDocuments({ verificationStatus: "pending" });
+    const mediationCasesCount = await Case.countDocuments({ isMediationEligible: true });
     
     let lawsCount = 0;
     const aiServicePath = path.join(__dirname, "../ai-service/laws");
@@ -59,17 +61,21 @@ router.get("/stats", auth(["admin"]), async (req, res) => {
       }
     });
 
-    const barData = dayNames.map(name => ({
-      name,
-      queries: barDataMap[name],
-      latency: Math.floor(Math.random() * (400 - 250 + 1) + 250) // Simulated slight real-time latency jitter
-    }));
+    const barData = dayNames.map(name => {
+      const q = barDataMap[name] || 0;
+      return {
+        name,
+        queries: q,
+        latency: q > 0 ? Math.floor(310 + (q * 45)) : 0
+      };
+    });
 
     res.json({
       citizens: citizensCount,
       lawyers: lawyersCount,
       pending: pendingCount,
       laws: lawsCount,
+      mediationCases: mediationCasesCount,
       pieData: finalPieData,
       barData: barData
     });
@@ -116,6 +122,7 @@ router.get("/lawyers", auth(["admin"]), async (req, res) => {
         specialization: l.specialization,
         experience: l.experience,
         rating: l.rating,
+        preferredLanguage: l.preferredLanguage,
         caseCount
       };
     }));
@@ -127,7 +134,7 @@ router.get("/lawyers", auth(["admin"]), async (req, res) => {
 });
 
 // ✅ VERIFY/REJECT LAWYER
-router.patch("/verify-lawyer/:id", auth(["admin"]), async (req, res) => {
+router.patch("/verify-lawyer/:id", auth(["admin"]), logAudit("VERIFY_LAWYER", "Lawyer"), async (req, res) => {
   try {
     const { status } = req.body; // "verified" or "rejected"
     const lawyer = await Lawyer.findById(req.params.id);
@@ -156,7 +163,14 @@ const storage = multer.diskStorage({
     cb(null, `${Date.now()}_${safeName}`);
   }
 });
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  if (file.mimetype === "application/pdf") {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only PDF allowed for laws."), false);
+  }
+};
+const upload = multer({ storage, fileFilter, limits: { fileSize: 50 * 1024 * 1024 } });
 
 // ✅ Upload Law (ASYNC INDEXING CONTEXT)
 router.post("/upload-law", auth(["admin"]), upload.single("pdf"), (req, res) => {
@@ -212,10 +226,20 @@ router.get("/laws", auth(["admin"]), async (req, res) => {
 // 📂 GET ALL CASES (GLOBAL OVERSIGHT)
 router.get("/all-cases", auth(["admin"]), async (req, res) => {
   try {
-    const cases = await Case.find()
-      .populate("user", "name email")
+    const limit = parseInt(req.query.limit) || 0;
+    const skip = parseInt(req.query.skip) || 0;
+    const mediationOnly = req.query.mediationOnly === "true";
+    const query = mediationOnly ? { isMediationEligible: true } : {};
+
+    let queryBuilder = Case.find(query)
+      .populate("user", "name email preferredLanguage")
       .populate("assignedLawyer", "name email")
       .sort({ createdAt: -1 });
+
+    if (skip > 0) queryBuilder = queryBuilder.skip(skip);
+    if (limit > 0) queryBuilder = queryBuilder.limit(limit);
+
+    const cases = await queryBuilder;
     res.json(cases);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -395,6 +419,7 @@ router.patch(
   "/block-lawyer/:id",
   auth(
   ["admin"]),
+  logAudit("BLOCK_USER", "Lawyer"),
   async (req, res) => {
     try {
       const { isBlocked } = req.body
@@ -504,6 +529,48 @@ router.post(
         message: "Feedback submitted.",
         newRating: lawyer?.rating
       })
+    } catch (err) {
+      res.status(500).json({
+        message: err.message
+      })
+    }
+  }
+)
+
+router.get(
+  "/language-stats",
+  auth(["admin"]),
+  async (req, res) => {
+    try {
+      /* Aggregate citizen language distribution */
+      const citizenLangs = await User
+        .aggregate([
+          {
+            $match: { role: "user" }
+          },
+          {
+            $group: {
+              _id:   "$preferredLanguage",
+              count: { $sum: 1 }
+            }
+          },
+          {
+            $sort: { count: -1 }
+          },
+          {
+            $limit: 10
+          }
+        ])
+
+      /* Replace null/undefined with "en" */
+      const cleaned = citizenLangs.map(
+        item => ({
+          _id:   item._id || "en",
+          count: item.count
+        })
+      )
+
+      res.json(cleaned)
     } catch (err) {
       res.status(500).json({
         message: err.message

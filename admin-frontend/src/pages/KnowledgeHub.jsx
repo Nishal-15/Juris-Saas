@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
+import { SUPPORTED_LANGUAGES } from '../config/languages';
 import { Database, Upload, FileText, CheckCircle, Loader2, RefreshCw, Server, AlertCircle } from 'lucide-react';
 
 export default function KnowledgeHub() {
@@ -29,7 +30,7 @@ export default function KnowledgeHub() {
   const fetchSyncHistory = async () => {
     try {
       const res = await API.get('/admin/law-sync-status');
-      setSyncHistory(res.data);
+      setSyncHistory(res.data?.history || (Array.isArray(res.data) ? res.data : []));
     } catch (err) {
       console.error("Fetch Sync History Error:", err);
     }
@@ -232,6 +233,66 @@ export default function KnowledgeHub() {
                 ))
               )}
             </div>
+          </div>
+
+          <div style={{
+            padding: "18px",
+            borderRadius: "var(--radius-md)",
+            background: "rgba(201,168,76,0.04)",
+            border: "1px solid rgba(201,168,76,0.15)",
+            marginTop: "16px"
+          }}>
+            <div style={{
+              fontWeight: 700,
+              fontSize: "0.82rem",
+              color: "var(--gold)",
+              marginBottom: "12px",
+              display: "flex",
+              alignItems: "center",
+              gap: 7
+            }}>
+              🌐 AI Language Coverage
+            </div>
+            <div style={{
+              display: "grid",
+              gridTemplateColumns: "repeat(3, 1fr)",
+              gap: "6px"
+            }}>
+              {SUPPORTED_LANGUAGES.map(lang => (
+                <div key={lang.code} style={{
+                  display: "flex",
+                  alignItems: "center",
+                  gap: 5,
+                  padding: "4px 6px",
+                  background: "rgba(255,255,255,0.03)",
+                  borderRadius: "6px",
+                  fontSize: "0.7rem",
+                  color: "var(--text-secondary)"
+                }}>
+                  <span style={{ fontSize: "0.85rem" }}>
+                    {lang.flag}
+                  </span>
+                  <span style={{
+                    overflow: "hidden",
+                    textOverflow: "ellipsis",
+                    whiteSpace: "nowrap"
+                  }}>
+                    {lang.name}
+                  </span>
+                </div>
+              ))}
+            </div>
+            <p style={{
+              fontSize: "0.7rem",
+              color: "var(--text-muted)",
+              marginTop: "10px",
+              lineHeight: 1.5
+            }}>
+              JurisBot auto-detects citizen language
+              and responds in their native language.
+              All 22 scheduled Indian languages
+              supported.
+            </p>
           </div>
 
         </div>

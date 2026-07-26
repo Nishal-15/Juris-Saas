@@ -1,6 +1,15 @@
-const { google } = require("googleapis")
+let google = null;
+try {
+  google = require("googleapis").google;
+} catch {
+  /* googleapis not installed */
+}
+
+const { Resend } = require("resend");
+const resend = process.env.RESEND_API_KEY ? new Resend(process.env.RESEND_API_KEY) : null;
 
 const createTransporter = async () => {
+  if (!google) throw new Error("googleapis module not installed");
   const oauth2Client = new google.auth.OAuth2(
     process.env.GOOGLE_CLIENT_ID,
     process.env.GOOGLE_CLIENT_SECRET,
@@ -15,7 +24,7 @@ const createTransporter = async () => {
 }
 
 const encodeEmail = ({ to, subject, html }) => {
-  const from = process.env.GMAIL_SENDER_ADDRESS ||
+  const from = process.env.GMAIL_SENDER_ADDRESS || process.env.EMAIL_USER ||
     "admin@jurisbot.in"
   const emailLines = [
     `From: JurisBot <${from}>`,
@@ -33,12 +42,27 @@ const encodeEmail = ({ to, subject, html }) => {
 
 const sendEmail = async ({ to, subject, html }) => {
   try {
+    const auth = {
+      user: process.env.EMAIL_USER,
+      pass: process.env.EMAIL_PASS,
+    }
     if (
-      !process.env.GOOGLE_CLIENT_ID ||
-      !process.env.GOOGLE_REFRESH_TOKEN
+      !google ||
+      ((!process.env.GOOGLE_CLIENT_ID ||
+      !process.env.GOOGLE_REFRESH_TOKEN) && !auth.user)
     ) {
+      if (resend) {
+        await resend.emails.send({
+          from: "JurisBot Notifications <onboarding@resend.dev>",
+          to,
+          subject,
+          html
+        });
+        console.log(`✅ [Resend] Sent to ${to}`);
+        return;
+      }
       console.log(
-        `[Gmail Simulation] To: ${to} | ` +
+        `[Email Simulation] To: ${to} | ` +
         `Subject: ${subject}`
       )
       return

@@ -1,9 +1,7 @@
 import axios from "axios"
 
 const API = axios.create({
-  baseURL:
-    import.meta.env.VITE_API_BASE ||
-    "http://localhost:5000/api",
+  baseURL: import.meta.env.VITE_API_BASE,
   timeout: 15000,
 })
 
@@ -39,13 +37,76 @@ API.interceptors.request.use(
   error => Promise.reject(error)
 )
 
+let isRefreshing = false
+let failedQueue  = []
+
+const processQueue = (error, token = null) => {
+  failedQueue.forEach(p => {
+    if (error) p.reject(error)
+    else       p.resolve(token)
+  })
+  failedQueue = []
+}
+
 API.interceptors.response.use(
   response => response,
-  error => {
-    if (error.response?.status === 401) {
-      localStorage.removeItem("token")
-      localStorage.removeItem("role")
-      window.location.href = "/"
+  async error => {
+    const original = error.config
+
+    if (
+      error.response?.status === 401 &&
+      !original._retry &&
+      !original.url?.includes("/refresh-token")
+    ) {
+      if (isRefreshing) {
+        return new Promise((resolve, reject) => {
+          failedQueue.push({ resolve, reject })
+        }).then(token => {
+          original.headers.Authorization =
+            `Bearer ${token}`
+          return API(original)
+        }).catch(err => Promise.reject(err))
+      }
+
+      original._retry = true
+      isRefreshing     = true
+
+      const refreshToken =
+        localStorage.getItem("refreshToken")
+
+      if (!refreshToken) {
+        localStorage.removeItem("token")
+        localStorage.removeItem("refreshToken")
+        localStorage.removeItem("role")
+        window.location.href = "/"
+        return Promise.reject(error)
+      }
+
+      try {
+        const { data } = await API.post(
+          "/auth/refresh-token",
+          { refreshToken }
+        )
+        localStorage.setItem(
+          "token", data.token
+        )
+        localStorage.setItem(
+          "refreshToken", data.refreshToken
+        )
+        original.headers.Authorization =
+          `Bearer ${data.token}`
+        processQueue(null, data.token)
+        return API(original)
+      } catch (refreshErr) {
+        processQueue(refreshErr, null)
+        localStorage.removeItem("token")
+        localStorage.removeItem("refreshToken")
+        localStorage.removeItem("role")
+        window.location.href = "/"
+        return Promise.reject(refreshErr)
+      } finally {
+        isRefreshing = false
+      }
     }
     return Promise.reject(error)
   }

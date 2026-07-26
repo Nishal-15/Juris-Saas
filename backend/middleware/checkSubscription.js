@@ -8,7 +8,8 @@ const checkSubscription = async (req, res, next) => {
     if (!lawyer) return res.status(404).json({ message: "Lawyer account not found" });
 
     const now = new Date();
-    const isExpired = lawyer.subscriptionExpiresAt && lawyer.subscriptionExpiresAt < now;
+    const expiryDate = lawyer.subscriptionExpiresAt ? new Date(lawyer.subscriptionExpiresAt) : null;
+    const isExpired = !expiryDate || isNaN(expiryDate.getTime()) || expiryDate < now;
 
     // 1. STRICT 30-DAY RENEWAL CHECK
     if (isExpired) {
@@ -42,7 +43,7 @@ const checkSubscription = async (req, res, next) => {
 
     next();
   } catch (err) {
-    console.error("Subscription Check Error:", err);
+    console.error(`Subscription Check Error [Lawyer ID: ${req.user?.id || 'unknown'}]:`, err);
     res.status(500).json({ message: "Subscription verification failed" });
   }
 };

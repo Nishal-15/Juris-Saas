@@ -114,7 +114,7 @@ export default function LegalExperts() {
         ) : filtered.length === 0 ? (
           <div className="empty-state" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
             <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚖️</div>
-            <p>{search ? "No matching experts found." : "No verified experts yet."}</p>
+            <p>{search ? "No matching experts found." : "No verified legal experts found."}</p>
           </div>
         ) : (
           <div className="table-wrap">

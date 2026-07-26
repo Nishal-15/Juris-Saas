@@ -6,9 +6,26 @@ import './subscription.css';
 const SVGCheck = () => <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><polyline points="20 6 9 17 4 12"></polyline></svg>;
 const SVGAI = () => <svg viewBox="0 0 24 24" width="16" height="16" stroke="currentColor" strokeWidth="2" fill="none" strokeLinecap="round" strokeLinejoin="round"><path d="M12 2l3 7 7 3-7 3-3 7-3-7-7-3 7-3z"></path></svg>;
 
+const loadRazorpay = () => {
+  return new Promise((resolve) => {
+    if (window.Razorpay) return resolve(true);
+    const script = document.createElement('script');
+    script.src = 'https://checkout.razorpay.com/v1/checkout.js';
+    script.onload = () => resolve(true);
+    script.onerror = () => resolve(false);
+    document.body.appendChild(script);
+  });
+};
+
 export default function Subscription() {
     const [lawyer, setLawyer] = useState(null);
     const [loading, setLoading] = useState(true);
+    const [toast, setToast] = useState(null);
+
+    const showToast = (msg) => {
+        setToast(msg);
+        setTimeout(() => setToast(null), 4000);
+    };
 
     // Simulated Payment Modal state
     const [modalOpen, setModalOpen] = useState(false);
@@ -48,12 +65,19 @@ export default function Subscription() {
         setPaying(true);
         try {
             if (!formInputs.cardName.trim()) {
-                alert("Please enter your name.");
+                showToast("Please enter your name.");
                 setPaying(false);
                 return;
             }
             if (!formInputs.upi.trim() && !formInputs.cardNumber.trim()) {
-                alert("Please enter either a UPI ID or a Credit/Debit Card.");
+                showToast("Please enter either a UPI ID or a Credit/Debit Card.");
+                setPaying(false);
+                return;
+            }
+
+            const isLoaded = await loadRazorpay();
+            if (!isLoaded) {
+                showToast("Razorpay SDK failed to load. Are you online?");
                 setPaying(false);
                 return;
             }
@@ -81,11 +105,11 @@ export default function Subscription() {
 
                         // Execute actual plan upgrade
                         await axios.patch("/lawyers/upgrade", { planType: selectedPlan.planName });
-                        alert(`🎉 Payment Successful! Welcome to the ${selectedPlan.planName} Plan.`);
+                        showToast(`🎉 Payment Successful! Welcome to the ${selectedPlan.planName} Plan.`);
                         setModalOpen(false);
                         fetchProfile();
                     } catch (err) {
-                        alert("Payment verification failed. Please contact support.");
+                        showToast("Payment verification failed. Please contact support.");
                     }
                 },
                 prefill: {
@@ -100,7 +124,7 @@ export default function Subscription() {
 
             const rzp = new window.Razorpay(options);
             rzp.on('payment.failed', function (response) {
-                alert(`Payment Failed: ${response.error.description}`);
+                showToast(`Payment Failed: ${response.error.description || "Transaction declined"}`);
             });
             rzp.open();
             
@@ -402,6 +426,15 @@ export default function Subscription() {
                                 </div>
                             </div>
                         </div>
+                    </div>
+                )}
+                {toast && (
+                    <div className="ld-toast" style={{
+                        position: 'fixed', bottom: '20px', right: '20px', background: '#22252a',
+                        border: '1px solid #30363d', color: '#fff', padding: '12px 20px',
+                        borderRadius: '8px', zIndex: 10000, boxShadow: '0 8px 24px rgba(0,0,0,0.5)'
+                    }}>
+                        {toast}
                     </div>
                 )}
             </div>

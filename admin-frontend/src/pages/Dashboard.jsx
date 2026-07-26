@@ -2,6 +2,7 @@ import React, { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { io } from 'socket.io-client';
 import { useToast } from '../components/Toast';
+import { SUPPORTED_LANGUAGES, getLangFlag } from '../config/languages';
 import { Users, Scale, FileText, Activity, Clock, BookOpen, RefreshCw, Download } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
@@ -12,7 +13,8 @@ export default function Dashboard() {
     citizens: 0,
     lawyers: 0,
     pending: 0,
-    laws: 0
+    laws: 0,
+    mediationCases: 0
   });
   
   const [barData, setBarData] = useState([]);
@@ -22,13 +24,15 @@ export default function Dashboard() {
   const [lastSync, setLastSync] = useState(null);
   const [lastActivity, setLastActivity] = useState(null);
   const [tierData, setTierData] = useState(null);
+  const [langStats, setLangStats] = useState([]);
   const toast = useToast();
 
   useEffect(() => {
     fetchStats();
     fetchTierData();
+    fetchLangStats();
 
-    const socket = io(import.meta.env.VITE_SOCKET_URL || "http://localhost:5000");
+    const socket = io(import.meta.env.VITE_SOCKET_URL);
     
     socket.on("marketplace-needs-refresh", () => {
       fetchStats();
@@ -53,7 +57,8 @@ export default function Dashboard() {
         citizens: res.data.citizens,
         lawyers: res.data.lawyers,
         pending: res.data.pending,
-        laws: res.data.laws
+        laws: res.data.laws,
+        mediationCases: res.data.mediationCases || 0
       });
       setBarData(res.data.barData || []);
       setPieData(res.data.pieData || []);
@@ -72,6 +77,15 @@ export default function Dashboard() {
       setTierData(res.data);
     } catch (err) {
       console.error("Tier Analytics Error:", err);
+    }
+  };
+
+  const fetchLangStats = async () => {
+    try {
+      const res = await API.get('/admin/language-stats');
+      setLangStats(res.data || []);
+    } catch {
+      /* Silent fail — non-critical */
     }
   };
 
@@ -145,7 +159,7 @@ export default function Dashboard() {
       <div className="stats-grid">
         <div className="stat-card" style={{ padding: '24px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #3b82f6, transparent)' }}></div>
-          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(59,130,246,0.10)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1, flexShrink: 0, width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(59,130,246,0.10)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Users size={22} />
           </div>
           <div className="stat-label">Total Citizens</div>
@@ -155,7 +169,7 @@ export default function Dashboard() {
         
         <div className="stat-card" style={{ padding: '24px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #c9a84c, transparent)' }}></div>
-          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(201,168,76,0.10)', color: '#c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1, flexShrink: 0, width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(201,168,76,0.10)', color: '#c9a84c', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Scale size={22} />
           </div>
           <div className="stat-label">Legal Experts</div>
@@ -165,7 +179,7 @@ export default function Dashboard() {
         
         <div className="stat-card" style={{ padding: '24px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #f59e0b, transparent)' }}></div>
-          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: stats.pending > 0 ? 'rgba(245,158,11,0.10)' : 'rgba(148,163,184,0.1)', color: stats.pending > 0 ? '#f59e0b' : '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1, flexShrink: 0, width: '44px', height: '44px', borderRadius: '14px', background: stats.pending > 0 ? 'rgba(245,158,11,0.10)' : 'rgba(148,163,184,0.1)', color: stats.pending > 0 ? '#f59e0b' : '#94a3b8', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <Clock size={22} />
           </div>
           <div className="stat-label">Pending Verifications</div>
@@ -175,12 +189,49 @@ export default function Dashboard() {
         
         <div className="stat-card" style={{ padding: '24px' }}>
           <div style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '3px', background: 'linear-gradient(90deg, transparent, #10b981, transparent)' }}></div>
-          <div style={{ position: 'absolute', top: '24px', right: '24px', width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ position: 'absolute', top: '20px', right: '20px', zIndex: 1, flexShrink: 0, width: '44px', height: '44px', borderRadius: '14px', background: 'rgba(16,185,129,0.10)', color: '#10b981', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
             <BookOpen size={22} />
           </div>
           <div className="stat-label">AI Legal Index</div>
           <div className="stat-value">{stats.laws}</div>
           <div className="stat-trend trend-up">↑ Indexed Legal Acts</div>
+        </div>
+
+        <div className="stat-card" style={{ padding: "24px" }}>
+          <div style={{
+            position: "absolute",
+            top: 0, left: 0,
+            width: "100%",
+            height: "3px",
+            background: "linear-gradient(90deg, transparent, #8b5cf6, transparent)"
+          }} />
+          <div style={{
+            position: "absolute",
+            top: "20px",
+            right: "20px",
+            zIndex: 1,
+            flexShrink: 0,
+            width: "44px",
+            height: "44px",
+            borderRadius: "14px",
+            background: "rgba(139,92,246,0.10)",
+            color: "#8b5cf6",
+            display: "flex",
+            alignItems: "center",
+            justifyContent: "center",
+            fontSize: "1.4rem"
+          }}>
+            ⚖️
+          </div>
+          <div className="stat-label">
+            Mediation Eligible
+          </div>
+          <div className="stat-value">
+            {stats.mediationCases}
+          </div>
+          <div className="stat-trend" style={{ color: "#8b5cf6" }}>
+            → Under Mediation Act 2023
+          </div>
         </div>
       </div>
 
@@ -195,20 +246,25 @@ export default function Dashboard() {
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
             <h4 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '15px' }}>Weekly Query Volume & Latency</h4>
             <div style={{ width: '100%', height: 300 }}>
+              {loading ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Loading chart...</div>
+              ) : barData && barData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <BarChart data={barData} margin={{ top: 10, right: 10, left: -20, bottom: 0 }}>
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
+                  <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                   <Tooltip 
                     cursor={{ fill: 'rgba(201,168,76,0.05)' }}
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '10px' }} />
-                  <Bar dataKey="queries" fill="#c9a84c" radius={[4, 4, 0, 0]} name="Query Volume" />
-                  <Bar dataKey="latency" fill="#1e293b" radius={[4, 4, 0, 0]} name="Latency (ms)" />
+                  <Bar yAxisId="left" dataKey="queries" fill="#c9a84c" radius={[4, 4, 0, 0]} name="Query Volume" />
+                  <Bar yAxisId="right" dataKey="latency" fill="#1e293b" radius={[4, 4, 0, 0]} name="Latency (ms)" />
                 </BarChart>
               </ResponsiveContainer>
+              ) : (<p style={{ padding: '40px', textAlign: 'center' }}>No data available</p>)}
             </div>
           </div>
 
@@ -216,6 +272,9 @@ export default function Dashboard() {
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h4 style={{ marginBottom: '10px', color: 'var(--text-primary)', fontSize: '15px', width: '100%' }}>AI Consultation Topics</h4>
             <div style={{ width: '100%', height: 260 }}>
+              {loading ? (
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Loading chart...</div>
+              ) : pieData && pieData.length > 0 ? (
               <ResponsiveContainer width="100%" height="100%">
                 <PieChart>
                   <Pie
@@ -239,6 +298,7 @@ export default function Dashboard() {
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '12px', paddingTop: '20px' }} />
                 </PieChart>
               </ResponsiveContainer>
+              ) : (<p style={{ padding: '40px', textAlign: 'center' }}>No data available</p>)}
             </div>
           </div>
         </div>
@@ -259,31 +319,6 @@ export default function Dashboard() {
             ].map(item => {
               const count = tierData?.lawyers?.[item.key] || 0;
               const max = Math.max(...Object.values(tierData?.lawyers || {a:1}));
-              const width = max > 0 ? (count / max) * 100 : 0;
-              return (
-                <div key={item.key} style={{ marginBottom: '12px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.85rem', marginBottom: '6px' }}>
-                    <span>{item.label}</span>
-                    <span style={{ fontWeight: 600 }}>{count}</span>
-                  </div>
-                  <div style={{ height: '8px', background: 'var(--bg-light)', borderRadius: '4px', overflow: 'hidden' }}>
-                    <div style={{ height: '100%', background: item.color, width: `${width}%`, transition: 'width 0.8s ease' }}></div>
-                  </div>
-                </div>
-              );
-            })}
-          </div>
-
-          {/* Citizens */}
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
-            <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Citizen Income</h4>
-            {[
-              { label: 'High Income', key: 'high', color: '#c9a84c' },
-              { label: 'Mid Income', key: 'mid', color: '#3b82f6' },
-              { label: 'Low Income', key: 'low', color: '#10b981' }
-            ].map(item => {
-              const count = tierData?.citizens?.[item.key] || 0;
-              const max = Math.max(...Object.values(tierData?.citizens || {a:1}));
               const width = max > 0 ? (count / max) * 100 : 0;
               return (
                 <div key={item.key} style={{ marginBottom: '12px' }}>
@@ -324,6 +359,65 @@ export default function Dashboard() {
               );
             })}
           </div>
+
+          {/* Top Languages */}
+          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+            <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Top Languages</h4>
+
+            {langStats.length === 0 ? (
+              SUPPORTED_LANGUAGES
+                .slice(0, 5)
+                .map((lang, i) => (
+                  <div key={lang.code} style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '5px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {lang.flag} {lang.name}
+                      </span>
+                      <span style={{ fontWeight: 600, color: 'var(--text-muted)' }}>—</span>
+                    </div>
+                    <div style={{ height: '6px', background: 'var(--bg-base)', borderRadius: '4px' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${(5 - i) * 18}%`,
+                        background: 'var(--gold)',
+                        borderRadius: '4px',
+                        opacity: 0.4 + i * 0.1
+                      }} />
+                    </div>
+                  </div>
+                ))
+            ) : (
+              langStats.slice(0, 5).map((stat, i) => {
+                const lang = SUPPORTED_LANGUAGES.find(l => l.code === stat._id) || {
+                  flag: "🌐",
+                  name: stat._id || "Unknown",
+                  code: stat._id
+                };
+                const maxCount = langStats[0]?.count || 1;
+                const pct = Math.round((stat.count / maxCount) * 100);
+                return (
+                  <div key={stat._id} style={{ marginBottom: '10px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', fontSize: '0.82rem', marginBottom: '5px' }}>
+                      <span style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                        {lang.flag} {lang.name}
+                      </span>
+                      <span style={{ fontWeight: 700, color: 'var(--text-primary)' }}>{stat.count}</span>
+                    </div>
+                    <div style={{ height: '6px', background: 'var(--bg-base)', borderRadius: '4px', overflow: 'hidden' }}>
+                      <div style={{
+                        height: '100%',
+                        width: `${pct}%`,
+                        background: 'var(--gold)',
+                        borderRadius: '4px',
+                        transition: 'width 0.8s ease'
+                      }} />
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
+
         </div>
       </div>
     </div>

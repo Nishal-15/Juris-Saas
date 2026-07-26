@@ -1,12 +1,15 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
+import { getLangName, getLangFlag, getLangNative, SUPPORTED_LANGUAGES } from '../config/languages';
+import LanguageSelector from '../components/LanguageSelector';
 import { Users, Mail, MapPin, Search, RefreshCw } from 'lucide-react';
 
 export default function Citizens() {
   const [citizens, setCitizens] = useState([]);
   const [loading, setLoading] = useState(true);
   const [search, setSearch] = useState("");
+  const [langFilter, setLangFilter] = useState("all");
   const toast = useToast();
 
   useEffect(() => {
@@ -35,10 +38,12 @@ export default function Citizens() {
 
   const filtered = citizens.filter(c => {
     const s = search.toLowerCase();
-    return !search ||
+    const matchSearch = !search ||
       (c.name || "").toLowerCase().includes(s) ||
       (c.email || "").toLowerCase().includes(s) ||
       (c.city || "").toLowerCase().includes(s);
+    const matchLang = langFilter === "all" || (c.preferredLanguage || "en") === langFilter;
+    return matchSearch && matchLang;
   });
 
   return (
@@ -59,14 +64,37 @@ export default function Citizens() {
         </div>
       </header>
 
-      <div className="search-wrap">
-        <Search size={18} />
-        <input 
-          type="text" 
-          placeholder="Search by name, email, or city..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
+        <div className="search-wrap" style={{ margin: 0, flex: 1, minWidth: "260px" }}>
+          <Search size={18} />
+          <input 
+            type="text" 
+            placeholder="Search by name, email, or city..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select
+          value={langFilter}
+          onChange={e => setLangFilter(e.target.value)}
+          style={{
+            padding: "10px 14px",
+            borderRadius: "var(--radius-sm)",
+            border: "1px solid var(--border-dark)",
+            background: "var(--bg-card)",
+            color: "var(--text-primary)",
+            fontSize: "0.875rem",
+            outline: "none",
+            cursor: "pointer"
+          }}
+        >
+          <option value="all">All Languages</option>
+          {SUPPORTED_LANGUAGES.map(l => (
+            <option key={l.code} value={l.code}>
+              {l.flag} {l.name}
+            </option>
+          ))}
+        </select>
       </div>
 
       <div className="content-section" style={{ padding: '24px' }}>
@@ -88,13 +116,14 @@ export default function Citizens() {
                   <th>Citizen Name</th>
                   <th>Contact Details</th>
                   <th>Location</th>
+                  <th>Language</th>
                   <th>Income Tier</th>
                   <th>Status</th>
                 </tr>
               </thead>
               <tbody>
                 {filtered.map((c) => {
-                  const incomeBadge = getIncomeBadge(c.income);
+                  const incomeBadge = getIncomeBadge(c.incomeTier);
                   return (
                     <tr key={c._id}>
                       <td>
@@ -119,8 +148,34 @@ export default function Citizens() {
                         </div>
                       </td>
                       <td>
+                        <div style={{
+                          display: "flex",
+                          alignItems: "center",
+                          gap: 6,
+                          fontSize: "0.82rem"
+                        }}>
+                          <span style={{ fontSize: "1rem" }}>
+                            {getLangFlag(c.preferredLanguage || "en")}
+                          </span>
+                          <div>
+                            <div style={{
+                              fontWeight: 600,
+                              color: "var(--text-primary)"
+                            }}>
+                              {getLangName(c.preferredLanguage || "en")}
+                            </div>
+                            <div style={{
+                              fontSize: "0.68rem",
+                              color: "var(--text-muted)"
+                            }}>
+                              {getLangNative(c.preferredLanguage || "en")}
+                            </div>
+                          </div>
+                        </div>
+                      </td>
+                      <td>
                         <span className="badge" style={{ background: incomeBadge.bg, color: incomeBadge.col, textTransform: 'capitalize' }}>
-                          {c.income || "Unspecified"}
+                          {c.incomeTier || "Unspecified"}
                         </span>
                       </td>
                       <td>

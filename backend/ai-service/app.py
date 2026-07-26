@@ -11,6 +11,7 @@ from dotenv import load_dotenv
 import faiss # type: ignore
 import numpy as np
 from sentence_transformers import SentenceTransformer
+import pickle
 
 # Load environment variables
 load_dotenv()
@@ -33,6 +34,8 @@ SUPPORTED_LANGUAGES = {
   "ne":  "Nepali",     "sa":  "Sanskrit",
   "en":  "English"
 }
+
+RTL_LANGUAGES = ["ur", "ks", "sd"]
 
 MEDIATION_ELIGIBLE = [
   "property dispute","boundary dispute",
@@ -100,6 +103,11 @@ def get_mediation_script(case_summary,
   lang_name = SUPPORTED_LANGUAGES.get(
     lang, "English"
   )
+  if lang in RTL_LANGUAGES:
+    rtl_note = "Format for RTL script."
+  else:
+    rtl_note = ""
+
   system_prompt = f"""You are a professional
 legal narrator for an AI video avatar.
 Write a warm, clear, personalized spoken
@@ -109,9 +117,15 @@ Write ONLY the spoken words.
 No stage directions. No brackets.
 No formatting markers.
 
-Language: {lang_name}
+Language: {lang_name} ({lang})
 Citizen Name: {citizen_name}
 Case Summary: {case_summary}
+
+CRITICAL LANGUAGE RULES:
+- Write the ENTIRE script in {lang_name}.
+- Do NOT use English unless the target language IS English.
+- Speak naturally as an empathetic legal guide would in {lang_name}.
+- {rtl_note}
 
 Structure:
 1. Greeting using citizen name (1 sentence)
@@ -225,16 +239,28 @@ def get_heygen_voice_id(lang):
 GROQ_API_KEY = os.getenv("GROQ_API_KEY")
 
 PINECONE_API_KEY = os.getenv("PINECONE_API_KEY")
-PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME", "jurisbot-index")
+PINECONE_INDEX_NAME = os.getenv("PINECONE_INDEX_NAME")
 
 OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 
 # Initialize FAISS and Embedding Model
 try:
     print("Initializing FAISS & Embedding Model...", flush=True)
-    faiss_index = faiss.read_index("faiss.index")
-    faiss_meta = np.load("meta.npy", allow_pickle=True)
     embed_model = SentenceTransformer("all-MiniLM-L6-v2")
+    if os.path.exists("faiss_index.bin") and os.path.exists("faiss_meta.pkl"):
+        faiss_index = faiss.read_index("faiss_index.bin")
+        with open("faiss_meta.pkl", "rb") as f:
+            faiss_meta = pickle.load(f)
+        print(f"[FAISS] Loaded {faiss_index.ntotal} vectors from disk", flush=True)
+    elif os.path.exists("faiss.index") and os.path.exists("meta.npy"):
+        faiss_index = faiss.read_index("faiss.index")
+        faiss_meta = np.load("meta.npy", allow_pickle=True)
+        print(f"[FAISS] Loaded {faiss_index.ntotal} vectors from disk", flush=True)
+    else:
+        dimension = embed_model.get_sentence_embedding_dimension()
+        faiss_index = faiss.IndexFlatL2(dimension)
+        faiss_meta = []
+        print("[FAISS] Initialized empty index", flush=True)
     print("SUCCESS: Local FAISS RAG Engine Ready", flush=True)
 except Exception as e:
     print(f"ERROR: FAISS Init Error: {e}", flush=True)
@@ -242,8 +268,18 @@ except Exception as e:
     faiss_meta = None
     embed_model = None
 
+def save_faiss_index():
+    if faiss_index is not None and faiss_meta is not None:
+        try:
+            faiss.write_index(faiss_index, "faiss_index.bin")
+            with open("faiss_meta.pkl", "wb") as f:
+                pickle.dump(faiss_meta, f)
+            print("[FAISS] Index and metadata saved to disk", flush=True)
+        except Exception as e:
+            print(f"[FAISS Error] Could not save index: {e}", flush=True)
+
 app = Flask(__name__)
-CORS(app) # Allow cross-origin requests from Flutter
+CORS(app, resources={r"/*": {"origins": [os.getenv("BACKEND_URL", "http://localhost:5000"), "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "https://jurisbot.vercel.app"]}})
 
 # =========================
 # ZERO-DATA RETENTION (PII Redaction)
@@ -285,7 +321,8 @@ def handle_greeting(user_input, user_name="User"):
         return random.choice(responses)
     return None
 
-def get_legal_answer(user_input, lang="en"):
+def get_legal_answer(user_input, lang="en", history=None):
+    if history is None: history = []
     # 1. Hard Filter for common non-legal topics
     if any(topic in user_input.lower() for topic in REJECTED_CATEGORIES):
         return "Sorry, I can't provide an answer for this. Please ask only law-related questions."
@@ -349,9 +386,32 @@ MANDATORY RESPONSE FORMAT:
 
 **Simple Example**
 - Relatable scenario (max 3 lines).
-
-Answer in {lang_name}. Use {lang_name} vocabulary appropriate for a common citizen unfamiliar with legal terminology.
 """
+
+    if lang in RTL_LANGUAGES:
+        lang_direction_note = (
+            "This is a Right-to-Left (RTL) language. "
+            "Ensure clean formatting without breaking "
+            "words across lines."
+        )
+    else:
+        lang_direction_note = ""
+
+    system_instruction += f"""
+CRITICAL LANGUAGE REQUIREMENT:
+- You MUST answer ENTIRELY in {lang_name} ({lang}).
+- Do NOT mix languages. Do NOT respond in English unless lang is 'en'.
+- Use natural, respectful, conversational {lang_name} appropriate for an Indian citizen.
+- If technical legal terms (like 'Habeas Corpus', 'FIR', 'Bail', 'Affidavit') have no exact common word in {lang_name}, write the English term in parentheses after the {lang_name} explanation.
+- {lang_direction_note}
+"""
+
+    # Build message chain with conversation history
+    messages_list = [{"role": "system", "content": system_instruction}]
+    for msg in history:
+        role = "assistant" if msg.get("role") == "bot" else "user"
+        messages_list.append({"role": role, "content": msg.get("text", "")})
+    messages_list.append({"role": "user", "content": redact_pii(user_input)})
 
     # 4. NVIDIA — First Priority
     NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
@@ -361,10 +421,7 @@ Answer in {lang_name}. Use {lang_name} vocabulary appropriate for a common citiz
             url = "https://integrate.api.nvidia.com/v1/chat/completions"
             payload = {
                 "model": "meta/llama-3.1-8b-instruct",
-                "messages": [
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": redact_pii(user_input)}
-                ],
+                "messages": messages_list,
                 "temperature": 0.2,
                 "max_tokens": 1500
             }
@@ -387,10 +444,7 @@ Answer in {lang_name}. Use {lang_name} vocabulary appropriate for a common citiz
             url = "https://api.groq.com/openai/v1/chat/completions"
             payload = {
                 "model": "llama-3.1-8b-instant",
-                "messages": [
-                    {"role": "system", "content": system_instruction},
-                    {"role": "user", "content": redact_pii(user_input)}
-                ],
+                "messages": messages_list,
                 "temperature": 0.2,
                 "max_tokens": 1500
             }
@@ -410,7 +464,11 @@ Answer in {lang_name}. Use {lang_name} vocabulary appropriate for a common citiz
     if os.environ.get("USE_OLLAMA") == "true":
         try:
             print("Trying Local Mistral...", flush=True)
-            payload = {"model": "mistral", "prompt": f"{system_instruction}\n\nQuery: {user_input}", "stream": False}
+            history_context = ""
+            for msg in history[-6:]: # last 6 messages
+                sender = "Assistant" if msg.get("role") == "bot" else "User"
+                history_context += f"{sender}: {msg.get('text', '')}\n"
+            payload = {"model": "mistral", "prompt": f"{system_instruction}\n\nConversation History:\n{history_context}\nQuery: {user_input}", "stream": False}
             res = requests.post(OLLAMA_URL, json=payload, timeout=15)
             if res.status_code == 200:
                 return res.json().get("response")
@@ -430,11 +488,12 @@ def chat():
         if lang == "auto" or not lang:
             lang = detect_language(user_input)
         user_name = data.get("userName", "User")
+        history = data.get("history", [])
 
         greeting = handle_greeting(user_input, user_name)
         if greeting: return jsonify({"answer": greeting})
 
-        answer = get_legal_answer(user_input, lang)
+        answer = get_legal_answer(user_input, lang, history)
         return jsonify({
             "answer": answer,
             "detectedLang": lang,
@@ -445,8 +504,29 @@ def chat():
         print(f"CRITICAL ERROR: {str(e)}", flush=True)
         return jsonify({"error": "Internal AI server error"}), 500
 
+@app.route("/upload-law", methods=["POST"])
+def upload_law():
+    global faiss_meta
+    try:
+        data = request.json
+        text = data.get("text", "")
+        act_name = data.get("act", "General Statute")
+        year = data.get("year", "2024")
+        if text and embed_model and faiss_index is not None:
+            vec = embed_model.encode([text]).astype("float32")
+            faiss_index.add(vec)
+            if isinstance(faiss_meta, list):
+                faiss_meta.append({"act": act_name, "year": year, "heading": "Uploaded Section", "content": text})
+            elif isinstance(faiss_meta, np.ndarray):
+                faiss_meta = np.append(faiss_meta, {"act": act_name, "year": year, "heading": "Uploaded Section", "content": text})
+            save_faiss_index()
+        return jsonify({"status": "success", "message": "Law indexed successfully"})
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
+
 @app.route("/analyze-document", methods=["POST"])
 def analyze_document():
+    global faiss_meta
     try:
         data = request.json
         file_path = data.get("filePath")
@@ -503,6 +583,18 @@ def analyze_document():
             
         # Truncate text roughly to fit LLM context windows (e.g. 15000 chars)
         truncated_text = text[:15000]
+        
+        if truncated_text.strip() and embed_model and faiss_index is not None:
+            try:
+                vec = embed_model.encode([truncated_text[:1000]]).astype("float32")
+                faiss_index.add(vec)
+                if isinstance(faiss_meta, list):
+                    faiss_meta.append({"act": "Analyzed Document", "year": "2024", "heading": os.path.basename(file_path), "content": truncated_text[:1000]})
+                elif isinstance(faiss_meta, np.ndarray):
+                    faiss_meta = np.append(faiss_meta, {"act": "Analyzed Document", "year": "2024", "heading": os.path.basename(file_path), "content": truncated_text[:1000]})
+                save_faiss_index()
+            except Exception as ex:
+                print(f"[FAISS] Could not index analyzed document: {ex}", flush=True)
         
         system_instruction = """
 You are an expert Legal AI Assistant. You have been provided with the text extracted from a legal document.

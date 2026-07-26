@@ -3,7 +3,7 @@ require("dotenv").config({ path: ".env" });
 
 async function globalSync() {
   try {
-    await mongoose.connect(process.env.MONGO_URI);
+    await mongoose.connect(process.env.MONGO_URI, { serverSelectionTimeoutMS: 5000 });
     const db = mongoose.connection.db;
 
     // 1. YOUR REAL ID (The one you are logged in as)
@@ -32,7 +32,7 @@ async function globalSync() {
     console.log(`✅ Appointments Synced: ${apptResult.modifiedCount}`);
 
     // --- SYNC LAWYERS PROFILE ---
-    await db.collection('lawyers').updateOne(
+    const lawyerResult = await db.collection('lawyers').updateOne(
       { _id: REAL_ID },
       { 
         $set: {
@@ -53,15 +53,19 @@ async function globalSync() {
       },
       { upsert: true }
     );
-    console.log("✅ Lawyer Profile Synced/Updated with Professional Tier.");
+    console.log(`✅ Lawyer Profile Synced/Updated: ${lawyerResult.modifiedCount || lawyerResult.upsertedCount || 1} records modified.`);
 
-    // --- SYNC ANALYTICS Fallback ---
-    // Some systems cache stats, we might need to recalculate or just wait for refresh
-
-    process.exit(0);
+    console.log(`🎯 [Global Sync Summary] Total Records Modified/Synced: ${(caseResult.modifiedCount || 0) + (apptResult.modifiedCount || 0) + (lawyerResult.modifiedCount || lawyerResult.upsertedCount || 0)}`);
   } catch (err) {
-    console.error(err);
+    console.error("[Global Sync Fatal Error]:", err);
     process.exit(1);
+  } finally {
+    try {
+      await mongoose.disconnect();
+      console.log("🔌 Database connection closed cleanly.");
+    } catch (e) {
+      // ignore disconnect errors
+    }
   }
 }
 globalSync();

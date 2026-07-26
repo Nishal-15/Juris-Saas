@@ -5,7 +5,7 @@ const auth = require("../middleware/auth");
 // Get All Lawyers from the 'lawyers' collection
 router.get("/", async (req, res) => {
   try {
-    const lawyers = await Lawyer.find({ isVerified: true });
+    const lawyers = await Lawyer.find({ isVerified: true }).select("-password");
     res.json(lawyers);
   } catch (err) {
     res.status(500).json({ message: err.message });
@@ -46,9 +46,19 @@ router.patch("/upgrade", auth(["lawyer"]), async (req, res) => {
   try {
     const { planType } = req.body; // "Starter" or "Pro"
     
+    if (!planType ||
+        !["Starter","Pro"].includes(planType)
+    ) {
+      return res.status(400).json({
+        message:
+          "Invalid plan. " +
+          "Choose Starter or Pro."
+      })
+    }
+
     const plans = {
-      "Starter": { limit: 5 },
-      "Pro": { limit: 9999 } // Unlimited
+      "Starter": { limit: 10  },
+      "Pro":     { limit: 9999 } // Unlimited
     };
 
     if (!plans[planType]) {

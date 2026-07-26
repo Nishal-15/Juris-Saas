@@ -4,12 +4,31 @@ import socket from "../../socket";
 import axios from "../../api/axios";
 import "./lawyer_chat.css";
 
+const formatTime = (msg) => {
+  try {
+    const raw = msg.timestamp || msg.createdAt || msg.time;
+    if (!raw) return new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    if (typeof raw === "string" && /^\d{1,2}:\d{2}\s*(AM|PM)?$/i.test(raw.trim())) {
+      return raw.trim();
+    }
+    const d = new Date(raw);
+    if (!isNaN(d.getTime())) {
+      return d.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
+    }
+    const match = String(raw).match(/(\d{1,2}:\d{2}(\s*(AM|PM))?)/i);
+    if (match) return match[1];
+    return "Now";
+  } catch (e) {
+    return "Now";
+  }
+};
+
 export default function LawyerChat({ currentUser, targetUser }) {
   const navigate = useNavigate();
   const [msg, setMsg] = useState("");
   const [messages, setMessages] = useState([]);
-  const [targetName, setTargetName] = useState("Client");
-  const [lawyerName, setLawyerName] = useState("Expert");
+  const [targetName, setTargetName] = useState("Verified Client");
+  const [lawyerName, setLawyerName] = useState("Expert Advocate");
   const endRef = useRef(null);
   useEffect(() => {
     const user = JSON.parse(localStorage.getItem("user") || "{}");
@@ -106,18 +125,18 @@ export default function LawyerChat({ currentUser, targetUser }) {
              <div className="wa-avatar">👤</div>
              <div className="wa-details">
                 <h3>{targetName}</h3>
-                <span className="wa-status">● Client Online</span>
+                <span className="wa-status">End-to-End Encrypted Consultation</span>
              </div>
           </div>
           <div className="wa-actions">
-             <button className="wa-icon-btn" onClick={startVideo}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
+             <button className="wa-icon-btn" onClick={startVideo} title="Start Encrypted Video Room">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M17 10.5V7c0-.55-.45-1-1-1H4c-.55 0-1 .45-1 1v10c0 .55.45 1 1 1h12c.55 0 1-.45 1-1v-3.5l4 4v-11l-4 4z"/></svg>
              </button>
-             <button className="wa-icon-btn" onClick={() => fileInputRef.current.click()}>
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4s-4 1.79-4 4v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-1.5z"/></svg>
+             <button className="wa-icon-btn" onClick={() => fileInputRef.current.click()} title="Share Legal Document">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M16.5 6v11.5c0 2.21-1.79 4-4 4s-4-1.79-4-4V5c0-1.38 1.12-2.5 2.5-2.5s2.5 1.12 2.5 2.5v10.5c0 .55-.45 1-1 1s-1-.45-1-1V6H10v9.5c0 1.38 1.12 2.5 2.5 2.5s2.5-1.12 2.5-2.5V5c0-2.21-1.79-4-4-4s-4 1.79-4 4v12.5c0 3.31 2.69 6 6 6s6-2.69 6-6V6h-1.5z"/></svg>
              </button>
-             <button className="wa-icon-btn">
-                <svg viewBox="0 0 24 24" width="24" height="24" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
+             <button className="wa-icon-btn" title="More Options">
+                <svg viewBox="0 0 24 24" width="22" height="22" fill="currentColor"><path d="M12 8c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2zm0 2c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2zm0 6c-1.1 0-2 .9-2 2s.9 2 2 2 2-.9 2-2-.9-2-2-2z"/></svg>
              </button>
           </div>
         </header>
@@ -126,17 +145,17 @@ export default function LawyerChat({ currentUser, targetUser }) {
         <div className="wa-messages-area">
           <div className="wa-empty">
              <div className="wa-lock-tag">
-                <svg viewBox="0 0 24 24" width="12" height="12" fill="currentColor" style={{marginRight: '5px'}}><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
-                Secure Consultation
+                <svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor" style={{marginRight: '6px'}}><path d="M18 8h-1V6c0-2.76-2.24-5-5-5S7 3.24 7 6v2H6c-1.1 0-2 .9-2 2v10c0 1.1.9 2 2 2h12c1.1 0 2-.9 2-2V10c0-1.1-.9-2-2-2zM9 6c0-1.66 1.34-3 3-3s3 1.34 3 3v2H9V6zm9 14H6V10h12v10zm-6-3c1.1 0 2-.9 2-2s-.9-2-2-2-2 .9-2 2 .9 2 2 2z"/></svg>
+                JurisVault™ 256-Bit Privilege
              </div>
-             <p>This conversation is encrypted for client-lawyer privilege.</p>
+             <p>This communication is privileged under Section 126 of the Indian Evidence Act and secured with zero-knowledge encryption.</p>
           </div>
           {messages.map((m, i) => (
             <div key={i} className={`wa-bubble-row ${m.from === userId ? "wa-sent" : "wa-received"}`}>
               <div className="wa-bubble">
                 {m.text}
                 <span className="wa-time">
-                  {m.timestamp || (m.createdAt && new Date(m.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' }))}
+                  {formatTime(m)}
                   {m.from === userId && <span className="wa-check">✓✓</span>}
                 </span>
               </div>

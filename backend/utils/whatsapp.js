@@ -55,14 +55,23 @@ const sendTemplate = async ({
   }
 }
 
+const getMetaLangCode = (lang = "en") => {
+  const map = {
+    hi: "hi", bn: "bn", te: "te", mr: "mr", ta: "ta",
+    gu: "gu", kn: "kn", ml: "ml", pa: "pa", or: "or",
+    ur: "ur", as: "as", en: "en_IN"
+  };
+  return map[lang] || "en_IN";
+};
+
 const sendHearingReminder = ({
   to, citizenName, caseTitle,
   hearingDate, courtLocation,
-  lang = "en_IN"
+  lang = "en"
 }) => sendTemplate({
   to,
   templateName: "hearing_reminder",
-  languageCode: lang,
+  languageCode: getMetaLangCode(lang),
   components: [{
     type: "body",
     parameters: [
@@ -75,10 +84,11 @@ const sendHearingReminder = ({
 })
 
 const sendCaseAssigned = ({
-  to, citizenName, lawyerName
+  to, citizenName, lawyerName, lang = "en"
 }) => sendTemplate({
   to,
   templateName: "case_assigned",
+  languageCode: getMetaLangCode(lang),
   components: [{
     type: "body",
     parameters: [
@@ -89,10 +99,11 @@ const sendCaseAssigned = ({
 })
 
 const sendLawyerVerified = ({
-  to, lawyerName
+  to, lawyerName, lang = "en"
 }) => sendTemplate({
   to,
   templateName: "lawyer_verified",
+  languageCode: getMetaLangCode(lang),
   components: [{
     type: "body",
     parameters: [
@@ -101,10 +112,11 @@ const sendLawyerVerified = ({
   }]
 })
 
-const sendOTP = ({ to, otp }) =>
+const sendOTP = ({ to, otp, lang = "en" }) =>
   sendTemplate({
     to,
     templateName: "jurisbot_otp",
+    languageCode: getMetaLangCode(lang),
     components: [{
       type: "body",
       parameters: [
@@ -114,10 +126,11 @@ const sendOTP = ({ to, otp }) =>
   })
 
 const sendMediationAlert = ({
-  to, citizenName, caseTitle
+  to, citizenName, caseTitle, lang = "en"
 }) => sendTemplate({
   to,
   templateName: "mediation_eligible",
+  languageCode: getMetaLangCode(lang),
   components: [{
     type: "body",
     parameters: [
@@ -128,10 +141,11 @@ const sendMediationAlert = ({
 })
 
 const sendCallInvite = ({
-  to, lawyerName, callLink
+  to, lawyerName, callLink, lang = "en"
 }) => sendTemplate({
   to,
   templateName: "consultation_call",
+  languageCode: getMetaLangCode(lang),
   components: [{
     type: "body",
     parameters: [

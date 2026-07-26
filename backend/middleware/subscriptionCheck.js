@@ -9,7 +9,8 @@ module.exports = function(actionType = "view") {
       if (!lawyer) return res.status(404).json({ message: "Lawyer account not found." });
 
       const now = new Date();
-      const isExpired = lawyer.subscriptionExpiresAt && now > lawyer.subscriptionExpiresAt;
+      const expiryDate = lawyer.subscriptionExpiresAt ? new Date(lawyer.subscriptionExpiresAt) : null;
+      const isExpired = !expiryDate || isNaN(expiryDate.getTime()) || expiryDate < now;
 
       // 1. IF EXPIRED -> VIEW ONLY MODE
       if (isExpired || lawyer.subscriptionTier === "Expired") {
@@ -41,7 +42,7 @@ module.exports = function(actionType = "view") {
 
       next();
     } catch (err) {
-      console.error("Subscription Middleware Error:", err);
+      console.error(`Subscription Middleware Error [Lawyer ID: ${req.user?.id || 'unknown'}]:`, err);
       res.status(500).json({ message: "Internal server error during subscription check." });
     }
   };

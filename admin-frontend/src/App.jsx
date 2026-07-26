@@ -8,12 +8,13 @@ import Citizens from './pages/Citizens';
 import KnowledgeHub from './pages/KnowledgeHub';
 import Broadcast from './pages/Broadcast';
 import Cases from './pages/Cases';
+import MediationCases from './pages/MediationCases';
 import Settings from './pages/Settings';
 import ErrorBoundary from './components/ErrorBoundary';
 
 // Placeholder for Login
 const Login = ({ setAuth }) => {
-  const [email, setEmail] = useState("nishalramar@gmail.com");
+  const [email, setEmail] = useState("");
   const [pass, setPass] = useState("");
   const [showPass, setShowPass] = useState(false);
   const [otp, setOtp] = useState("");
@@ -29,7 +30,7 @@ const Login = ({ setAuth }) => {
 
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/login", {
+      const res = await fetch(import.meta.env.VITE_API_BASE + "/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail, password: cleanPass, role: "admin" })
@@ -40,6 +41,12 @@ const Login = ({ setAuth }) => {
         setStep(2);
       } else if (res.ok && data.token) {
         localStorage.setItem("token", data.token);
+        if (data.refreshToken) {
+          localStorage.setItem(
+            "refreshToken",
+            data.refreshToken
+          )
+        }
         localStorage.setItem("role", "admin");
         setAuth(true);
       } else {
@@ -56,7 +63,7 @@ const Login = ({ setAuth }) => {
     if (!otp.trim()) return setError("Enter OTP");
     setLoading(true);
     try {
-      const res = await fetch("http://localhost:5000/api/auth/verify-otp", {
+      const res = await fetch(import.meta.env.VITE_API_BASE + "/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), otp: otp.trim() })
@@ -65,6 +72,12 @@ const Login = ({ setAuth }) => {
       
       if (res.ok && data.token) {
         localStorage.setItem("token", data.token);
+        if (data.refreshToken) {
+          localStorage.setItem(
+            "refreshToken",
+            data.refreshToken
+          )
+        }
         localStorage.setItem("role", "admin");
         setAuth(true);
       } else {
@@ -277,7 +290,7 @@ export default function App() {
       try {
         const token = localStorage.getItem("token")
         const res = await window.fetch(
-          `${import.meta.env.VITE_API_BASE || "http://localhost:5000/api"}/admin/pending-lawyers`,
+          `${import.meta.env.VITE_API_BASE}/admin/pending-lawyers`,
           { headers:{ Authorization:`Bearer ${token}` } }
         )
         const data = await res.json()
@@ -301,6 +314,7 @@ export default function App() {
           <Route path="/lawyers" element={<ErrorBoundary><LegalExperts /></ErrorBoundary>} />
           <Route path="/citizens" element={<ErrorBoundary><Citizens /></ErrorBoundary>} />
           <Route path="/cases" element={<ErrorBoundary><Cases /></ErrorBoundary>} />
+          <Route path="/mediation" element={<ErrorBoundary><MediationCases /></ErrorBoundary>} />
           <Route path="/broadcast" element={<ErrorBoundary><Broadcast /></ErrorBoundary>} />
           <Route path="/knowledge" element={<ErrorBoundary><KnowledgeHub /></ErrorBoundary>} />
           <Route path="/settings" element={<ErrorBoundary><Settings /></ErrorBoundary>} />

@@ -2,8 +2,9 @@ const cron = require("node-cron");
 const Case = require("../models/Case");
 const axios = require("axios");
 const twilio = require("twilio");
-const { spawn } = require("child_process")
-const path      = require("path")
+const { spawn } = require("child_process");
+const path      = require("path");
+const { getAIChatURL } = require("./aiUrl");
 
 // 🕒 Check every morning at 8:00 AM
 cron.schedule("0 8 * * *", async () => {
@@ -49,7 +50,7 @@ async function generateAILegalAlert(caseData, isToday) {
       ? `Write a 1-sentence professional legal reminder for a client whose court hearing is TODAY for case: "${caseData.title}". Be professional and encouraging.`
       : `Write a 1-sentence legal reminder for a client who has a hearing in 48 hours for case: "${caseData.title}". Remind them to be prepared.`;
 
-    const aiRes = await axios.post(process.env.PYTHON_AI_SERVICE_URL || "http://127.0.0.1:8088/chat", {
+    const aiRes = await axios.post(getAIChatURL(), {
       message: prompt,
       userName: caseData.user?.name || "Citizen"
     });
@@ -226,24 +227,36 @@ cron.schedule("*/30 * * * *", async () => {
       urgency:        "Emergency",
       assignedLawyer: null,
       createdAt:      { $lte: twoHrs }
-    }).populate("user", "name")
+    }).populate("user", "name");
 
     for (const c of urgent) {
-      const io = require("../server")
-        ?.app?.get?.("io")
+      let io = null;
+      try {
+        const serverModule = require("../server");
+        io = serverModule?.io ||
+          serverModule?.app?.get?.("io") ||
+          null;
+      } catch {
+        /* server not yet loaded */
+      }
       if (io) {
         io.emit("emergency-unassigned", {
           caseId:    c._id,
           caseTitle: c.title,
           message:
             `URGENT: Case "${c.title}" ` +
-            `has been unassigned for 2+ hours`
-        })
+            `unassigned for 2+ hours`
+        });
+      } else {
+        console.warn(
+          `[Emergency] io not available. ` +
+          `Case ${c._id} needs attention.`
+        );
       }
       console.log(
         `[Emergency Escalation] ` +
         `Case ${c._id} unassigned 2hrs+`
-      )
+      );
     }
   } catch (err) {
     console.error(

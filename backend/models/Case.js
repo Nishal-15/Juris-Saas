@@ -62,7 +62,13 @@ const CaseSchema = new mongoose.Schema({
     default: false
   },
   mediationScript:  { type: String, default: null },
-  mediationVideoUrl:{ type: String, default: null }
+  mediationVideoUrl:{ type: String, default: null },
+  courtExplanation: {
+    why: String,
+    timeline: String,
+    estimatedCost: String,
+    nextStep: String
+  }
 }, { timestamps: true });
 
 module.exports = mongoose.model("Case", CaseSchema);

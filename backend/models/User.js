@@ -24,6 +24,7 @@ module.exports = mongoose.model("User",
   // 🔒 Security
   twoFactorOtp: { type: String, default: null },
   twoFactorExpires: { type: Date, default: null },
+  refreshToken: { type: String, default: null },
   
   
   createdAt: { type: Date, default: Date.now }

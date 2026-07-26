@@ -46,6 +46,7 @@ const LawyerSchema = new mongoose.Schema({
     default: () => new Date(Date.now() + 14 * 24 * 60 * 60 * 1000) // 14 days from now
   },
   isBlocked: { type: Boolean, default: false },
+  refreshToken: { type: String, default: null },
   createdAt: { type: Date, default: Date.now },
   updatedAt: { type: Date, default: Date.now }
 }, { collection: 'lawyers', timestamps: true });

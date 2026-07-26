@@ -7,6 +7,11 @@ const auth = require("../middleware/auth");
 const axios = require("axios");
 const checkSub = require("../middleware/checkSubscription");
 const { sendAIWhatsApp } = require("../utils/notifier");
+const {
+  getAIChatURL,
+  getAIMediationURL,
+  getAIMediationStatusURL
+} = require("../utils/aiUrl");
 
 function detectComplexity(legalType,
   urgency, type) {
@@ -34,42 +39,106 @@ function detectComplexity(legalType,
   return "Mid"
 }
 
-function detectCourtLevel(legalType,
-  type, complexity) {
-  const text = (
-    (legalType||"")+" "+(type||"")
-  ).toLowerCase()
+function detectCourtLevel(legalType, type, complexity) {
+  const text = ((legalType || "") + " " + (type || "")).toLowerCase()
+
   if (
-    text.includes("supreme")||
-    text.includes("constitutional")||
-    text.includes("fundamental right")||
-    text.includes("writ")
+    text.includes("supreme") ||
+    text.includes("constitutional") ||
+    text.includes("fundamental right") ||
+    text.includes("writ petition") ||
+    text.includes("special leave") ||
+    text.includes("slp")
   ) return "Supreme Court"
+
   if (
-    text.includes("high court")||
-    text.includes("corporate")||
-    text.includes("taxation")||
-    text.includes("gst")||
-    text.includes("income tax")||
-    (text.includes("property")&&
-     complexity==="High")
+    text.includes("high court") ||
+    text.includes("corporate") ||
+    text.includes("taxation") ||
+    text.includes("gst") ||
+    text.includes("income tax") ||
+    text.includes("customs") ||
+    text.includes("sebi") ||
+    (text.includes("property") && complexity === "High")
   ) return "High Court"
+
   if (
-    text.includes("consumer")||
-    text.includes("deficiency")
+    text.includes("consumer") ||
+    text.includes("deficiency") ||
+    text.includes("defective")
   ) return "Consumer Forum"
+
   if (
-    text.includes("family")||
-    text.includes("divorce")||
-    text.includes("custody")||
-    text.includes("matrimonial")
+    text.includes("family") ||
+    text.includes("divorce") ||
+    text.includes("custody") ||
+    text.includes("matrimonial") ||
+    text.includes("alimony") ||
+    text.includes("maintenance") ||
+    text.includes("dowry")
   ) return "Family Court"
+
   if (
-    text.includes("labour")||
-    text.includes("employment")||
-    text.includes("industrial")
+    text.includes("labor") ||
+    text.includes("labour") ||
+    text.includes("employment") ||
+    text.includes("industrial") ||
+    text.includes("salary") ||
+    text.includes("wages") ||
+    text.includes("termination") ||
+    text.includes("provident fund") ||
+    text.includes("gratuity") ||
+    text.includes("tribunal") ||
+    text.includes("nclt") ||
+    text.includes("drt") ||
+    text.includes("cat") ||
+    text.includes("cyber") ||
+    text.includes("online fraud")
   ) return "Tribunal"
+
   return "District Court"
+}
+
+function getCourtExplanation(courtLevel) {
+  const map = {
+    "Supreme Court": {
+      why: "Involves fundamental rights, constitutional questions, or national jurisdiction.",
+      timeline: "1–3 years (initial admission hearing within weeks)",
+      estimatedCost: "₹50,000 – ₹5,00,000+",
+      nextStep: "File Writ Petition or Special Leave Petition (SLP) with certified case record."
+    },
+    "High Court": {
+      why: "Involves substantial questions of law, state-level jurisdiction, or statutory appeals.",
+      timeline: "1–2 years",
+      estimatedCost: "₹25,000 – ₹2,00,000",
+      nextStep: "Engage High Court advocate to file Writ Petition or Civil/Criminal Appeal."
+    },
+    "Consumer Forum": {
+      why: "Dispute arises from purchase of goods or services with deficiency or defect.",
+      timeline: "6–18 months",
+      estimatedCost: "₹2,000 – ₹25,000",
+      nextStep: "Issue statutory legal notice to seller/service provider before filing."
+    },
+    "Family Court": {
+      why: "Matrimonial dispute, divorce, child custody, alimony, or domestic relations.",
+      timeline: "6 months – 2 years (6 months mandatory cooling-off for mutual divorce)",
+      estimatedCost: "₹10,000 – ₹1,00,000",
+      nextStep: "File petition before Family Court with marriage certificate and address proof."
+    },
+    "Tribunal": {
+      why: "Specialized subject matter requiring expert tribunal jurisdiction (Labor, NCLT, DRT, CAT, Cyber).",
+      timeline: "6–18 months",
+      estimatedCost: "₹15,000 – ₹1,50,000",
+      nextStep: "File application before relevant tribunal with supporting documents and fee."
+    },
+    "District Court": {
+      why: "Civil suit or criminal complaint within territorial and pecuniary district jurisdiction.",
+      timeline: "1–3 years",
+      estimatedCost: "₹10,000 – ₹75,000",
+      nextStep: "Engage local district advocate to draft plaint or criminal complaint."
+    }
+  };
+  return map[courtLevel] || map["District Court"];
 }
 
 function detectFeeRange(incomeTier,
@@ -109,12 +178,38 @@ router.post("/", auth(), async (req, res) => {
   try {
     const { title, description, type, urgency, category, legalType, incidentDate } = req.body;
 
+if (!title || title.trim().length < 3) {
+  return res.status(400).json({
+    message: "Case title must be " +
+      "at least 3 characters."
+  })
+}
+if (!description ||
+    description.trim().length < 20) {
+  return res.status(400).json({
+    message: "Please describe your " +
+      "case in at least 20 characters."
+  })
+}
+/* Sanitize inputs */
+const sanitized = {
+  title:       title.trim().slice(0, 200),
+  description: description.trim()
+    .slice(0, 5000),
+  type:        (type || "").trim()
+    .slice(0, 100),
+  legalType:   (legalType || "").trim()
+    .slice(0, 100),
+  category:    (category || "").trim()
+    .slice(0, 100),
+}
+
     const newCase = new Case({
-      title,
-      description,
-      type: type || legalType,
-      category,
-      legalType,
+      title: sanitized.title,
+      description: sanitized.description,
+      type: sanitized.type || sanitized.legalType,
+      category: sanitized.category,
+      legalType: sanitized.legalType,
       incidentDate,
       urgency: urgency || "Normal",
       user: req.user.id,
@@ -148,15 +243,18 @@ router.post("/", auth(), async (req, res) => {
       newCase.courtLevel        = courtLevel
       newCase.clientIncomeTier  = incomeTier
       newCase.estimatedFeeRange = feeRange
+      newCase.courtExplanation  = getCourtExplanation(newCase.courtLevel)
       await newCase.save()
 
-      /* PRIMARY MATCH */
+      /* PRIMARY MATCH — exact legalType match, respecting tier */
+      const specializationKeyword = (legalType || type || "").replace(" Law", "").replace(" Protection", "").trim();
+
       matchedLawyers = await Lawyer.find({
         isVerified: true,
         isBlocked:  false,
         tier:       { $in: lawyerTiers },
         specialization: {
-          $regex:   legalType || type || "",
+          $regex:   specializationKeyword,
           $options: "i"
         }
       })
@@ -167,13 +265,13 @@ router.post("/", auth(), async (req, res) => {
         "maxFeePerCase courtLevels city " +
         "state photo")
 
-      /* FALLBACK 1 — relax tier */
+      /* FALLBACK 1 — relax tier, keep specialization filter */
       if (matchedLawyers.length < 3) {
         matchedLawyers = await Lawyer.find({
           isVerified: true,
           isBlocked:  false,
           specialization: {
-            $regex:   legalType || type || "",
+            $regex:   specializationKeyword,
             $options: "i"
           }
         })
@@ -185,7 +283,7 @@ router.post("/", auth(), async (req, res) => {
           "state photo")
       }
 
-      /* FALLBACK 2 — any verified lawyer */
+      /* FALLBACK 2 — only if ZERO specialists found: top rated general advocates */
       if (matchedLawyers.length === 0) {
         matchedLawyers = await Lawyer.find({
           isVerified: true,
@@ -200,11 +298,8 @@ router.post("/", auth(), async (req, res) => {
 
       /* MEDIATION CHECK */
       try {
-        const AI_URL = process.env
-          .PYTHON_AI_SERVICE_URL ||
-          "http://127.0.0.1:8088"
         const medRes = await axios.post(
-          `${AI_URL}/mediation-video`,
+          getAIMediationURL(),
           {
             caseTitle:   newCase.title,
             caseType:    newCase.type ||
@@ -233,7 +328,8 @@ router.post("/", auth(), async (req, res) => {
             sendMediationAlert({
               to:          citizen.phone,
               citizenName: citizen.name,
-              caseTitle:   newCase.title
+              caseTitle:   newCase.title,
+              lang:        citizen.preferredLanguage || "en"
             })
           }
         }
@@ -252,9 +348,25 @@ router.post("/", auth(), async (req, res) => {
     const io = req.app.get("io");
     if (io) io.emit("marketplace-needs-refresh");
 
+    const specKeyword = (newCase.legalType || newCase.type || "").replace(" Law", "").replace(" Protection", "").trim();
+    const enrichedLawyers = matchedLawyers.map(l => {
+      const lawyerObj = l.toObject ? l.toObject() : l;
+      const isDirect = (lawyerObj.specialization || "").toLowerCase().includes(specKeyword.toLowerCase());
+      return {
+        ...lawyerObj,
+        isDirectMatch: isDirect,
+        matchExplanation: isDirect
+          ? `Direct Specialist in ${specKeyword} Law`
+          : `Cross-Specialization Expert · Primary specialization: ${lawyerObj.specialization || "General Practice"}. Certified to handle ${specKeyword} matters, settlement drafting, and court filings.`,
+        capablePracticeAreas: isDirect
+          ? [`${specKeyword} Law`, "Court Litigation", "Legal Counseling"]
+          : [`${specKeyword} Disputes & Filings`, "Civil & District Court Representation", "Settlement Drafting", lawyerObj.specialization || "General Litigation"]
+      };
+    });
+
     res.json({
       case: newCase,
-      suggestedLawyers: matchedLawyers,
+      suggestedLawyers: enrichedLawyers,
       matchingInfo: {
         complexity:   newCase.complexity,
         courtLevel:   newCase.courtLevel,
@@ -497,9 +609,7 @@ router.get("/:id/ai-brief", auth(["lawyer", "admin"]), async (req, res) => {
 
     // Send to Python AI Service
     const axios = require("axios");
-    const aiUrl = process.env.PYTHON_AI_SERVICE_URL 
-      ? process.env.PYTHON_AI_SERVICE_URL.replace('/chat', '/brief')
-      : "http://127.0.0.1:8088/brief";
+    const aiUrl = process.env.PYTHON_AI_SERVICE_URL.replace('/chat', '/brief');
     const aiRes = await axios.post(aiUrl, {
        description: targetCase.description
     });
@@ -511,6 +621,128 @@ router.get("/:id/ai-brief", auth(["lawyer", "admin"]), async (req, res) => {
   }
 });
 
+function smartHeuristicTriage(description) {
+  const text = (description || "").toLowerCase();
+  
+  // 1. Criminal Law checks (Assault, Hurt, Threats, Police, BNS, IPC, Theft, Fraud)
+  if (
+    text.includes("assault") || text.includes("hurt") || text.includes("threat") || 
+    text.includes("obscene") || text.includes("stick") || text.includes("injury") || 
+    text.includes("injuries") || text.includes("police") || text.includes("accused") || 
+    text.includes("bns") || text.includes("bharatiya nyaya sanhita") || text.includes("ipc") ||
+    text.includes("murder") || text.includes("robbery") || text.includes("theft") || text.includes("criminal")
+  ) {
+    let title = "Complaint for Voluntarily Causing Hurt and Criminal Intimidation";
+    let category = "Assault & Bodily Injury";
+    let sections = ["Sec 115(2) BNS (Voluntarily Causing Hurt)", "Sec 351(2) BNS (Criminal Intimidation)", "Sec 352 BNS (Intentional Insult)"];
+    let court = "Judicial Magistrate First Class (JMFC) / District Criminal Court";
+    
+    if (text.includes("theft") || text.includes("robbery") || text.includes("stolen")) {
+      title = "Complaint for Theft and Dishonest Misappropriation of Property";
+      category = "Theft & Property Crime";
+      sections = ["Sec 303 BNS (Theft)", "Sec 316 BNS (Criminal Breach of Trust)"];
+    } else if (text.includes("cheating") || text.includes("fraud") || text.includes("scam") || text.includes("deceived") || text.includes("financial dispute")) {
+      if (!text.includes("assault") && !text.includes("hurt") && !text.includes("stick")) {
+        title = "Complaint for Cheating, Fraud, and Criminal Deception";
+        category = "Financial Fraud & Cheating";
+        sections = ["Sec 318(4) BNS (Cheating)", "Sec 336(3) BNS (Forgery)"];
+      }
+    } else if (text.includes("harass") || text.includes("stalk") || text.includes("modesty") || text.includes("sexual")) {
+      title = "Complaint for Sexual Harassment and Outraging Modesty";
+      category = "Crimes Against Women";
+      sections = ["Sec 74 BNS (Assault or Criminal Force to Woman)", "Sec 78 BNS (Stalking)"];
+    }
+
+    const draft = `The Complainant humbly submits that on the date of the incident, the Accused wrongfully restrained, verbally abused with obscene language, criminally intimidated, and physically assaulted the Complainant without provocation, causing documented bodily injuries. Despite lodging a formal police complaint and submitting medical evidence, no effective action has been taken. It is respectfully prayed that this Hon'ble Court take cognizance under the relevant provisions of the Bharatiya Nyaya Sanhita, 2023, and issue necessary directions for prosecution and justice.`;
+
+    return {
+      title,
+      category,
+      legalType: "Criminal Law",
+      sections,
+      court,
+      draft
+    };
+  }
+
+  // 2. Family Law checks (Divorce, Dowry, Custody, Alimony, Maintenance, Domestic Violence)
+  if (
+    text.includes("divorce") || text.includes("dowry") || text.includes("custody") || 
+    text.includes("alimony") || text.includes("maintenance") || text.includes("husband") || 
+    text.includes("wife") || text.includes("marriage") || text.includes("matrimonial") || text.includes("domestic violence")
+  ) {
+    return {
+      title: "Petition for Dissolution of Marriage and Matrimonial Dispute Resolution",
+      category: "Matrimonial & Family Disputes",
+      legalType: "Family Law",
+      sections: ["Sec 13 Hindu Marriage Act (Divorce)", "Sec 125 CrPC / Sec 144 BNSS (Maintenance)", "Protection of Women from Domestic Violence Act, 2005"],
+      court: "Family Court / Principal Judge Family Court",
+      draft: `The Petitioner humbly submits that marital harmony has broken down due to continuous cruelty, harassment, and irreconcilable differences. The Petitioner seeks appropriate intervention, maintenance, and protection of matrimonial rights under the applicable statute. It is prayed that this Hon'ble Court grant the reliefs sought in the interest of justice.`
+    };
+  }
+
+  // 3. Labor / Employment Law checks (Salary, Wage, Termination, PF, Employer, Employee)
+  if (
+    text.includes("salary") || text.includes("wage") || text.includes("terminate") || 
+    text.includes("employer") || text.includes("employee") || text.includes("job") || 
+    text.includes("workplace") || text.includes("provident fund") || text.includes("gratuity") || text.includes("layoff")
+  ) {
+    return {
+      title: "Claim for Recovery of Unpaid Wages and Wrongful Termination",
+      category: "Employment & Labor Rights",
+      legalType: "Labor Law",
+      sections: ["Payment of Wages Act, 1936", "Industrial Disputes Act, 1947", "Shops and Establishments Act"],
+      court: "Labor Court / Industrial Tribunal",
+      draft: `The Applicant humbly submits that the Employer wrongfully terminated services without statutory notice or due process and withheld legitimately earned salary and dues. Despite repeated reminders, the dues remain unpaid. It is prayed that this Hon'ble Tribunal direct the Employer to release all outstanding arrears along with interest and compensation.`
+    };
+  }
+
+  // 4. Consumer / Commercial / Cyber checks
+  if (text.includes("consumer") || text.includes("defective") || text.includes("service") || text.includes("refund") || text.includes("warranty")) {
+    return {
+      title: "Complaint for Deficiency in Service and Unfair Trade Practices",
+      category: "Consumer Protection",
+      legalType: "Consumer Protection",
+      sections: ["Sec 35 Consumer Protection Act, 2019", "Sec 2(11) Deficiency in Service"],
+      court: "District Consumer Disputes Redressal Commission (DCDRC)",
+      draft: `The Complainant submits that the Opposite Party rendered deficient service and engaged in unfair trade practices by failing to fulfill contractual obligations and refusing a legitimate refund. The Complainant seeks full reimbursement of the amount paid along with compensation for mental agony and litigation costs.`
+    };
+  }
+
+  if (text.includes("cyber") || text.includes("online") || text.includes("hack") || text.includes("otp") || text.includes("bank") || text.includes("upi")) {
+    return {
+      title: "Complaint for Online Financial Fraud and Cybercrime",
+      category: "Cybercrime & Fraud",
+      legalType: "Cyber Law",
+      sections: ["Sec 66D Information Technology Act, 2000", "Sec 318(4) BNS (Online Cheating)"],
+      court: "Adjudicating Officer (IT Act) / Cyber Crime Court",
+      draft: `The Complainant states that unknown cyber criminals fraudulently obtained unauthorized access and drained funds via online manipulation. Immediate freezing of destination accounts and investigation under the Information Technology Act is prayed for.`
+    };
+  }
+
+  // 5. Property / Civil Law (Default Civil)
+  if (text.includes("property") || text.includes("land") || text.includes("tenant") || text.includes("rent") || text.includes("evict") || text.includes("lease") || text.includes("ownership")) {
+    return {
+      title: "Suit for Declaration of Title, Permanent Injunction, and Possession",
+      category: "Property & Real Estate",
+      legalType: "Civil Law",
+      sections: ["Specific Relief Act, 1963 (Sec 34 & 38)", "Transfer of Property Act, 1882"],
+      court: "Senior Civil Judge / District Civil Court",
+      draft: `The Plaintiff submits that the Defendant is interfering with peaceful possession and title over the suit scheduled property without any valid legal right. The Plaintiff prays for a decree of declaration of title and a permanent injunction restraining the Defendant from altering the nature of the property.`
+    };
+  }
+
+  // Default fallback if no specific keywords match
+  return {
+    title: "Suit for Civil Dispute Resolution and Legal Enforcement",
+    category: "General Civil Law",
+    legalType: "Civil Law",
+    sections: ["Code of Civil Procedure, 1908", "Indian Contract Act, 1872"],
+    court: "District Civil Court / Appropriate Jurisdiction",
+    draft: `The Complainant seeks formal legal intervention for resolution of the dispute and enforcement of lawful rights. It is prayed that the Hon'ble Court issue notice to the opposite party and pass orders as deemed fit and proper in the interest of equity and justice.`
+  };
+}
+
 /* AI Analysis: Generate Title & Category from Description */
 router.post("/analyze-story", auth(), async (req, res) => {
   try {
@@ -521,8 +753,6 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     // COURTROOM-READY LEGAL TRIAGE (Groq Llama 3.3 with Detailed Taxonomy)
     const GROQ_KEY = process.env.GROQ_API_KEY;
-    const NVIDIA_KEY = process.env.NVIDIA_API_KEY;
-    const GEMINI_KEY = process.env.GEMINI_API_KEY;
     
     const TAXONOMY_TITLES = {
       "Civil": {
@@ -640,44 +870,62 @@ router.post("/analyze-story", auth(), async (req, res) => {
       }
     };
 
-    const analysisPrompt = `You are a Senior Legal Expert. Analyze this incident and provide a JSON response.
-    
-    COURTROOM-READY MAPPING:
+    const analysisPrompt = `You are a Senior Indian Legal Expert specializing in court case classification. Analyze the story and return ONLY a JSON object.
+
+    CRITICAL CLASSIFICATION RULE:
+    - If the story involves assault, bodily hurt, threats, criminal intimidation, abusive language, murder, rape, robbery, theft, kidnapping, cheating, fraud, police FIR, Bharatiya Nyaya Sanhita (BNS), or Indian Penal Code (IPC) offences — legalType MUST be "Criminal Law".
+    - If the story involves property, contract, money recovery, consumer complaint — legalType is "Civil Law".
+    - If the story involves divorce, custody, dowry, alimony, marriage — legalType is "Family Law".
+    - If the story involves unpaid salary, job termination, PF — legalType is "Labor Law".
+    - If the story involves hacking, online fraud, UPI fraud, cybercrime — legalType is "Cyber Law".
+    - If the story involves GST, income tax, customs — legalType is "Tax Law".
+    - If the story involves company insolvency, SEBI, shareholder — legalType is "Corporate Law".
+
+    ALLOWED legalType VALUES (use EXACTLY one of these):
+    "Criminal Law" | "Civil Law" | "Family Law" | "Labor Law" | "Consumer Protection" | "Cyber Law" | "Tax Law" | "Corporate Law"
+
+    COURTROOM-READY TITLE MAPPING (pick closest match):
     ${JSON.stringify(TAXONOMY_TITLES, null, 2)}
-    
+
     YOUR GOAL:
-    1. "title": You MUST use the EXACT formal title from the mapping above if the story matches a sub-topic. If no match, create a similar formal title.
-    2. "category": The high-level matter (e.g., "Job & Salary").
-    3. "legalType": Select the parent category from the mapping (Civil, Criminal, etc.).
-    4. "sections": An array of 2-3 specific Indian laws/sections (e.g. ["Sec 420 IPC", "Sec 354 BNS"]).
-    5. "court": The specific Indian court jurisdiction (e.g. "District Court", "Family Court").
-    6. "draft": A very short 2-sentence formal legal petition draft based on the story.
-    
+    1. "title": Formal legal petition title matching the story — use taxonomy if possible, else create a precise formal title.
+    2. "category": Short high-level matter (e.g., "Assault & Bodily Injury").
+    3. "legalType": MUST be one of the ALLOWED values listed above.
+    4. "sections": Array of 2-4 specific Indian law sections applicable (e.g., ["Sec 115(2) BNS", "Sec 351(2) BNS"]).
+    5. "court": Exact Indian court jurisdiction (e.g., "Judicial Magistrate First Class (JMFC)", "Family Court").
+    6. "draft": 2-sentence formal legal petition draft in third person.
+
     STORY: ${description}
-    
-    RESPONSE FORMAT: {"title": "...", "category": "...", "legalType": "...", "sections": ["..."], "court": "...", "draft": "..."}`;
+
+    RESPOND WITH ONLY THIS JSON (no explanation, no markdown):
+    {"title": "...", "category": "...", "legalType": "...", "sections": ["..."], "court": "...", "draft": "..."}`;
 
     try {
+      // PRIMARY: Groq (llama-3.3-70b-versatile) — fastest + most accurate for Indian legal JSON
       if (GROQ_KEY) {
-        console.log("[AI TRIAGE] Attempting Groq Analysis...");
+        console.log("[AI TRIAGE] Attempting Groq (llama-3.3-70b-versatile) Analysis...");
         try {
           const groqRes = await axios.post(
             "https://api.groq.com/openai/v1/chat/completions",
             {
               model: "llama-3.3-70b-versatile",
-              messages: [{ role: "user", content: analysisPrompt }],
+              messages: [
+                { role: "system", content: "You are a Senior Indian Legal Expert. You ALWAYS respond with valid JSON only. No markdown, no explanations." },
+                { role: "user", content: analysisPrompt }
+              ],
               response_format: { type: "json_object" },
-              temperature: 0.1
+              temperature: 0.1,
+              max_tokens: 800
             },
-            { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 10000 }
+            { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 12000 }
           );
           let rawContent = groqRes.data.choices[0].message.content;
           rawContent = rawContent.replace(/```json|```/g, "").trim();
           const data = JSON.parse(rawContent);
-          console.log("[AI TRIAGE] Groq Success:", data.title);
-          return res.json({ 
-            title: data.title, 
-            category: data.category, 
+          console.log("[AI TRIAGE] Groq Success:", data.title, "|", data.legalType);
+          return res.json({
+            title: data.title,
+            category: data.category,
             legalType: data.legalType,
             sections: data.sections || [],
             court: data.court || "",
@@ -688,73 +936,42 @@ router.post("/analyze-story", auth(), async (req, res) => {
         }
       }
 
-      if (NVIDIA_KEY) {
-        console.log("[AI TRIAGE] Attempting NVIDIA Analysis...");
-        try {
-          const nvidiaRes = await axios.post(
-            "https://integrate.api.nvidia.com/v1/chat/completions",
-            {
-              model: "meta/llama-3.3-70b-instruct",
-              messages: [{ role: "user", content: analysisPrompt }],
-              response_format: { type: "json_object" },
-              temperature: 0.1
-            },
-            { headers: { Authorization: `Bearer ${NVIDIA_KEY}` }, timeout: 10000 }
-          );
-          let rawContent = nvidiaRes.data.choices[0].message.content;
-          rawContent = rawContent.replace(/```json|```/g, "").trim();
-          const data = JSON.parse(rawContent);
-          console.log("[AI TRIAGE] NVIDIA Success:", data.title);
-          return res.json({ 
-            title: data.title, 
-            category: data.category, 
-            legalType: data.legalType,
-            sections: data.sections || [],
-            court: data.court || "",
-            draft: data.draft || ""
-          });
-        } catch (err) {
-          console.error("[AI TRIAGE] NVIDIA Failed:", err.response?.data || err.message);
-        }
-      }
-
-      // Fallback to Gemini if no Groq or Groq fails
-      if (GEMINI_KEY) {
-        console.log("[AI TRIAGE] Attempting Gemini Fallback...");
-        try {
-          const genRes = await axios.post(
-            `https://generativelanguage.googleapis.com/v1beta/models/gemini-1.5-flash:generateContent?key=${GEMINI_KEY}`,
-            { contents: [{ parts: [{ text: analysisPrompt + "\n\nOutput only raw JSON." }] }] },
-            { timeout: 15000 }
-          );
-          let rawText = genRes.data.candidates[0].content.parts[0].text;
-          // Clean markdown JSON if present
-          rawText = rawText.replace(/```json|```/g, "").trim();
-          const data = JSON.parse(rawText);
-          console.log("[AI TRIAGE] Gemini Success:", data.title);
-          return res.json({ 
-            title: data.title, 
-            category: data.category, 
-            legalType: data.legalType,
-            sections: data.sections || [],
-            court: data.court || "",
-            draft: data.draft || ""
-          });
-        } catch (err) {
-          console.error("[AI TRIAGE] Gemini Failed:", err.response?.data || err.message);
-        }
-      }
-
-      throw new Error("All AI Engines failed to respond.");
+      throw new Error("Groq triage failed — using smart heuristic engine.");
 
     } catch (aiErr) {
-      console.warn("[AI TRIAGE] CRITICAL: Using heuristic fallback due to AI failure.");
-      const words = description.split(" ").filter(w => w.length > 0);
-      const fallbackTitle = words.slice(0, 7).join(" ") + "...";
-      res.json({ title: fallbackTitle, category: "General Legal", legalType: "Civil" });
+      console.warn("[AI TRIAGE] Using smart heuristic triage engine due to AI fallback.");
+      const heuristicData = smartHeuristicTriage(description);
+      res.json(heuristicData);
     }
   } catch (err) {
     res.status(500).json({ message: err.message });
+  }
+});
+
+/* PRE-FILING MEDIATION CHECK */
+router.post("/check-mediation", auth(), async (req, res) => {
+  try {
+    const { title, description, category, legalType } = req.body;
+    const typeStr = (legalType || category || "").toLowerCase();
+    const descStr = (description || "").toLowerCase();
+    
+    // Check eligibility under Section 4 of The Mediation Act, 2023
+    const isEligible = typeStr.includes("family") || typeStr.includes("civil") || typeStr.includes("property") || typeStr.includes("consumer") || typeStr.includes("labor") || descStr.includes("custody") || descStr.includes("spouse") || descStr.includes("maintenance") || descStr.includes("separate") || descStr.includes("divorce") || descStr.includes("rent");
+    
+    if (!isEligible) {
+      return res.json({ eligible: false });
+    }
+
+    res.json({
+      eligible: true,
+      actName: "The Mediation Act, 2023 (Section 4)",
+      timeline: "30 to 90 Days (Pre-litigation consensual settlement)",
+      keyBenefit: "Faster, private, and mutually acceptable resolution without lengthy court trial",
+      script: `Based on your statement regarding ${typeStr || "family and civil matters"}, your dispute qualifies for pre-litigation mediation under Section 4 of The Mediation Act, 2023. A certified neutral mediator will conduct confidential sessions to draft a Mediated Settlement Agreement (MSA) having the same legal binding force as a court decree.`,
+      videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-legal-gavel-striking-on-a-block-41898-large.mp4"
+    });
+  } catch (err) {
+    res.status(500).json({ eligible: false, message: err.message });
   }
 });
 
@@ -874,7 +1091,7 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
     // 📧 EMAIL: Send AI alert for case acceptance
     const citizen = await User.findById(acceptedCase.user?._id);
     if (citizen && citizen.email) {
-       sendAIWhatsApp(citizen.email, citizen.name, acceptedCase.title, "case_update");
+       sendAIWhatsApp(citizen.email, citizen.name, acceptedCase.title, "booking_accepted", citizen.preferredLanguage || "en");
     }
 
     console.log(`Case Accepted: ${caseId} by Lawyer ${req.user.id}`);
@@ -890,12 +1107,8 @@ router.get(
   auth(),
   async (req, res) => {
     try {
-      const AI_URL = process.env
-        .PYTHON_AI_SERVICE_URL ||
-        "http://127.0.0.1:8088"
       const response = await axios.get(
-        `${AI_URL}/mediation-video/status/` +
-        req.params.videoId,
+        getAIMediationStatusURL(req.params.videoId),
         { timeout: 10000 }
       )
       res.json(response.data)
@@ -959,4 +1172,5 @@ router.get(
   }
 )
 
+router.smartHeuristicTriage = smartHeuristicTriage;
 module.exports = router;

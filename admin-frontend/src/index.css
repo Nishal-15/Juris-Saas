@@ -173,7 +173,7 @@ h1, h2, h3, .institutional-title {
   box-shadow: var(--shadow);
   border: 1px solid var(--border);
   position: relative;
-  overflow: hidden;
+  overflow: visible;
 }
 
 .stat-card::after {
@@ -184,6 +184,8 @@ h1, h2, h3, .institutional-title {
   width: 4px;
   height: 100%;
   background: var(--primary);
+  border-top-left-radius: 20px;
+  border-bottom-left-radius: 20px;
 }
 
 .stat-label {

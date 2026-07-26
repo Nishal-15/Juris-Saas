@@ -114,7 +114,7 @@ export default function VerificationQueue() {
       ) : filtered.length === 0 ? (
         <div className="empty-state" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
           <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
-          <p>{search ? "No matching lawyers found." : "Queue is clear"}</p>
+          <p>{search ? "No matching lawyers found." : "No verification requests pending."}</p>
         </div>
       ) : (
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>

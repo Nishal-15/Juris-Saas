@@ -5,6 +5,7 @@ const fs = require("fs");
 const Document = require("../models/Document");
 const auth = require("../middleware/auth");
 const axios = require("axios");
+const { getAIDocumentURL, getAIDraftURL } = require("../utils/aiUrl");
 
 // 📁 Multer Config for Citizen Vault
 const storage = multer.diskStorage({
@@ -59,11 +60,8 @@ router.post("/analyze", auth(), upload.single("file"), async (req, res) => {
     const absoluteFilePath = path.resolve(req.file.path);
     console.log(`[Document Analyzer] Analyzing: ${absoluteFilePath}`);
 
-    // Call Python AI Service
-    const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL ? process.env.PYTHON_AI_SERVICE_URL.replace("/chat", "") : "http://127.0.0.1:8088";
-    
     try {
-      const aiResponse = await axios.post(`${aiServiceUrl}/analyze-document`, {
+      const aiResponse = await axios.post(getAIDocumentURL(), {
         filePath: absoluteFilePath
       });
 
@@ -88,10 +86,8 @@ router.post("/draft", auth(), async (req, res) => {
     const { docType, facts } = req.body;
     if (!docType || !facts) return res.status(400).json({ message: "docType and facts are required" });
 
-    const aiServiceUrl = process.env.PYTHON_AI_SERVICE_URL ? process.env.PYTHON_AI_SERVICE_URL.replace("/chat", "") : "http://127.0.0.1:8088";
-    
     try {
-      const aiResponse = await axios.post(`${aiServiceUrl}/draft-document`, {
+      const aiResponse = await axios.post(getAIDraftURL(), {
         docType,
         facts
       });

@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
+import { SUPPORTED_LANGUAGES, getLangFlag } from '../config/languages';
 import { Megaphone, ShieldAlert, Send, CheckCircle, Terminal, AlertTriangle, Info, Zap, Loader2 } from 'lucide-react';
 
 const initialBroadcasts = [
@@ -14,7 +15,8 @@ export default function Broadcast() {
     target: 'all',
     title: '',
     message: '',
-    priority: 'normal'
+    priority: 'normal',
+    lang: 'all'
   });
   const [sending, setSending] = useState(false);
   const [history, setHistory] = useState(initialBroadcasts);
@@ -37,11 +39,12 @@ export default function Broadcast() {
         message: formData.message,
         target: formData.target,
         priority: formData.priority,
+        lang: formData.lang,
         date: new Date().toISOString()
       };
       setHistory([newEntry, ...history]);
       
-      setFormData({ ...formData, title: '', message: '' });
+      setFormData({ ...formData, title: '', message: '', lang: 'all' });
     } catch (err) {
       toast.error("Signal failed to transmit.");
     } finally {
@@ -84,7 +87,7 @@ export default function Broadcast() {
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '20px' }}>
             
-            <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '20px' }}>
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(3, 1fr)', gap: '16px' }}>
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Target Sector</label>
                 <select 
@@ -98,6 +101,53 @@ export default function Broadcast() {
                 </select>
               </div>
               
+              <div>
+                <label style={{
+                  display: "block",
+                  fontSize: "0.75rem",
+                  fontWeight: 600,
+                  color: "var(--text-muted)",
+                  textTransform: "uppercase",
+                  marginBottom: "8px"
+                }}>
+                  Language
+                </label>
+                <select
+                  style={{
+                    width: "100%",
+                    padding: "12px 14px",
+                    background: "var(--bg-base)",
+                    border: "1px solid var(--border-dark)",
+                    color: "var(--text-primary)",
+                    borderRadius: "8px",
+                    outline: "none",
+                    transition: "var(--transition)"
+                  }}
+                  value={formData.lang}
+                  onChange={e =>
+                    setFormData({
+                      ...formData,
+                      lang: e.target.value
+                    })
+                  }
+                >
+                  <option value="all">
+                    🌐 All Languages (English)
+                  </option>
+                  {SUPPORTED_LANGUAGES
+                    .filter(l => l.code !== "en")
+                    .map(l => (
+                      <option
+                        key={l.code}
+                        value={l.code}
+                      >
+                        {l.flag} {l.name} — {l.native}
+                      </option>
+                    ))
+                  }
+                </select>
+              </div>
+
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Signal Priority</label>
                 <select 
@@ -134,6 +184,29 @@ export default function Broadcast() {
                 onChange={e => setFormData({...formData, message: e.target.value})}
               ></textarea>
             </div>
+
+            {formData.lang !== "all" && (
+              <div style={{
+                display: "flex",
+                alignItems: "center",
+                gap: 6,
+                fontSize: "0.72rem",
+                color: "var(--text-muted)",
+                marginBottom: 8
+              }}>
+                <span>
+                  {getLangFlag(formData.lang)}
+                </span>
+                Broadcasting in:
+                <strong style={{
+                  color: "var(--gold)"
+                }}>
+                  {SUPPORTED_LANGUAGES.find(
+                    l => l.code === formData.lang
+                  )?.name}
+                </strong>
+              </div>
+            )}
 
             <button 
               className={formData.priority === 'emergency' ? 'btn-danger' : 'btn-primary'}
@@ -172,13 +245,25 @@ export default function Broadcast() {
                   
                   <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>{log.message}</p>
                   
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px' }}>
+                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
                     <span style={{ fontSize: '0.65rem', background: '#1e293b', color: '#94a3b8', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       Target: {log.target}
                     </span>
                     <span style={{ fontSize: '0.65rem', background: pStyle.bg, color: pStyle.color, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
                       {pStyle.label}
                     </span>
+                    {log.lang && log.lang !== "all" && (
+                      <span style={{
+                        fontSize: "0.65rem",
+                        background: "var(--bg-base)",
+                        color: "var(--text-muted)",
+                        padding: "2px 8px",
+                        borderRadius: "4px",
+                        textTransform: "uppercase"
+                      }}>
+                        {getLangFlag(log.lang)} {log.lang}
+                      </span>
+                    )}
                   </div>
                 </div>
               );

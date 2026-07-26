@@ -1,6 +1,7 @@
 const router = require("express").Router();
 const axios = require("axios");
 const auth = require("../middleware/auth");
+const { getAIChatURL } = require("../utils/aiUrl");
 
 
 const Message = require("../models/Message");
@@ -66,9 +67,7 @@ router.post("/", auth(), async (req, res) => {
     const dbUser = await User.findById(userId).select("name") || await Lawyer.findById(userId).select("name");
     if (dbUser) userName = dbUser.name;
 
-    // 🧠 UNIVERSAL AI BRIDGE: Support both AI_SERVICE_URL and PYTHON_AI_SERVICE_URL
-    const baseUrl = process.env.PYTHON_AI_SERVICE_URL || process.env.AI_SERVICE_URL || "http://127.0.0.1:8088/chat";
-    const pythonAIServiceUrl = baseUrl.endsWith("/chat") ? baseUrl : `${baseUrl}/chat`;
+    const pythonAIServiceUrl = getAIChatURL();
     console.log(`📡 Routing AI request to: ${pythonAIServiceUrl}`);
     
     try {

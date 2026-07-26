@@ -1,11 +1,18 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
+import MediationBanner from '../components/MediationBanner';
+import MediationPlayer from '../components/MediationPlayer';
+import { getLangName, getLangFlag } from '../config/languages';
+import { LanguageBadge } from '../components/LanguageSelector';
 import { FileText, Search, AlertTriangle, Clock, RefreshCw } from 'lucide-react';
 
 export default function Cases() {
   const [cases, setCases] = useState([]);
   const [loading, setLoading] = useState(true);
+  const [selectedMediation, setSelectedMediation] = useState(null);
+  const [showPlayer, setShowPlayer] = useState(false);
+  const [activeTooltip, setActiveTooltip] = useState(null);
   
   const [search, setSearch] = useState("");
   const [statusFilter, setStatusFilter] = useState("All");
@@ -60,6 +67,48 @@ export default function Cases() {
     if (s.includes('closed') || s.includes('resolved')) return { bg: 'var(--bg-base)', col: 'var(--text-muted)' };
     if (s.includes('pending')) return { bg: 'var(--amber-dim)', col: 'var(--amber)' };
     return { bg: 'var(--green-dim)', col: 'var(--green)' };
+  };
+
+  const getCourtExplanation = (courtLevel) => {
+    const map = {
+      "Supreme Court": {
+        why: "Involves fundamental rights, constitutional questions, or national jurisdiction.",
+        timeline: "1–3 years (initial admission hearing within weeks)",
+        estimatedCost: "₹50,000 – ₹5,00,000+",
+        nextStep: "File Writ Petition or Special Leave Petition (SLP) with certified case record."
+      },
+      "High Court": {
+        why: "Involves substantial questions of law, state-level jurisdiction, or statutory appeals.",
+        timeline: "1–2 years",
+        estimatedCost: "₹25,000 – ₹2,00,000",
+        nextStep: "Engage High Court advocate to file Writ Petition or Civil/Criminal Appeal."
+      },
+      "Consumer Forum": {
+        why: "Dispute arises from purchase of goods or services with deficiency or defect.",
+        timeline: "6–18 months",
+        estimatedCost: "₹2,000 – ₹25,000",
+        nextStep: "Issue statutory legal notice to seller/service provider before filing."
+      },
+      "Family Court": {
+        why: "Matrimonial dispute, divorce, child custody, alimony, or domestic relations.",
+        timeline: "6 months – 2 years (6 months mandatory cooling-off for mutual divorce)",
+        estimatedCost: "₹10,000 – ₹1,00,000",
+        nextStep: "File petition before Family Court with marriage certificate and address proof."
+      },
+      "Tribunal": {
+        why: "Specialized subject matter requiring expert tribunal jurisdiction (Labor, NCLT, DRT, CAT, Cyber).",
+        timeline: "6–18 months",
+        estimatedCost: "₹15,000 – ₹1,50,000",
+        nextStep: "File application before relevant tribunal with supporting documents and fee."
+      },
+      "District Court": {
+        why: "Civil suit or criminal complaint within territorial and pecuniary district jurisdiction.",
+        timeline: "1–3 years",
+        estimatedCost: "₹10,000 – ₹75,000",
+        nextStep: "Engage local district advocate to draft plaint or criminal complaint."
+      }
+    };
+    return map[courtLevel] || map["District Court"];
   };
 
   return (
@@ -157,6 +206,54 @@ export default function Cases() {
                           <div>
                             <div style={{ fontWeight: '600', color: 'var(--text-primary)', marginBottom: '4px' }}>{c.title || "Untitled Matter"}</div>
                             <div style={{ fontSize: '0.73rem', color: 'var(--text-muted)' }}>#{c._id.slice(-6)} · {c.category || c.legalType || 'General'}</div>
+                            <div style={{ marginTop: '6px', position: 'relative' }}>
+                              <span
+                                style={{
+                                  display: 'inline-flex',
+                                  alignItems: 'center',
+                                  gap: '4px',
+                                  fontSize: '0.7rem',
+                                  fontWeight: 600,
+                                  color: '#0284c7',
+                                  background: '#e0f2fe',
+                                  padding: '2px 8px',
+                                  borderRadius: '12px',
+                                  cursor: 'pointer'
+                                }}
+                                onClick={() => setActiveTooltip(activeTooltip === c._id ? null : c._id)}
+                              >
+                                🏛️ {c.courtLevel || "District Court"} ℹ️
+                              </span>
+                              {activeTooltip === c._id && (() => {
+                                const exp = c.courtExplanation || getCourtExplanation(c.courtLevel || "District Court");
+                                return (
+                                  <div style={{
+                                    position: 'absolute',
+                                    top: '100%',
+                                    left: 0,
+                                    zIndex: 10,
+                                    background: 'white',
+                                    border: '1px solid var(--border-dark)',
+                                    boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
+                                    borderRadius: '8px',
+                                    padding: '12px',
+                                    width: '280px',
+                                    fontSize: '0.75rem',
+                                    color: 'var(--text-primary)',
+                                    marginTop: '4px'
+                                  }}>
+                                    <div style={{ fontWeight: 700, marginBottom: '6px', color: '#0284c7' }}>🏛️ {c.courtLevel || "District Court"}</div>
+                                    <div style={{ marginBottom: '4px' }}><strong>Why this court:</strong> {exp.why}</div>
+                                    <div style={{ marginBottom: '4px' }}><strong>Est. Timeline:</strong> {exp.timeline}</div>
+                                    <div style={{ marginBottom: '4px' }}><strong>Est. Cost:</strong> {exp.estimatedCost}</div>
+                                    <div><strong>Next Steps:</strong> {exp.nextStep}</div>
+                                    <div style={{ textAlign: 'right', marginTop: '6px' }}>
+                                      <button onClick={() => setActiveTooltip(null)} style={{ background: 'none', border: 'none', color: 'var(--text-muted)', cursor: 'pointer', fontSize: '0.7rem', textDecoration: 'underline' }}>Close</button>
+                                    </div>
+                                  </div>
+                                );
+                              })()}
+                            </div>
                           </div>
                         </div>
                       </td>
@@ -165,7 +262,23 @@ export default function Cases() {
                           <div style={{ width: '28px', height: '28px', borderRadius: '50%', background: 'rgba(59,130,246,0.12)', color: '#3b82f6', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '0.75rem', fontWeight: 700 }}>
                             {(c.user?.name || "U")[0].toUpperCase()}
                           </div>
-                          <span style={{ fontWeight: 500 }}>{c.user?.name || "Unknown"}</span>
+                          <div>
+                            <span style={{ fontWeight: 500 }}>{c.user?.name || "Unknown"}</span>
+                            {c.user?.preferredLanguage &&
+                             c.user.preferredLanguage !== "en" && (
+                              <div style={{
+                                fontSize: "0.68rem",
+                                color: "var(--text-muted)",
+                                marginTop: 2,
+                                display: "flex",
+                                alignItems: "center",
+                                gap: 3
+                              }}>
+                                {getLangFlag(c.user.preferredLanguage)}
+                                {getLangName(c.user.preferredLanguage)}
+                              </div>
+                            )}
+                          </div>
                         </div>
                       </td>
                       <td>
@@ -188,9 +301,59 @@ export default function Cases() {
                         </span>
                       </td>
                       <td>
-                        <span className="badge" style={{ background: statBadge.bg, color: statBadge.col }}>
-                          {c.status || "Active"}
-                        </span>
+                        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-start' }}>
+                          <span className="badge" style={{ background: statBadge.bg, color: statBadge.col }}>
+                            {c.status || "Active"}
+                          </span>
+                          {c.isMediationEligible && (() => {
+                            const medLang = c.mediationLang || c.lang || c.user?.preferredLanguage || "en";
+                            return (
+                              <span
+                                title="Mediation eligible case"
+                                style={{
+                                  display: "inline-flex",
+                                  alignItems: "center",
+                                  gap: 4,
+                                  fontSize: "0.65rem",
+                                  fontWeight: 700,
+                                  color: "#c9a84c",
+                                  background: "rgba(201,168,76,0.1)",
+                                  border: "1px solid rgba(201,168,76,0.3)",
+                                  borderRadius: 12,
+                                  padding: "2px 7px",
+                                  marginTop: 4,
+                                  cursor: "pointer",
+                                  whiteSpace: "nowrap"
+                                }}
+                                onClick={() => {
+                                  setSelectedMediation({
+                                    eligible: true,
+                                    script: c.mediationScript,
+                                    videoUrl: c.mediationVideoUrl,
+                                    lang: medLang,
+                                    langName: getLangName(medLang),
+                                    mediationAct: {
+                                      actName: "The Mediation Act, 2023",
+                                      enforcedDate: "9 October 2023",
+                                      keyBenefit: "Faster private resolution"
+                                    }
+                                  });
+                                  setShowPlayer(true);
+                                }}
+                              >
+                                ⚖️ Mediation Eligible
+                                {medLang !== "en" && (
+                                  <span style={{
+                                    fontSize: "0.62rem",
+                                    color: "var(--text-muted)"
+                                  }}>
+                                    {getLangFlag(medLang)}
+                                  </span>
+                                )}
+                              </span>
+                            );
+                          })()}
+                        </div>
                       </td>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '8px', fontSize: '0.85rem', color: 'var(--text-secondary)' }}>
@@ -206,6 +369,24 @@ export default function Cases() {
           )}
         </div>
       </div>
+
+      {showPlayer && selectedMediation && (
+        <MediationPlayer
+          mediationInfo={selectedMediation}
+          onChooseMediator={() => {
+            setShowPlayer(false);
+            toast.info("Mediator connection coming soon.");
+          }}
+          onChooseLawyer={() => {
+            setShowPlayer(false);
+            toast.info("Lawyer matching is already active for this case.");
+          }}
+          onClose={() => {
+            setShowPlayer(false);
+            setSelectedMediation(null);
+          }}
+        />
+      )}
     </div>
   );
 }
