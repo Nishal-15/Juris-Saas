@@ -6,8 +6,9 @@ const { sendEmail, subscriptionConfirmTemplate } =
   require("../utils/mailer")
 
 const PLANS = {
-  Starter: { amount: 49900,  cases: 10    },
-  Pro:     { amount: 199900, cases: 99999 }
+  Starter:   { amount: 49900,  cases: 10    },
+  Pro:       { amount: 199900, cases: 99999 },
+  Unlimited: { amount: 499900, cases: 99999 }
 }
 
 /* CREATE ORDER */

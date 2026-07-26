@@ -203,7 +203,7 @@ export default function Subscription() {
                         <div className="plan-name">Free Trial</div>
                         <div className="plan-price">
                             <span className="rupee-sym">₹</span>0
-                            <span className="price-unit">/ 7 days</span>
+                            <span className="price-unit">/ 14 days</span>
                         </div>
                         <p className="plan-tagline">Try JurisBot with no commitment</p>
                         <p className="plan-annual-note">&nbsp;</p>
@@ -225,18 +225,18 @@ export default function Subscription() {
                     <div className={`pricing-card ${lawyer.subscriptionTier === 'Starter' ? 'highlighted' : ''}`}>
                         <div className="plan-name">Solo Advocate</div>
                         <div className="plan-price">
-                            <span className="rupee-sym">₹</span>1,999
+                            <span className="rupee-sym">₹</span>499
                             <span className="price-unit">/ user / month</span>
                         </div>
                         <p className="plan-tagline">For independent practitioners managing their own practice</p>
-                        <p className="plan-annual-note">₹14,999/year · Save ₹9,000</p>
+                        <p className="plan-annual-note">₹4,999/year · Save ₹989</p>
                         {lawyer.subscriptionTier === 'Starter' ? (
                             <button className="upgrade-btn current-plan-btn">Your current plan</button>
                         ) : (
-                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Starter", 1999)}>Upgrade</button>
+                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Starter", 499)}>Upgrade</button>
                         )}
                         <ul className="plan-features">
-                            <li><span className="feat-icon"><SVGCheck /></span>20 Active Cases</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>10 Active Cases</li>
                             <li><span className="feat-icon"><SVGAI /></span>Unlimited AI Legal Chat</li>
                             <li><span className="feat-icon"><SVGAI /></span>10 Document Analyses/mo</li>
                             <li><span className="feat-icon"><SVGCheck /></span>Video Consultations</li>
@@ -250,15 +250,15 @@ export default function Subscription() {
                         <div className="popular-badge">RECOMMENDED</div>
                         <div className="plan-name">Boutique Firm</div>
                         <div className="plan-price">
-                            <span className="rupee-sym">₹</span>4,999
+                            <span className="rupee-sym">₹</span>1,999
                             <span className="price-unit">/ month (excl. GST)</span>
                         </div>
                         <p className="plan-tagline">A secure workspace built for small legal teams of 3–10 lawyers</p>
-                        <p className="plan-annual-note">₹39,999/year · Save ₹20,000</p>
+                        <p className="plan-annual-note">₹19,999/year · Save ₹3,989</p>
                         {lawyer.subscriptionTier === 'Pro' ? (
                             <button className="upgrade-btn current-plan-btn">Your current plan</button>
                         ) : (
-                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Pro", 4999)}>Upgrade</button>
+                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Pro", 1999)}>Upgrade</button>
                         )}
                         <ul className="plan-features">
                             <li><span className="feat-icon"><SVGCheck /></span>Unlimited Cases</li>
@@ -275,15 +275,15 @@ export default function Subscription() {
                     <div className={`pricing-card ${lawyer.subscriptionTier === 'Unlimited' ? 'highlighted' : ''}`}>
                         <div className="plan-name">Enterprise Firm</div>
                         <div className="plan-price">
-                            <span className="rupee-sym">₹</span>9,999
+                            <span className="rupee-sym">₹</span>4,999
                             <span className="price-unit">/ month (excl. GST)</span>
                         </div>
                         <p className="plan-tagline">Custom AI and dedicated support for large legal organisations</p>
-                        <p className="plan-annual-note">₹79,999/year · Save ₹40,000</p>
+                        <p className="plan-annual-note">₹49,999/year · Save ₹9,989</p>
                         {lawyer.subscriptionTier === 'Unlimited' ? (
                             <button className="upgrade-btn current-plan-btn">Your current plan</button>
                         ) : (
-                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Unlimited", 9999)}>Go Enterprise</button>
+                            <button className="upgrade-btn" onClick={() => handleOpenPayment("Unlimited", 4999)}>Go Enterprise</button>
                         )}
                         <ul className="plan-features">
                             <li><span className="feat-icon"><SVGCheck /></span>Unlimited Cases &amp; Seats</li>
