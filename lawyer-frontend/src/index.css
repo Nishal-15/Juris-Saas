@@ -244,3 +244,50 @@ body {
   background: rgba(201,168,76,0.1);
   transform: none !important;
 }
+
+/* ==========================================
+   📱 MOBILE VIEW RESPONSIVE OVERRIDES
+   (Added strictly in CSS without touching existing JSX code)
+========================================== */
+@media (max-width: 768px) {
+  .auth-page, div[style*="minHeight: 100vh"], div[style*="min-height: 100vh"] {
+    padding: 16px 12px !important;
+    align-items: flex-start !important;
+    overflow-y: auto !important;
+    height: auto !important;
+  }
+  .auth-card,
+  div[style*="width: 800px"],
+  div[style*="width: 600px"],
+  div[style*="width: 420px"],
+  div[style*="width: 500px"] {
+    padding: 28px 16px !important;
+    border-radius: 18px !important;
+    width: 100% !important;
+    max-width: 98% !important;
+    margin: 10px 0 !important;
+    max-height: none !important;
+    height: auto !important;
+    box-sizing: border-box !important;
+  }
+  .form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .full-width {
+    grid-column: span 1 !important;
+  }
+  h1 {
+    font-size: 22px !important;
+  }
+  h2 {
+    font-size: 20px !important;
+  }
+  p {
+    font-size: 13px !important;
+  }
+  .btn-primary-gold, button[type="submit"] {
+    padding: 14px !important;
+    font-size: 14px !important;
+  }
+}
