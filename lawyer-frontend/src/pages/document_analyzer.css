@@ -360,3 +360,50 @@
   from { opacity: 0; transform: translateY(10px); }
   to { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .da-page,
+  .da-page {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 75px !important;
+  }
+  html body #root .da-body,
+  .da-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 14px 80px !important;
+    overflow-y: visible !important;
+    box-sizing: border-box !important;
+  }
+  html body #root .da-header,
+  .da-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  html body #root .da-caps,
+  .da-caps {
+    grid-template-columns: 1fr !important;
+    gap: 12px !important;
+    width: 100% !important;
+  }
+  .da-cap-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .da-dropzone {
+    padding: 24px 16px !important;
+    box-sizing: border-box !important;
+  }
+  .da-results-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 8px !important;
+  }
+}

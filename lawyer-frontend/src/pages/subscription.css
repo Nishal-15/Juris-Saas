@@ -195,3 +195,41 @@
     margin-top: 1px;
     opacity: 0.8;
 }
+
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .subscription-container,
+  .subscription-container {
+    padding: 16px 14px 80px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  html body #root .status-card,
+  .status-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 16px !important;
+    padding: 20px !important;
+  }
+  .usage-section {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+  .expiry-info {
+    text-align: left !important;
+    width: 100% !important;
+  }
+  html body #root .pricing-grid,
+  .pricing-grid {
+    grid-template-columns: 1fr !important;
+    gap: 20px !important;
+    width: 100% !important;
+  }
+  .pricing-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 24px 18px !important;
+  }
+}

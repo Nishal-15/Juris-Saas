@@ -601,3 +601,126 @@
   from { opacity: 0; transform: translateY(-6px); }
   to   { opacity: 1; transform: translateY(0); }
 }
+
+/* =========================================================
+   📱 MOBILE VIEW — DIRECT COMPONENT OVERRIDES (100% NATIVE)
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .ld-page,
+  .ld-page {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 75px !important;
+  }
+  
+  html body #root .ld-body,
+  .ld-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 14px 80px !important;
+    overflow-y: visible !important;
+    box-sizing: border-box !important;
+  }
+
+  /* Fix Subscription Bar Overlap */
+  html body #root .ld-sub-bar,
+  .ld-sub-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .ld-sub-info {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 4px !important;
+    width: 100% !important;
+  }
+  .ld-sub-divider {
+    display: none !important;
+  }
+  .ld-upgrade-btn {
+    width: 100% !important;
+    padding: 12px !important;
+    text-align: center !important;
+    font-size: 13px !important;
+  }
+
+  /* Fix Header & Topbar */
+  html body #root .ld-topbar,
+  .ld-topbar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+  }
+  .ld-title {
+    font-size: 24px !important;
+  }
+  .ld-topbar-right {
+    width: 100% !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* Fix Stat Cards (Cut-off horizontally) */
+  html body #root .ld-stats,
+  .ld-stats {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+    margin-bottom: 24px !important;
+    width: 100% !important;
+  }
+  .ld-stat-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 18px !important;
+  }
+  .ld-stat-value {
+    font-size: 32px !important;
+  }
+
+  /* Fix Tabs (Cut-off horizontally) */
+  html body #root .ld-tabs,
+  .ld-tabs {
+    flex-direction: column !important;
+    gap: 8px !important;
+    padding: 8px !important;
+    width: 100% !important;
+    box-sizing: border-box !important;
+  }
+  .ld-tab {
+    width: 100% !important;
+    justify-content: space-between !important;
+    padding: 12px 16px !important;
+    font-size: 13px !important;
+    border-radius: 10px !important;
+  }
+
+  /* Fix Case Kanban Grid */
+  html body #root .ld-kanban-grid,
+  .ld-kanban-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+  .ld-case-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 20px 16px !important;
+  }
+  .ld-card-actions {
+    flex-direction: column !important;
+    gap: 10px !important;
+  }
+  .ld-card-btn {
+    width: 100% !important;
+    padding: 12px !important;
+  }
+}

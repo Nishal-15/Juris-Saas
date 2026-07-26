@@ -240,3 +240,25 @@
   position: relative;
   z-index: 5;
 }
+
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .secure-call-header,
+  .secure-call-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 14px 16px !important;
+  }
+  .secure-header-right {
+    width: 100% !important;
+    justify-content: space-between !important;
+  }
+  .waiting-card {
+    padding: 24px 16px !important;
+    margin: 16px !important;
+    box-sizing: border-box !important;
+  }
+}

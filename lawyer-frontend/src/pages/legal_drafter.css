@@ -245,3 +245,41 @@
 .drafter-line {
   margin: 0 0 10px 0;
 }
+
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .drafter-page,
+  .drafter-page {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 75px !important;
+  }
+  html body #root .drafter-body,
+  .drafter-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 14px 80px !important;
+    overflow-y: visible !important;
+    box-sizing: border-box !important;
+  }
+  html body #root .drafter-content-wrapper,
+  .drafter-content-wrapper {
+    flex-direction: column !important;
+    gap: 16px !important;
+    height: auto !important;
+  }
+  .drafter-input-panel,
+  .drafter-output-panel {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 18px 14px !important;
+    height: auto !important;
+  }
+  .drafter-title {
+    font-size: 24px !important;
+  }
+}

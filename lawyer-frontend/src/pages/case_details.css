@@ -418,3 +418,49 @@ select.cd-input option {
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
 
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .cd-page,
+  .cd-page {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 75px !important;
+  }
+  html body #root .cd-body,
+  .cd-body {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 14px 80px !important;
+    overflow-y: visible !important;
+    box-sizing: border-box !important;
+  }
+  html body #root .cd-header,
+  .cd-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 14px !important;
+  }
+  html body #root .cd-grid,
+  .cd-grid {
+    grid-template-columns: 1fr !important;
+    gap: 16px !important;
+    width: 100% !important;
+  }
+  .cd-card {
+    width: 100% !important;
+    box-sizing: border-box !important;
+    padding: 20px 16px !important;
+  }
+  .cd-form-grid {
+    grid-template-columns: 1fr !important;
+    gap: 14px !important;
+  }
+  .cd-title {
+    font-size: 22px !important;
+  }
+}
+

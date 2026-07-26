@@ -57,3 +57,30 @@
   animation: pulseDot 1.5s infinite;
 }
 @keyframes pulseDot { 0%,100% { transform: scale(1); } 50% { transform: scale(1.3); } }
+
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .np-header,
+  .np-header {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+  }
+  .np-clear-btn {
+    width: 100% !important;
+    justify-content: center !important;
+  }
+  .np-card {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  .np-card-right {
+    flex-direction: row !important;
+    justify-content: space-between !important;
+    width: 100% !important;
+  }
+}

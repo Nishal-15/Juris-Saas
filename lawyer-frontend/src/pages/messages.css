@@ -114,3 +114,35 @@
 }
 
 .btn-chat-open:hover { border-color: var(--gold); color: var(--gold); }
+
+/* =========================================================
+   📱 MOBILE VIEW — COMPONENT OVERRIDES
+========================================================= */
+@media (max-width: 768px) {
+  html body #root .messages-page,
+  .messages-page {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
+    overflow-y: auto !important;
+    padding-bottom: 75px !important;
+  }
+  html body #root .messages-main,
+  .messages-main {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 16px 14px 80px !important;
+    overflow-y: visible !important;
+    box-sizing: border-box !important;
+  }
+  .chat-item-row {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    padding: 16px !important;
+  }
+  .btn-chat-open {
+    width: 100% !important;
+    text-align: center !important;
+  }
+}
