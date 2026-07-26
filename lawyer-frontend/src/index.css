@@ -245,47 +245,152 @@ body {
   transform: none !important;
 }
 
-/* ==========================================
-   📱 MOBILE VIEW RESPONSIVE OVERRIDES
-   (Added strictly in CSS without touching existing JSX code)
-========================================== */
+/* ==========================================================================
+   📱 MASTER GLOBAL MOBILE RESPONSIVE OVERRIDES (FULL LAWYER FRONTEND)
+   (Added strictly in CSS without touching ANY existing JSX/JS code)
+========================================================================== */
 @media (max-width: 768px) {
-  .auth-page, div[style*="minHeight: 100vh"], div[style*="min-height: 100vh"] {
-    padding: 16px 12px !important;
-    align-items: flex-start !important;
+  /* 1. Page & Layout Containers (Dashboard, Cases, Messages, Drafter, etc.) */
+  .ld-page, .ac-page, .cd-page, .notif-page, .msg-page, .da-page, .dr-page, .sub-page, .vc-page,
+  div[class*="-page"], div[style*="minHeight: 100vh"], div[style*="min-height: 100vh"] {
+    flex-direction: column !important;
+    height: auto !important;
+    min-height: 100vh !important;
     overflow-y: auto !important;
-    height: auto !important;
+    padding-bottom: 70px !important;
   }
-  .auth-card,
-  div[style*="width: 800px"],
-  div[style*="width: 600px"],
-  div[style*="width: 420px"],
-  div[style*="width: 500px"] {
-    padding: 28px 16px !important;
-    border-radius: 18px !important;
+
+  /* 2. Body Containers */
+  .ld-body, .ac-body, .cd-body, .notif-body, .msg-body, .da-body, .dr-body, .sub-body, .vc-body,
+  div[class*="-body"] {
     width: 100% !important;
-    max-width: 98% !important;
-    margin: 10px 0 !important;
-    max-height: none !important;
-    height: auto !important;
+    padding: 16px 12px !important;
+    overflow-y: visible !important;
     box-sizing: border-box !important;
   }
-  .form-grid {
+
+  /* 3. Global Sidebar -> Native Mobile Bottom Navigation Bar */
+  .sidebar {
+    position: fixed !important;
+    bottom: 0 !important;
+    left: 0 !important;
+    right: 0 !important;
+    top: auto !important;
+    width: 100% !important;
+    min-width: 100% !important;
+    height: 60px !important;
+    flex-direction: row !important;
+    z-index: 99999 !important;
+    border-right: none !important;
+    border-top: 1px solid rgba(255,255,255,0.1) !important;
+    background: #0c1221 !important;
+    box-shadow: 0 -4px 20px rgba(0,0,0,0.6) !important;
+    padding: 0 !important;
+  }
+  .sidebar-logo, .sidebar-section-title, .sidebar-footer, .sidebar-toggle,
+  .logo-name, .logo-sub, .user-name, .user-role {
+    display: none !important;
+  }
+  .sidebar-nav {
+    flex-direction: row !important;
+    padding: 4px !important;
+    justify-content: space-around !important;
+    align-items: center !important;
+    width: 100% !important;
+    overflow-x: auto !important;
+    gap: 4px !important;
+  }
+  .sidebar-link {
+    padding: 6px 8px !important;
+    flex-direction: column !important;
+    gap: 2px !important;
+    font-size: 9px !important;
+    border-radius: 8px !important;
+    background: transparent !important;
+    box-shadow: none !important;
+  }
+  .sidebar-link.active {
+    background: rgba(201,168,76,0.15) !important;
+    color: var(--gold) !important;
+    border: 1px solid rgba(201,168,76,0.3) !important;
+  }
+  .link-icon svg {
+    width: 20px !important;
+    height: 20px !important;
+  }
+
+  /* 4. Topbars & Headers */
+  .ld-topbar, .ac-header, .cd-header, div[class*="-topbar"], div[class*="-header"] {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 12px !important;
+    margin-bottom: 20px !important;
+  }
+  .ld-topbar-right, div[class*="-right"] {
+    width: 100% !important;
+    justify-content: space-between !important;
+    flex-wrap: wrap !important;
+    gap: 10px !important;
+  }
+
+  /* 5. Stat Grids & Kanban Grids */
+  .ld-stats, .ac-cards-grid, .ld-kanban-grid, div[class*="-grid"], .form-grid {
     grid-template-columns: 1fr !important;
-    gap: 14px !important;
+    gap: 12px !important;
+    padding: 10px 0 !important;
   }
-  .full-width {
-    grid-column: span 1 !important;
+
+  /* 6. Cards & Panels */
+  .ld-stat-card, .ld-case-card, .ac-card, .ac-panel, .cd-panel, .auth-card,
+  div[style*="width: 800px"], div[style*="width: 600px"], div[style*="width: 420px"], div[style*="width: 500px"] {
+    width: 100% !important;
+    max-width: 100% !important;
+    padding: 18px 14px !important;
+    border-radius: 16px !important;
+    box-sizing: border-box !important;
+    height: auto !important;
+    max-height: none !important;
   }
-  h1 {
-    font-size: 22px !important;
+
+  /* 7. Tables -> Convert to safe mobile view */
+  .ac-table-head, .ac-table-row {
+    grid-template-columns: 1.5fr 1fr 1fr !important;
+    padding: 12px 10px !important;
+    font-size: 11px !important;
+    gap: 6px !important;
   }
-  h2 {
-    font-size: 20px !important;
+  .ac-table-head *:nth-child(4), .ac-table-head *:nth-child(5),
+  .ac-table-row *:nth-child(4), .ac-table-row *:nth-child(5) {
+    display: none !important;
   }
-  p {
-    font-size: 13px !important;
+
+  /* 8. Tabs & Subscriptions */
+  .ld-tabs, .ac-tabs {
+    flex-wrap: wrap !important;
+    gap: 6px !important;
+    padding: 6px !important;
   }
+  .ld-tab, .ac-tab {
+    padding: 8px 10px !important;
+    font-size: 11px !important;
+    flex: 1 1 auto !important;
+  }
+  .ld-sub-bar {
+    flex-direction: column !important;
+    align-items: flex-start !important;
+    gap: 10px !important;
+    padding: 14px !important;
+  }
+  .ld-upgrade-btn {
+    width: 100% !important;
+    padding: 10px !important;
+    text-align: center !important;
+  }
+
+  /* 9. Typography overrides for mobile */
+  h1, .ld-title, .ac-title { font-size: 22px !important; }
+  h2 { font-size: 18px !important; }
+  p, .ld-subtitle, .ac-subtitle { font-size: 13px !important; }
   .btn-primary-gold, button[type="submit"] {
     padding: 14px !important;
     font-size: 14px !important;
