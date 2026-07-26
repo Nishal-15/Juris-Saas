@@ -38,7 +38,7 @@ export default function Settings() {
       await API.post("/branding/upload-logo", formData, {
         headers: { "Content-Type": "multipart/form-data" }
       });
-      setLogoPreview(`${import.meta.env.VITE_API_BASE?.replace('/api','') || 'http://localhost:5000'}/branding/logo.png?t=${Date.now()}`);
+      setLogoPreview(`${(import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || 'https://juris-saas.onrender.com/api').replace('/api','')}/branding/logo.png?t=${Date.now()}`);
       toast.success("Platform logo updated globally!");
     } catch (err) {
       toast.error("Logo upload failed");

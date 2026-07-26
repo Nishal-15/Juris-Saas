@@ -12,6 +12,8 @@ import MediationCases from './pages/MediationCases';
 import Settings from './pages/Settings';
 import ErrorBoundary from './components/ErrorBoundary';
 
+const API_BASE = import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || "https://juris-saas.onrender.com/api";
+
 // Placeholder for Login
 const Login = ({ setAuth }) => {
   const [email, setEmail] = useState("");
@@ -30,7 +32,7 @@ const Login = ({ setAuth }) => {
 
     setLoading(true);
     try {
-      const res = await fetch(import.meta.env.VITE_API_BASE + "/auth/login", {
+      const res = await fetch(API_BASE + "/auth/login", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: cleanEmail, password: cleanPass, role: "admin" })
@@ -63,7 +65,7 @@ const Login = ({ setAuth }) => {
     if (!otp.trim()) return setError("Enter OTP");
     setLoading(true);
     try {
-      const res = await fetch(import.meta.env.VITE_API_BASE + "/auth/verify-otp", {
+      const res = await fetch(API_BASE + "/auth/verify-otp", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ email: email.trim(), otp: otp.trim() })
@@ -290,7 +292,7 @@ export default function App() {
       try {
         const token = localStorage.getItem("token")
         const res = await window.fetch(
-          `${import.meta.env.VITE_API_BASE}/admin/pending-lawyers`,
+          `${API_BASE}/admin/pending-lawyers`,
           { headers:{ Authorization:`Bearer ${token}` } }
         )
         const data = await res.json()

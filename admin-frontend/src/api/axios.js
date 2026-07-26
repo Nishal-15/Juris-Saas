@@ -1,7 +1,7 @@
 import axios from "axios"
 
 const API = axios.create({
-  baseURL: import.meta.env.VITE_API_BASE,
+  baseURL: import.meta.env.VITE_API_URL || import.meta.env.VITE_API_BASE || "https://juris-saas.onrender.com/api",
   timeout: 15000,
 })
 
