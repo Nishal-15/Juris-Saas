@@ -8,9 +8,14 @@ from flask_cors import CORS
 from dotenv import load_dotenv
 
 # Load environment variables
-import faiss # type: ignore
-import numpy as np
-from sentence_transformers import SentenceTransformer
+try:
+    import faiss # type: ignore
+    import numpy as np
+    from sentence_transformers import SentenceTransformer
+except ImportError:
+    faiss = None
+    np = None
+    SentenceTransformer = None
 import pickle
 
 # Load environment variables
@@ -320,6 +325,8 @@ OLLAMA_URL = "http://127.0.0.1:11434/api/generate"
 # Initialize FAISS and Embedding Model
 try:
     print("Initializing FAISS & Embedding Model...", flush=True)
+    if SentenceTransformer is None or faiss is None or np is None:
+        raise ImportError("FAISS, SentenceTransformer, or numpy not installed in serverless mode.")
     embed_model = SentenceTransformer("all-MiniLM-L6-v2")
     if os.path.exists("faiss_index.bin") and os.path.exists("faiss_meta.pkl"):
         faiss_index = faiss.read_index("faiss_index.bin")
