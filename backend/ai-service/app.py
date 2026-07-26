@@ -38,26 +38,63 @@ SUPPORTED_LANGUAGES = {
 RTL_LANGUAGES = ["ur", "ks", "sd"]
 
 MEDIATION_ELIGIBLE = [
-  "property dispute","boundary dispute",
-  "property","family dispute","matrimonial",
-  "maintenance","consumer complaint",
-  "consumer","product defect",
-  "commercial dispute","business dispute",
-  "contract","landlord tenant","rent dispute",
-  "eviction","partnership dispute",
-  "employment dispute","neighbourhood dispute",
-  "money recovery","cheque bounce",
-  "insurance claim","medical negligence",
-  "school fees","society dispute",
-  "co-operative","intellectual property",
-  "trademark","divorce","child custody",
-  "domestic violence","deficiency in service"
+  # Family Law
+  "mutual divorce", "divorce settlement", "child custody", "custody arrangement",
+  "visitation rights", "maintenance", "alimony", "matrimonial property",
+  "family business dispute", "matrimonial", "family dispute", "dowry settlement",
+  # Property Law
+  "property partition", "boundary dispute", "easement rights", "landlord tenant",
+  "rent dispute", "lease agreement", "builder buyer", "delay in possession",
+  "property maintenance", "property dispute", "eviction", "landlord", "tenant",
+  # Civil Law
+  "money recovery", "outstanding dues", "breach of contract", "loan repayment",
+  "service agreement", "partnership settlement", "partnership dispute", "indemnity dispute",
+  "cheque bounce", "section 138", "civil suit",
+  # Commercial Law
+  "commercial contract", "vendor agreement", "supply agreement", "franchise dispute",
+  "distribution agreement", "agency agreement", "joint venture", "business dispute",
+  "commercial dispute", "pre-litigation commercial",
+  # Corporate Law
+  "shareholder dispute", "director dispute", "business dissolution", "share transfer",
+  # Labour & Employment
+  "salary dispute", "final settlement", "employment contract", "wrongful termination",
+  "workplace conflict", "employment dispute", "wages", "gratuity",
+  # Consumer Law
+  "refund dispute", "defective product", "deficient service", "warranty claim",
+  "e-commerce refund", "consumer complaint", "consumer",
+  # Banking & Finance
+  "loan settlement", "emi restructuring", "banking service complaint", "bank dispute",
+  # Insurance Law
+  "insurance claim", "policy dispute", "motor accident compensation", "mact",
+  # Intellectual Property
+  "licensing dispute", "royalty dispute", "ip assignment", "trademark", "copyright", "patent",
+  # Technology & E-Commerce Law
+  "software development", "saas agreement", "it service agreement",
+  "marketplace seller dispute", "online service agreement",
+  # Education & Healthcare Law
+  "fee refund", "admission refund", "school fees", "hospital billing", "medical service billing",
+  # Neighbourhood & Community Disputes
+  "noise complaint", "shared access", "water usage", "resident welfare", "rwa",
+  "society maintenance", "co-operative", "neighbourhood dispute", "society dispute"
 ]
 
 MEDIATION_EXCLUSIONS = [
-  "murder","rape","dacoity","terrorism",
-  "national security","fir","arrest",
-  "custody","bail","kidnapping","robbery"
+  # Criminal Law (Non-compoundable / Serious offences & Physical Assault)
+  "murder", "attempt to murder", "rape", "gang rape", "terrorism",
+  "human trafficking", "kidnapping for ransom", "kidnapping", "armed robbery",
+  "dacoity", "serious assault", "assault", "assaulted", "wooden stick", "weapon",
+  "acid attack", "waging war", "narcotics", "ndps", "counterfeit currency",
+  "voluntarily causing hurt", "bodily harm", "injury", "injuries", "hurt",
+  "criminal intimidation", "intentional insult", "obscene language",
+  # Police & Criminal Procedures
+  "police station", "police complaint", "complaint was lodged", "accused", "complainant",
+  "bns", "bharatiya nyaya sanhita", "ipc", "crpc", "bnss", "crime", "criminal",
+  "illegal custody", "police custody", "judicial custody", "remand", "fir", "arrest", "bail", "non-bailable",
+  # Public & Constitutional Law
+  "election petition", "writ petition", "habeas corpus", "mandamus", "quo warranto",
+  # Administrative Law & Civil Status
+  "professional misconduct", "bar council", "declaration of title against government",
+  "rights in rem", "first schedule"
 ]
 
 def detect_language(text):
@@ -85,18 +122,55 @@ def detect_language(text):
     print(f"Lang detect error: {e}",flush=True)
   return "en"
 
-def is_mediation_eligible(user_input,
-  case_type=""):
-  text = (
-    (user_input or "") + " " +
-    (case_type or "")
-  ).lower()
+def is_mediation_eligible(user_input, case_type=""):
+  text = ((user_input or "") + " " + (case_type or "")).lower()
   for excl in MEDIATION_EXCLUSIONS:
     if excl in text:
       return False
-  return any(
-    kw in text for kw in MEDIATION_ELIGIBLE
-  )
+  return any(kw in text for kw in MEDIATION_ELIGIBLE)
+
+def get_case_classification_labels(text, case_type=""):
+  combined = ((text or "") + " " + (case_type or "")).lower()
+  for excl in MEDIATION_EXCLUSIONS:
+    if excl in combined:
+      return {
+        "legal_classification": "Criminal / Public / Constitutional Law",
+        "case_type": case_type or "Non-Compoundable / Public Dispute",
+        "mediation_eligible": False,
+        "resolution_method": "Court Litigation / Prosecution",
+        "alternative_resolution": ["High Court", "District Session Court", "Appropriate Tribunal"]
+      }
+  classification_map = [
+    (["divorce", "custody", "visitation", "alimony", "matrimonial", "family"], "Family Law", "Family Dispute / Settlement", ["Family Court"]),
+    (["property", "boundary", "easement", "landlord", "tenant", "rent", "lease", "builder"], "Property Law", "Property / Tenancy Dispute", ["Civil Court", "RERA"]),
+    (["commercial", "vendor", "supply", "franchise", "distribution", "agency", "joint venture"], "Commercial Law", "Commercial Contract Dispute", ["Commercial Court"]),
+    (["shareholder", "director", "dissolution", "share transfer", "corporate"], "Corporate Law", "Corporate Governance Dispute", ["NCLT", "Commercial Court"]),
+    (["salary", "settlement", "employment", "termination", "workplace", "labour"], "Labour & Employment", "Employment Dispute", ["Labour Court", "Industrial Tribunal"]),
+    (["refund", "defective", "deficient", "warranty", "e-commerce", "consumer"], "Consumer Law", "Consumer Dispute", ["Consumer Dispute Redressal Commission"]),
+    (["loan", "emi", "banking", "cheque", "138", "money recovery", "dues", "breach of contract", "partnership"], "Civil Law / Banking", "Commercial / Loan Repayment Dispute", ["Civil Court", "DRT", "Commercial Court"]),
+    (["insurance", "policy", "claim", "accident", "mact"], "Insurance Law", "Insurance Claim Settlement", ["Motor Accident Claims Tribunal", "Consumer Forum"]),
+    (["licensing", "royalty", "ip assignment", "trademark", "copyright", "patent"], "Intellectual Property", "IP Licensing / Royalty Dispute", ["High Court / Commercial Division"]),
+    (["software", "saas", "it service", "marketplace", "online service"], "Technology Law", "IT / E-Commerce Agreement Dispute", ["Commercial Court", "Cyber Appellate Tribunal"]),
+    (["fee refund", "admission", "hospital billing", "medical billing", "school"], "Education / Healthcare Law", "Service & Billing Dispute", ["Consumer Forum", "Civil Court"]),
+    (["noise", "shared access", "water usage", "resident welfare", "rwa", "society", "neighbour"], "Community / Neighbourhood Disputes", "Society / Resident Dispute", ["Co-operative Court", "Civil Court"])
+  ]
+  for keywords, leg_class, c_type, alt_res in classification_map:
+    if any(kw in combined for kw in keywords):
+      return {
+        "legal_classification": leg_class,
+        "case_type": case_type or c_type,
+        "mediation_eligible": True,
+        "resolution_method": "Pre-Litigation Mediation",
+        "alternative_resolution": alt_res
+      }
+  eligible = any(kw in combined for kw in MEDIATION_ELIGIBLE)
+  return {
+    "legal_classification": "Civil / Commercial Law" if eligible else "General Legal Dispute",
+    "case_type": case_type or "General Dispute",
+    "mediation_eligible": eligible,
+    "resolution_method": "Pre-Litigation Mediation" if eligible else "Court Litigation",
+    "alternative_resolution": ["District Civil Court" if eligible else "Appropriate Court"]
+  }
 
 def get_mediation_script(case_summary,
   lang, citizen_name="User"):
@@ -356,36 +430,87 @@ def get_legal_answer(user_input, lang="en", history=None):
         system_instruction = "You are a professional Legal Expert. Write a short, professional 1-sentence legal notification for WhatsApp. Be concise."
     else:
         system_instruction = f"""
-You are an advanced AI legal assistant for Indian law. Your goal is to explain legal topics in simple language while staying 100% legally accurate.
+You are JurisBot, an AI Legal Assistant built for India.
+You are not merely a chatbot.
+You are an experienced Indian Advocate with more than 25 years of legal practice across all major branches of Indian law.
+You conduct consultations exactly like a senior lawyer during a client's first consultation.
+
+Your purpose is:
+• Understand the citizen's problem.
+• Identify the legal issue.
+• Classify the case.
+• Explain the law in simple language.
+• Recommend the correct legal procedure.
+• Suggest mediation whenever legally appropriate.
+• Generate a professional legal consultation.
+• Speak naturally like a human lawyer.
+Never sound robotic. Never sound like ChatGPT. Always sound like a real advocate.
+
+SUPPORTED LANGUAGES:
+You must understand and respond naturally in all 22 Scheduled Languages of India (1 English, 2 Hindi, 3 Tamil, 4 Telugu, 5 Kannada, 6 Malayalam, 7 Marathi, 8 Gujarati, 9 Bengali, 10 Punjabi, 11 Assamese, 12 Odia, 13 Urdu, 14 Sanskrit, 15 Konkani, 16 Manipuri, 17 Bodo, 18 Dogri, 19 Kashmiri, 20 Maithili, 21 Santali, 22 Sindhi).
+If the user speaks in any of these languages, detect automatically and continue entirely in that language.
+Generate both text and voice-friendly narration that sounds natural when converted to speech. Never translate literally; speak naturally like a lawyer from that language.
+
+PRIMARY RESPONSIBILITIES & CASE ANALYSIS:
+When analyzing a case description, automatically perform the following steps:
+STEP 1: Understand the facts.
+STEP 2: Extract Names, Dates, Places, Incident, Opposite party, Evidence, Damages, Injuries, Contracts, Money involved, Police involvement, Existing notices, Court proceedings.
+STEP 3: Determine Legal Classification (Criminal, Civil, Family, Property, Labour & Employment, Consumer, Corporate, Commercial, Cyber, Environmental, Tax, Constitutional, etc.).
+STEP 4: Identify Lawyer Specialization (Criminal Lawyer, Family Lawyer, Property Lawyer, Corporate Lawyer, Cyber Lawyer, Consumer Lawyer, etc.).
+STEP 5: Identify Case Type (Murder, Assault, Cheque Bounce, Divorce, Maintenance, Child Custody, Partition, Money Recovery, Employment Benefits, Wrongful Termination, etc.).
+STEP 6: Determine Resolution Method (Litigation, Mediation, Arbitration, Conciliation, Lok Adalat, Negotiation, Consumer Commission, Tribunal, High Court, Supreme Court, etc.).
+STEP 7: Generate Professional Case Title (e.g. Rajesh Kumar v. Arun Kumar - Employment Benefits and Final Settlement Dispute).
+
+MEDIATION ELIGIBILITY:
+Automatically determine: Can this dispute be mediated? If YES, explain WHY. If NO, explain WHY. Do NOT force mediation. Recommend mediation only when legally appropriate.
+
+LAWYER CONSULTATION STYLE:
+Behave exactly like an experienced lawyer. Never immediately recommend filing a case. First educate the citizen. Use empathy, professionalism, and plain language. Never use unnecessary legal jargon. Never scare the citizen. Never guarantee victory. Never predict court judgments.
+
+CONSULTATION FLOW (MANDATORY RESPONSE STRUCTURE):
+Always structure your consultation response in this exact order using clear Markdown headings:
+
+**1. Greeting & Case Understanding**
+- Politely acknowledge the citizen and summarize the dispute clearly without copying their exact words.
+
+**2. Legal Assessment & Classification**
+- Professional Case Title (e.g. Party A v. Party B - Subject)
+- Legal Classification, Case Type, and Lawyer Specialization needed.
+- Whether civil or criminal, and clear explanation of whether Mediation / ADR is suitable and why.
+
+**3. Applicable Indian Laws**
+- Explain relevant Indian laws and Acts (from verified legal context when available). Explain provisions in simple language.
+
+**4. Recommended Legal Process & Why**
+- Explain why Court, Mediation, Arbitration, or Tribunal is appropriate for this specific case.
+
+**5. Step-by-Step Procedure**
+- Provide a clear flowchart or step-by-step explanation (e.g. Police Complaint ↓ Investigation ↓ Charge Sheet ↓ Trial ↓ Judgment OR Mediation Request ↓ Mediator Appointment ↓ Negotiation ↓ Settlement).
+
+**6. Required Documents & Useful Evidence**
+- List relevant documents needed (Appointment letters, salary slips, sale deeds, marriage certificates, notices, etc.).
+- List useful evidence (Photos, videos, witnesses, medical reports, contracts, chats, emails, CCTV, digital records, etc.).
+
+**7. Citizen Rights & Possible Outcomes**
+- Explain their legal rights in simple language.
+- Detail realistic possible outcomes (Settlement, Court Order, Compensation, Partial Settlement, etc.).
+
+**8. Realistic Timelines, Expenses & Potential Risks**
+- Estimated Timeline: Realistic estimate (note that timelines vary).
+- Estimated Expenses: Court fees, lawyer fees, mediator fees, documentation charges (note that actual costs vary).
+- Potential Risks: Explain risks like missing evidence, delay, limitation period, weak documentation, or counter claims.
+
+**9. Practical Next Steps & Frequently Asked Questions**
+- Practical advice on what the citizen should do immediately.
+- 3 relevant FAQs tailored specifically to their case.
+
+**10. Legal Disclaimer**
+- Conclude with: *This consultation is informational and does not replace advice from a qualified legal professional.*
 
 You have been provided with the following REAL LAW SECTIONS as context. Use them to answer the user's question accurately.
 
 LEGAL CONTEXT (VERIFIED SOURCES):
-{legal_context if legal_context else "No specific sections found in database. Use your internal knowledge but be extremely cautious."}
-
-CORE OBJECTIVE:
-- Explain what the issue means in REAL LIFE first.
-- Use the provided LEGAL CONTEXT to ensure the highest accuracy.
-- If the context contradicts your internal knowledge, trust the context.
-- Sound knowledgeable and helpful, not robotic.
-
-MANDATORY RESPONSE FORMAT:
-
-**Direct Answer** (max 2 lines)
-- Plain English only. No section numbers.
-
-**Quick Understanding** (3-5 bullets)
-- Real-world meaning and consequences.
-
-**Legal Support**
-- Mention the specific Acts/Sections from the provided context.
-- Be precise about what the law says.
-
-**Practical Insight**
-- Real-world handling by police/courts.
-
-**Simple Example**
-- Relatable scenario (max 3 lines).
+{legal_context if legal_context else "No specific sections found in database. Use your internal legal knowledge according to Indian law."}
 """
 
     if lang in RTL_LANGUAGES:
@@ -735,6 +860,7 @@ def mediation_video():
       user_input + " " + case_type,
       case_type
     )
+    classification = get_case_classification_labels(user_input + " " + case_title, case_type)
 
     if not eligible:
       return jsonify({
@@ -744,7 +870,8 @@ def mediation_video():
         "lang":      lang,
         "langName":  SUPPORTED_LANGUAGES.get(
           lang,"English"
-        )
+        ),
+        "classification": classification
       })
 
     script = get_mediation_script(
@@ -812,6 +939,7 @@ def mediation_video():
       "langName":     SUPPORTED_LANGUAGES.get(
         lang, "English"
       ),
+      "classification": classification,
       "mediationAct": {
         "actName":
           "The Mediation Act, 2023",
@@ -829,6 +957,17 @@ def mediation_video():
     return jsonify({
       "error": str(e)
     }), 500
+
+@app.route("/triage-case", methods=["POST"])
+def triage_case():
+  try:
+    data = request.json
+    user_input = data.get("userInput", "")
+    case_type = data.get("caseType", "")
+    labels = get_case_classification_labels(user_input, case_type)
+    return jsonify(labels)
+  except Exception as e:
+    return jsonify({"error": str(e)}), 500
 
 @app.route(
   "/mediation-video/status/<video_id>",

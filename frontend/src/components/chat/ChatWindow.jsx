@@ -20,14 +20,24 @@ export default function ChatWindow() {
 
   const [sidebarOpen, setSidebarOpen] = useState(false);
 
+  const getStorageKey = () => {
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    const uid = user._id || user.id || "guest";
+    return `jurisbot_chat_sessions_${uid}`;
+  };
+
   const [sessions, setSessions] = useState(() => {
-    const saved = localStorage.getItem("jurisbot_chat_sessions");
+    const saved = localStorage.getItem(getStorageKey());
     return saved ? JSON.parse(saved) : [];
   });
   const [currentSessionId, setCurrentSessionId] = useState(null);
 
   useEffect(() => {
-    if (sessions.length === 0) {
+    const key = getStorageKey();
+    const saved = localStorage.getItem(key);
+    const loaded = saved ? JSON.parse(saved) : [];
+
+    if (loaded.length === 0) {
       const initialId = Date.now().toString();
       const initialSession = {
         id: initialId,
@@ -37,9 +47,10 @@ export default function ChatWindow() {
       setSessions([initialSession]);
       setCurrentSessionId(initialId);
       setMessages(initialSession.messages);
-      localStorage.setItem("jurisbot_chat_sessions", JSON.stringify([initialSession]));
+      localStorage.setItem(key, JSON.stringify([initialSession]));
     } else {
-      const lastSession = sessions[0];
+      setSessions(loaded);
+      const lastSession = loaded[0];
       setCurrentSessionId(lastSession.id);
       setMessages(lastSession.messages);
     }
@@ -59,7 +70,7 @@ export default function ChatWindow() {
         }
         return s;
       });
-      localStorage.setItem("jurisbot_chat_sessions", JSON.stringify(updatedSessions));
+      localStorage.setItem(getStorageKey(), JSON.stringify(updatedSessions));
       return updatedSessions;
     });
   };
@@ -85,7 +96,7 @@ export default function ChatWindow() {
     setSessions(updated);
     setCurrentSessionId(newId);
     setMessages(newSession.messages);
-    localStorage.setItem("jurisbot_chat_sessions", JSON.stringify(updated));
+    localStorage.setItem(getStorageKey(), JSON.stringify(updated));
   };
 
   const handleSelectChat = (id) => {
@@ -109,10 +120,10 @@ export default function ChatWindow() {
       setSessions([newSession]);
       setCurrentSessionId(newId);
       setMessages(newSession.messages);
-      localStorage.setItem("jurisbot_chat_sessions", JSON.stringify([newSession]));
+      localStorage.setItem(getStorageKey(), JSON.stringify([newSession]));
     } else {
       setSessions(filtered);
-      localStorage.setItem("jurisbot_chat_sessions", JSON.stringify(filtered));
+      localStorage.setItem(getStorageKey(), JSON.stringify(filtered));
       if (currentSessionId === id) {
         setCurrentSessionId(filtered[0].id);
         setMessages(filtered[0].messages);

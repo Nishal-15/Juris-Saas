@@ -954,12 +954,96 @@ router.post("/check-mediation", auth(), async (req, res) => {
     const { title, description, category, legalType } = req.body;
     const typeStr = (legalType || category || "").toLowerCase();
     const descStr = (description || "").toLowerCase();
-    
-    // Check eligibility under Section 4 of The Mediation Act, 2023
-    const isEligible = typeStr.includes("family") || typeStr.includes("civil") || typeStr.includes("property") || typeStr.includes("consumer") || typeStr.includes("labor") || descStr.includes("custody") || descStr.includes("spouse") || descStr.includes("maintenance") || descStr.includes("separate") || descStr.includes("divorce") || descStr.includes("rent");
-    
+    const combinedStr = `${typeStr} ${descStr}`;
+
+    // 1. Strict Exclusions: Criminal, Police, Non-compoundable, Constitutional, and Administrative Offences
+    const MED_EXCLUSIONS = [
+      "murder", "attempt to murder", "rape", "gang rape", "terrorism",
+      "human trafficking", "kidnapping", "armed robbery", "dacoity",
+      "serious assault", "assault", "assaulted", "wooden stick", "weapon",
+      "acid attack", "waging war", "narcotics", "ndps", "counterfeit currency",
+      "voluntarily causing hurt", "bodily harm", "injury", "injuries", "hurt",
+      "criminal intimidation", "intentional insult", "obscene language",
+      "police station", "police complaint", "complaint was lodged", "accused", "complainant",
+      "bns", "bharatiya nyaya sanhita", "ipc", "crpc", "bnss", "crime", "criminal",
+      "illegal custody", "police custody", "judicial custody", "remand", "fir", "arrest", "bail", "non-bailable",
+      "election petition", "writ petition", "habeas corpus", "mandamus", "quo warranto",
+      "professional misconduct", "bar council", "declaration of title against government"
+    ];
+
+    for (const excl of MED_EXCLUSIONS) {
+      if (combinedStr.includes(excl)) {
+        console.log(`[Mediation Excluded] Found exclusion term: ${excl}`);
+        return res.json({ 
+          eligible: false, 
+          reason: `Case involves criminal / public law offence (${excl}). Court litigation or police prosecution required.` 
+        });
+      }
+    }
+
+    // 2. Try calling Python AI Mediation Microservice for exact trained script and classification
+    try {
+      const aiRes = await axios.post(
+        getAIMediationURL(),
+        {
+          caseTitle: title || "Legal Consultation",
+          caseType: legalType || category || "",
+          citizenName: req.user?.name || "User",
+          lang: req.body.lang || "en",
+          userInput: description || ""
+        },
+        { timeout: 15000 }
+      );
+      if (aiRes.data && aiRes.data.eligible !== undefined) {
+        if (!aiRes.data.eligible) {
+          return res.json({ eligible: false, classification: aiRes.data.classification });
+        }
+        return res.json({
+          eligible: true,
+          actName: aiRes.data.mediationAct?.actName || "The Mediation Act, 2023 (Section 4)",
+          timeline: "30 to 90 Days (Pre-litigation consensual settlement)",
+          keyBenefit: aiRes.data.mediationAct?.keyBenefit || "Faster, private, and mutually acceptable resolution without lengthy court trial",
+          script: aiRes.data.script || `Hello. I am your JurisVault neural legal advisor. Based on your statement, your case qualifies for pre-litigation consensual mediation under Section 4 of The Mediation Act, 2023. A certified neutral mediator will conduct confidential sessions to arrive at a fair, mutually acceptable resolution in 30 to 90 days without going through a lengthy court trial. This Mediated Settlement Agreement has the same legally binding force as a court decree.`,
+          videoUrl: aiRes.data.videoUrl || "https://assets.mixkit.co/videos/preview/mixkit-legal-gavel-striking-on-a-block-41898-large.mp4",
+          classification: aiRes.data.classification
+        });
+      }
+    } catch (aiErr) {
+      console.warn("AI Mediation microservice check failed, falling back to local taxonomy:", aiErr.message);
+    }
+
+    // 3. Fallback: Local Taxonomy Eligibility Check
+    const MED_ELIGIBLE_KEYWORDS = [
+      "divorce", "custody", "visitation", "alimony", "maintenance", "matrimonial", "family",
+      "property", "boundary", "easement", "landlord", "tenant", "rent", "lease", "builder", "possession",
+      "commercial", "vendor", "supply", "franchise", "distribution", "agency", "joint venture", "business",
+      "shareholder", "director", "dissolution", "share transfer", "corporate",
+      "salary", "settlement", "employment", "termination", "workplace", "labour", "wages", "gratuity",
+      "refund", "defective", "deficient", "warranty", "e-commerce", "consumer",
+      "loan", "emi", "banking", "cheque", "138", "money recovery", "dues", "breach of contract", "partnership",
+      "insurance", "policy", "claim", "accident", "mact",
+      "licensing", "royalty", "ip assignment", "trademark", "copyright", "patent",
+      "software", "saas", "it service", "marketplace", "online service",
+      "fee refund", "admission", "hospital billing", "medical billing", "school",
+      "noise", "shared access", "water usage", "resident welfare", "rwa", "society", "neighbour", "co-operative"
+    ];
+    const isEligible = MED_ELIGIBLE_KEYWORDS.some(kw => combinedStr.includes(kw));
+
     if (!isEligible) {
       return res.json({ eligible: false });
+    }
+
+    let topicName = "your civil or commercial dispute";
+    if (typeStr.includes("labor") || typeStr.includes("job") || typeStr.includes("employ") || descStr.includes("salary release") || descStr.includes("notice period") || descStr.includes("wrongful termination") || descStr.includes("gratuity") || descStr.includes("provident fund")) {
+      topicName = "your employment, salary release, and notice period dispute";
+    } else if (typeStr.includes("family") || typeStr.includes("matrimonial") || descStr.includes("child custody") || descStr.includes("alimony") || descStr.includes("mutual divorce") || descStr.includes("matrimonial")) {
+      topicName = "your matrimonial, separation, or family dispute";
+    } else if (typeStr.includes("property") || typeStr.includes("tenant") || descStr.includes("rent dispute") || descStr.includes("boundary dispute") || descStr.includes("property partition") || descStr.includes("lease agreement") || descStr.includes("builder buyer")) {
+      topicName = "your property, rental, or tenancy dispute";
+    } else if (typeStr.includes("consumer") || descStr.includes("defective product") || descStr.includes("deficient service") || descStr.includes("warranty claim") || descStr.includes("refund dispute")) {
+      topicName = "your consumer protection and service grievance";
+    } else if (typeStr.includes("commercial") || typeStr.includes("corporate") || descStr.includes("vendor agreement") || descStr.includes("shareholder") || descStr.includes("joint venture") || descStr.includes("commercial contract")) {
+      topicName = "your commercial contract and business dispute";
     }
 
     res.json({
@@ -967,7 +1051,7 @@ router.post("/check-mediation", auth(), async (req, res) => {
       actName: "The Mediation Act, 2023 (Section 4)",
       timeline: "30 to 90 Days (Pre-litigation consensual settlement)",
       keyBenefit: "Faster, private, and mutually acceptable resolution without lengthy court trial",
-      script: `Based on your statement regarding ${typeStr || "family and civil matters"}, your dispute qualifies for pre-litigation mediation under Section 4 of The Mediation Act, 2023. A certified neutral mediator will conduct confidential sessions to draft a Mediated Settlement Agreement (MSA) having the same legal binding force as a court decree.`,
+      script: `Hello. I am your JurisVault neural legal advisor. Based on your statement regarding ${topicName}, your case qualifies for pre-litigation consensual mediation under Section 4 of The Mediation Act, 2023. A certified neutral mediator will conduct confidential sessions to arrive at a fair, mutually acceptable resolution in 30 to 90 days without going through a lengthy court trial. This Mediated Settlement Agreement has the same legally binding force as a court decree.`,
       videoUrl: "https://assets.mixkit.co/videos/preview/mixkit-legal-gavel-striking-on-a-block-41898-large.mp4"
     });
   } catch (err) {
