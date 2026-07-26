@@ -362,6 +362,15 @@ def save_faiss_index():
 app = Flask(__name__)
 CORS(app, resources={r"/*": {"origins": [os.getenv("BACKEND_URL", "http://localhost:5000"), "http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "https://jurisbot.vercel.app"]}})
 
+@app.route("/", methods=["GET"])
+def health_check():
+    return jsonify({
+        "service": "JurisVault AI Engine",
+        "status": "online",
+        "version": "2.0",
+        "engine": "NVIDIA NIM & Groq Hybrid"
+    }), 200
+
 # =========================
 # ZERO-DATA RETENTION (PII Redaction)
 # =========================
