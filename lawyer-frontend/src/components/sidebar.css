@@ -292,7 +292,58 @@
     width: 20px !important;
     height: 20px !important;
   }
-  .link-label {
+  html body #root .sidebar-link .link-label,
+  .sidebar-link .link-label {
+    display: none !important;
+  }
+
+  /* 🔔 IN MOBILE VIEW ALONE: KEEP NOTIFICATION AT TOP RIGHT */
+  html body #root .sidebar-nav a[href="/lawyer/notifications"],
+  html body #root .sidebar.collapsed .sidebar-nav a[href="/lawyer/notifications"],
+  .sidebar-nav a[href="/lawyer/notifications"],
+  .sidebar.collapsed .sidebar-nav a[href="/lawyer/notifications"] {
+    position: fixed !important;
+    top: 14px !important;
+    right: 16px !important;
+    bottom: auto !important;
+    left: auto !important;
+    width: 44px !important;
+    min-width: 44px !important;
+    max-width: 44px !important;
+    height: 44px !important;
+    min-height: 44px !important;
+    max-height: 44px !important;
+    border-radius: 50% !important;
+    background: #161c2d !important;
+    border: 1px solid rgba(201,168,76,0.4) !important;
+    box-shadow: 0 4px 16px rgba(0,0,0,0.7) !important;
+    z-index: 9999999 !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+    padding: 0 !important;
+    margin: 0 !important;
+  }
+  html body #root .sidebar-nav a[href="/lawyer/notifications"]:hover,
+  .sidebar-nav a[href="/lawyer/notifications"]:hover,
+  html body #root .sidebar-nav a[href="/lawyer/notifications"].active,
+  .sidebar-nav a[href="/lawyer/notifications"].active {
+    background: var(--gold) !important;
+    color: #0f111a !important;
+    border-color: var(--gold) !important;
+    box-shadow: 0 0 20px rgba(201,168,76,0.5) !important;
+  }
+  html body #root .sidebar-nav a[href="/lawyer/notifications"] .link-icon,
+  .sidebar-nav a[href="/lawyer/notifications"] .link-icon {
+    width: 22px !important;
+    height: 22px !important;
+    color: inherit !important;
+    display: flex !important;
+    align-items: center !important;
+    justify-content: center !important;
+  }
+  html body #root .sidebar-nav a[href="/lawyer/notifications"] .link-label,
+  .sidebar-nav a[href="/lawyer/notifications"] .link-label {
     display: none !important;
   }
 }
