@@ -22,6 +22,7 @@ const connectDB = require("./config/db");
 require("./utils/scheduler"); // 🔔 Initialize hearing notification scheduler
 
 const app = express();
+app.set("trust proxy", 1); // ✅ Required for cloud proxies (Render/Cloudflare) to prevent false rate-limit network errors
 const server = http.createServer(app);
 
 /* =======================
@@ -53,14 +54,18 @@ const ALLOWED = (
   .map(o => o.trim())
   .filter(Boolean)
 
-/* Always allow these in development */
+/* Always allow these in development and production */
 const DEV_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:5174",
   "http://localhost:5175",
   "http://127.0.0.1:5173",
   "http://127.0.0.1:5174",
-  "http://127.0.0.1:5175"
+  "http://127.0.0.1:5175",
+  "https://juris-saas.pages.dev",
+  "https://jurisbot-lawyer.pages.dev",
+  "https://jurisbot-admin.pages.dev",
+  "https://jurisbot.vercel.app"
 ]
 
 const ALL_ALLOWED = [
