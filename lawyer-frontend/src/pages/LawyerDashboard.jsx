@@ -236,6 +236,12 @@ export default function LawyerDashboard() {
           <div className="ld-topbar-right" style={{ display: 'flex', gap: '15px', alignItems: 'center' }}>
             {toast && <div className="ld-toast">{toast}</div>}
             <button 
+              onClick={() => window.dispatchEvent(new Event("open-pwa-modal"))}
+              style={{ background: "rgba(201, 168, 76, 0.2)", border: "1px solid #c9a84c", color: "#c9a84c", padding: "8px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: "bold", cursor: "pointer", display: "flex", gap: "6px", alignItems: "center" }}
+            >
+              <span>📲</span> Install App
+            </button>
+            <button 
               onClick={handleExportReport}
               style={{ background: 'transparent', border: '1px solid var(--ld-border)', color: 'var(--text-primary)', padding: '8px 16px', borderRadius: '6px', fontSize: '12px', fontWeight: 'bold', cursor: 'pointer', display: 'flex', gap: '6px', alignItems: 'center' }}
             >

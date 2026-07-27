@@ -13,16 +13,18 @@ export default function PwaInstallPill() {
       e.preventDefault();
       setDeferredPrompt(e);
     };
+    const openModalHandler = () => handleClickRef.current();
     window.addEventListener("beforeinstallprompt", pwaHandler);
+    window.addEventListener("open-pwa-modal", openModalHandler);
 
     return () => {
       window.removeEventListener("resize", handleResize);
       window.removeEventListener("beforeinstallprompt", pwaHandler);
+      window.removeEventListener("open-pwa-modal", openModalHandler);
     };
   }, []);
 
-  if (!isMobile && !deferredPrompt) return null;
-
+  const handleClickRef = React.useRef();
   const handleClick = () => {
     if (deferredPrompt) {
       deferredPrompt.prompt();
@@ -31,14 +33,17 @@ export default function PwaInstallPill() {
       setShowModal(true);
     }
   };
+  handleClickRef.current = handleClick;
+
+  if (!isMobile && !deferredPrompt) return null;
 
   return (
     <>
       <style>{`
         .pwa-floating-pill {
           position: fixed;
-          bottom: 80px;
-          right: 18px;
+          top: 68px;
+          right: 14px;
           z-index: 9999999;
           background: linear-gradient(135deg, #c9a84c 0%, #fcd34d 100%);
           color: #0f111a;

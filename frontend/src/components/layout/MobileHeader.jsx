@@ -12,6 +12,14 @@ export default function MobileHeader() {
       </div>
       
       <div className="mobile-actions-top">
+        <button 
+          className="mobile-icon-btn" 
+          onClick={() => window.dispatchEvent(new Event("open-pwa-modal"))}
+          style={{ width: "auto", padding: "4px 10px", background: "rgba(201, 168, 76, 0.2)", border: "1px solid #c9a84c", color: "#c9a84c", borderRadius: "14px", fontSize: "0.78rem", fontWeight: "bold", display: "flex", alignItems: "center", gap: "4px" }}
+          title="Install App"
+        >
+          <span>📲</span> <span style={{ fontSize: "0.75rem" }}>Install</span>
+        </button>
         <button className="mobile-icon-btn" onClick={() => navigate("/settings")}>
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
             <circle cx="12" cy="12" r="3"></circle>
