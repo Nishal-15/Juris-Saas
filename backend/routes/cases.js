@@ -224,7 +224,7 @@ const sanitized = {
     try {
       const citizen = await User.findById(
         req.user.id
-      ).select("incomeTier state city name phone")
+      ).select("incomeTier state city name phone email")
       const incomeTier =
         citizen?.incomeTier || "mid"
       const complexity  = detectComplexity(
@@ -263,7 +263,7 @@ const sanitized = {
       .select("name specialization rating " +
         "experience tier minFeePerCase " +
         "maxFeePerCase courtLevels city " +
-        "state photo")
+        "state photo email")
 
       /* FALLBACK 1 — relax tier, keep specialization filter */
       if (matchedLawyers.length < 3) {
@@ -280,7 +280,7 @@ const sanitized = {
         .select("name specialization rating " +
           "experience tier minFeePerCase " +
           "maxFeePerCase courtLevels city " +
-          "state photo")
+          "state photo email")
       }
 
       /* FALLBACK 2 — only if ZERO specialists found: top rated general advocates */
@@ -293,7 +293,7 @@ const sanitized = {
         .limit(3)
         .select("name specialization rating " +
           "experience tier minFeePerCase " +
-          "maxFeePerCase photo")
+          "maxFeePerCase photo email")
       }
 
       /* MEDIATION CHECK */
@@ -347,6 +347,29 @@ const sanitized = {
 
     const io = req.app.get("io");
     if (io) io.emit("marketplace-needs-refresh");
+
+    /* 📧 SEND EMAIL NOTIFICATIONS (CITIZEN & LAWYERS) */
+    try {
+      const { sendEmail, caseFiledCitizenTemplate, caseFiledLawyerNotificationTemplate } = require("../utils/mailer");
+      if (citizen?.email) {
+        sendEmail({
+          to: citizen.email,
+          ...caseFiledCitizenTemplate(citizen.name, newCase.title, newCase._id, newCase.urgency)
+        }).catch(e => console.error("Citizen case filed email failed:", e));
+      }
+      if (matchedLawyers && matchedLawyers.length > 0) {
+        for (const l of matchedLawyers) {
+          if (l.email) {
+            sendEmail({
+              to: l.email,
+              ...caseFiledLawyerNotificationTemplate(l.name, citizen?.name || "Client", newCase.title, newCase.urgency, newCase._id)
+            }).catch(e => console.error("Lawyer case alert email failed:", e));
+          }
+        }
+      }
+    } catch (mailErr) {
+      console.error("Case notification emails error:", mailErr.message);
+    }
 
     const specKeyword = (newCase.legalType || newCase.type || "").replace(" Law", "").replace(" Protection", "").trim();
     const enrichedLawyers = matchedLawyers.map(l => {

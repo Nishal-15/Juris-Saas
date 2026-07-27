@@ -16,6 +16,7 @@ import Subscription from "./pages/Subscription";
 import DocumentAnalyzer from "./pages/DocumentAnalyzer";
 import LegalDrafter from "./pages/LegalDrafter";
 import PendingVerification from "./pages/PendingVerification";
+import ResetPassword from "./auth/ResetPassword";
 import PwaInstallPill from "./components/PwaInstallPill";
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
@@ -100,6 +101,7 @@ export default function App() {
       {/* Auth */}
       <Route path="/" element={<Login />} />
       <Route path="/register" element={<Register />} />
+      <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/lawyer/verification-pending" element={<PendingVerification />} />
 
       {/* Lawyer Workspace */}

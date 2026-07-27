@@ -49,6 +49,17 @@ export default function Login() {
     }
   };
 
+  const handleForgotPassword = async () => {
+    const inputEmail = prompt("Please enter your registered email address to receive password reset instructions:", email);
+    if (!inputEmail) return;
+    try {
+      const res = await axios.post("/auth/forgot-password", { email: inputEmail });
+      alert(res.data.message || "Password reset instructions sent to your email!");
+    } catch (err) {
+      alert(err.response?.data?.message || "Failed to send reset email. Please verify your email address.");
+    }
+  };
+
   return (
     <div style={{ position: 'relative', background: '#0f111a', minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
       <style>{`
@@ -97,7 +108,10 @@ export default function Login() {
             placeholder="example@gmail.com" 
           />
           
-          <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: 600 }}>Password</label>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '8px' }}>
+            <label style={{ fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', fontWeight: 600 }}>Password</label>
+            <span onClick={handleForgotPassword} style={{ fontSize: '0.8rem', color: '#c9a84c', cursor: 'pointer', fontWeight: 600 }}>Forgot Password?</span>
+          </div>
           <div style={{ position: 'relative', marginBottom: '30px' }}>
             <input 
               type={showPassword ? "text" : "password"} 

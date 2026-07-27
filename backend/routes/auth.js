@@ -9,6 +9,7 @@ const path = require("path");
 const fs = require("fs");
 const { verifyLawyerCredentials } = require("../utils/aiVerifier");
 const { sendOtpEmail } = require("../utils/notifier");
+const { sendEmail, citizenWelcomeTemplate, lawyerWelcomeTemplate, passwordResetTemplate } = require("../utils/mailer");
 
 // 📁 UPLOAD CONFIG (Multi-field)
 const storage = multer.diskStorage({
@@ -121,6 +122,12 @@ if (name.trim().length < 2) {
     // 🤖 START BACKGROUND AI VERIFICATION
     verifyLawyerCredentials(lawyer._id, lawyer.certificateUrl);
 
+    // 📧 SEND WELCOME EMAIL TO LAWYER
+    sendEmail({
+      to: lawyer.email,
+      ...lawyerWelcomeTemplate(lawyer.name)
+    }).catch(e => console.error("Lawyer welcome email error:", e));
+
     const token = jwt.sign({ id: lawyer._id, role: "lawyer" }, process.env.JWT_SECRET, { expiresIn: "7d" });
     
     const userResponse = lawyer.toObject();
@@ -205,6 +212,12 @@ if (name.trim().length < 2) {
       role: role || "user",
       preferredLanguage: preferredLanguage || "en"
     });
+
+    // 📧 SEND WELCOME EMAIL TO CITIZEN
+    sendEmail({
+      to: user.email,
+      ...citizenWelcomeTemplate(user.name)
+    }).catch(e => console.error("Citizen welcome email error:", e));
 
     // ✅ GENERATE TOKEN DIRECTLY
     const token = jwt.sign(
@@ -538,5 +551,81 @@ router.post("/refresh-token",
     }
   }
 )
+
+/* FORGOT PASSWORD */
+router.post("/forgot-password", async (req, res) => {
+  try {
+    const { email, role } = req.body;
+    if (!email) return res.status(400).json({ message: "Please enter your email address." });
+    
+    const normalizedEmail = email.toLowerCase().trim();
+    let user = await User.findOne({ email: normalizedEmail });
+    let isLawyer = false;
+    
+    if (!user) {
+      user = await Lawyer.findOne({ email: normalizedEmail });
+      isLawyer = true;
+    }
+    
+    if (!user) {
+      return res.status(404).json({ message: "No account found with this email address." });
+    }
+    
+    const resetToken = jwt.sign(
+      { id: user._id, role: isLawyer ? "lawyer" : "user", type: "reset" },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+    
+    const origin = req.headers.origin || "https://jurisbot.in";
+    const resetLink = `${origin}/reset-password/${resetToken}`;
+    
+    sendEmail({
+      to: user.email,
+      ...passwordResetTemplate(resetLink, user.name)
+    }).catch(e => console.error("Password reset email error:", e));
+    
+    res.json({ message: "Password reset instructions have been sent to your email address!" });
+  } catch (err) {
+    console.error("Forgot Password Error:", err);
+    res.status(500).json({ message: "Failed to send reset email. Please try again." });
+  }
+});
+
+/* RESET PASSWORD */
+router.post("/reset-password", async (req, res) => {
+  try {
+    const { token, newPassword } = req.body;
+    if (!token || !newPassword) return res.status(400).json({ message: "Invalid request data." });
+    if (newPassword.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (err) {
+      return res.status(400).json({ message: "Reset link has expired or is invalid. Please request a new one." });
+    }
+    
+    if (decoded.type !== "reset") {
+      return res.status(400).json({ message: "Invalid token type." });
+    }
+    
+    let user = await User.findById(decoded.id);
+    if (!user) {
+      user = await Lawyer.findById(decoded.id);
+    }
+    
+    if (!user) return res.status(404).json({ message: "Account not found." });
+    
+    const salt = await bcrypt.genSalt(10);
+    user.password = await bcrypt.hash(newPassword, salt);
+    await user.save();
+    
+    res.json({ message: "Your password has been reset successfully! You can now log in." });
+  } catch (err) {
+    console.error("Reset Password Error:", err);
+    res.status(500).json({ message: "Server error while resetting password." });
+  }
+});
 
 module.exports = router;

@@ -251,6 +251,140 @@ const subscriptionConfirmTemplate = (
   </div>`
 })
 
+const citizenWelcomeTemplate = (userName) => ({
+  subject: "Welcome to JurisBot — Your 24/7 AI Legal Companion",
+  html: `<div style="${BASE_STYLE}">
+    <div style="background:${GOLD};padding:24px 30px">
+      <h2 style="margin:0;color:#0d0f1a;font-family:Georgia,serif">Welcome to JurisBot</h2>
+    </div>
+    <div style="padding:30px">
+      <p>Dear ${userName || "Citizen"},</p>
+      <p>Welcome to <strong>JurisBot</strong>! You now have access to India's premier AI legal guidance and advocate consultation platform.</p>
+      <div style="background:#1e293b;border-radius:12px;padding:18px;margin:20px 0;border:1px solid rgba(255,255,255,0.1)">
+        <h4 style="margin:0 0 10px 0;color:${GOLD}">What You Can Do Now:</h4>
+        <ul style="margin:0;padding-left:20px;color:#cbd5e1;line-height:1.6">
+          <li>💬 <strong>AI Legal Triage:</strong> Ask any legal question 24/7 in English or regional languages.</li>
+          <li>⚖️ <strong>File a Case:</strong> Connect with verified Supreme Court, High Court & District Court advocates.</li>
+          <li>🤝 <strong>Mediation & Arbitration:</strong> Settle disputes amicably without lengthy court proceedings.</li>
+        </ul>
+      </div>
+      <a href="https://jurisbot.in" style="display:inline-block;background:${GOLD};color:#0d0f1a;padding:12px 26px;border-radius:10px;font-weight:700;text-decoration:none;margin-top:10px">Open Citizen Portal</a>
+    </div>
+  </div>`
+});
+
+const lawyerWelcomeTemplate = (lawyerName) => ({
+  subject: "Welcome to JurisBot PRO — India's Elite Legal Network",
+  html: `<div style="${BASE_STYLE}">
+    <div style="background:linear-gradient(135deg, #c9a84c 0%, #a6852e 100%);padding:24px 30px">
+      <h2 style="margin:0;color:#0d0f1a;font-family:Georgia,serif">Welcome to JurisBot PRO</h2>
+    </div>
+    <div style="padding:30px">
+      <p>Dear Advocate ${lawyerName || "Practitioner"},</p>
+      <p>Welcome to <strong>JurisBot PRO</strong>. Your practitioner registration has been received and institutional Bar Council credential verification is in progress.</p>
+      <div style="background:#1e293b;border-radius:12px;padding:18px;margin:20px 0;border:1px solid rgba(255,255,255,0.1)">
+        <h4 style="margin:0 0 10px 0;color:${GOLD}">Next Steps for Advocates:</h4>
+        <ul style="margin:0;padding-left:20px;color:#cbd5e1;line-height:1.6">
+          <li>🛡️ <strong>AI Credential Check:</strong> Our AI verifies your enrollment certificate automatically in real-time.</li>
+          <li>🏛️ <strong>Live Marketplace:</strong> Receive client case requests and consultation appointments directly.</li>
+          <li>📄 <strong>AI Legal Drafter & Analyzer:</strong> Draft petitions, legal notices, and analyze case documents in seconds.</li>
+        </ul>
+      </div>
+      <a href="https://jurisbot.in/lawyer/dashboard" style="display:inline-block;background:${GOLD};color:#0d0f1a;padding:12px 26px;border-radius:10px;font-weight:700;text-decoration:none;margin-top:10px">Access Practitioner Console</a>
+    </div>
+  </div>`
+});
+
+const passwordResetTemplate = (resetLink, userName) => ({
+  subject: "JurisBot — Password Reset Request",
+  html: `<div style="${BASE_STYLE}">
+    <div style="background:#ef4444;padding:20px 30px">
+      <h2 style="margin:0;color:white;font-family:Georgia,serif">Password Reset</h2>
+    </div>
+    <div style="padding:30px">
+      <p>Hello ${userName || "User"},</p>
+      <p>We received a request to reset your password for your JurisBot account. Click the button below to set a new password:</p>
+      <div style="text-align:center;margin:24px 0">
+        <a href="${resetLink}" style="display:inline-block;background:${GOLD};color:#0d0f1a;padding:14px 28px;border-radius:10px;font-weight:800;text-decoration:none;font-size:1rem">Reset Password Now</a>
+      </div>
+      <p style="color:#94a3b8;font-size:0.85rem;word-break:break-all">
+        Or paste this link into your browser:<br>${resetLink}<br><br>
+        This link is valid for 15 minutes. If you did not request a password reset, please ignore this email.
+      </p>
+    </div>
+  </div>`
+});
+
+const caseFiledCitizenTemplate = (userName, caseTitle, caseId, urgencyClass = "Standard") => {
+  const isEmergency = String(urgencyClass).toUpperCase() === "EMERGENCY";
+  const isUrgent = String(urgencyClass).toUpperCase() === "URGENT";
+  const badgeColor = isEmergency ? "#ef4444" : isUrgent ? "#f59e0b" : "#10b981";
+  const badgeText = isEmergency ? "🚨 EMERGENCY LEGAL ACTION" : isUrgent ? "⚠️ URGENT PRIORITY" : "🟢 STANDARD TRACK";
+
+  return {
+    subject: `JurisBot — Case Filed Successfully [ID: #${String(caseId).slice(-6).toUpperCase()}]`,
+    html: `<div style="${BASE_STYLE}">
+      <div style="background:${GOLD};padding:24px 30px">
+        <h2 style="margin:0;color:#0d0f1a;font-family:Georgia,serif">Case Filing Confirmation</h2>
+      </div>
+      <div style="padding:30px">
+        <p>Dear ${userName || "Citizen"},</p>
+        <p>Your legal case has been successfully filed and indexed into the JurisBot marketplace for matching with verified advocates.</p>
+        
+        <div style="background:#1e293b;border-radius:12px;padding:20px;margin:20px 0;border:1px solid rgba(255,255,255,0.15)">
+          <div style="margin-bottom:12px">
+            <span style="background:${badgeColor};color:white;padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:800;letter-spacing:1px">${badgeText}</span>
+          </div>
+          <p style="margin:0 0 8px 0;color:#94a3b8;font-size:0.85rem">CASE TITLE</p>
+          <h3 style="margin:0 0 16px 0;color:white;font-size:1.15rem">${caseTitle}</h3>
+          <p style="margin:0 0 4px 0;color:#94a3b8;font-size:0.85rem">CASE REFERENCE NUMBER</p>
+          <strong style="color:${GOLD};font-size:1.05rem">#${String(caseId).slice(-6).toUpperCase()}</strong>
+        </div>
+
+        <p style="color:#cbd5e1;font-size:0.9rem">
+          ${isEmergency || isUrgent ? "Because your case is classified as <strong>high priority</strong>, verified advocates have been notified immediately." : "Verified advocates in your jurisdiction are reviewing your case filing."}
+        </p>
+        <a href="https://jurisbot.in" style="display:inline-block;background:${GOLD};color:#0d0f1a;padding:12px 26px;border-radius:10px;font-weight:700;text-decoration:none;margin-top:14px">Track Case Status</a>
+      </div>
+    </div>`
+  };
+};
+
+const caseFiledLawyerNotificationTemplate = (lawyerName, clientName, caseTitle, urgencyClass = "Standard", caseId) => {
+  const isEmergency = String(urgencyClass).toUpperCase() === "EMERGENCY";
+  const isUrgent = String(urgencyClass).toUpperCase() === "URGENT";
+  const badgeColor = isEmergency ? "#ef4444" : isUrgent ? "#f59e0b" : "#3b82f6";
+  const badgeText = isEmergency ? "🚨 EMERGENCY CASE FILED" : isUrgent ? "⚠️ URGENT CASE FILED" : "🏛️ NEW CLIENT CASE FILED";
+
+  return {
+    subject: `[${badgeText}] New Client Case in Your Jurisdiction: ${String(caseTitle).slice(0, 40)}...`,
+    html: `<div style="${BASE_STYLE}">
+      <div style="background:${isEmergency ? '#ef4444' : isUrgent ? '#f59e0b' : GOLD};padding:24px 30px">
+        <h2 style="margin:0;color:${isEmergency || isUrgent ? 'white' : '#0d0f1a'};font-family:Georgia,serif">${badgeText}</h2>
+      </div>
+      <div style="padding:30px">
+        <p>Dear Advocate ${lawyerName || "Practitioner"},</p>
+        <p>A new client case requiring representation has just been filed by <strong>${clientName}</strong> and matches your legal jurisdiction and specialization.</p>
+        
+        <div style="background:#1e293b;border-radius:12px;padding:20px;margin:20px 0;border:1px solid rgba(255,255,255,0.15)">
+          <div style="margin-bottom:12px">
+            <span style="background:${badgeColor};color:white;padding:5px 12px;border-radius:20px;font-size:0.75rem;font-weight:800;letter-spacing:1px">${badgeText}</span>
+          </div>
+          <p style="margin:0 0 6px 0;color:#94a3b8;font-size:0.85rem">CASE TITLE / SUMMARY</p>
+          <h3 style="margin:0 0 16px 0;color:white;font-size:1.1rem">${caseTitle}</h3>
+          <p style="margin:0 0 4px 0;color:#94a3b8;font-size:0.85rem">CLIENT / FILER</p>
+          <strong style="color:white;font-size:1rem">${clientName}</strong>
+        </div>
+
+        <p style="color:#cbd5e1;font-size:0.9rem">
+          ${isEmergency || isUrgent ? "⚡ <strong>Urgent action recommended:</strong> This case is flagged for immediate legal intervention. Claim it before another practitioner accepts it." : "Log in to your Practitioner Workspace to review the case documents and claim representation."}
+        </p>
+        <a href="https://jurisbot.in/lawyer/dashboard" style="display:inline-block;background:${GOLD};color:#0d0f1a;padding:14px 28px;border-radius:10px;font-weight:800;text-decoration:none;margin-top:14px">Review & Claim Case #${String(caseId).slice(-6).toUpperCase()}</a>
+      </div>
+    </div>`
+  };
+};
+
 module.exports = {
   sendEmail,
   otpTemplate,
@@ -258,5 +392,10 @@ module.exports = {
   lawyerRejectedTemplate,
   caseAssignedTemplate,
   hearingReminderTemplate,
-  subscriptionConfirmTemplate
+  subscriptionConfirmTemplate,
+  citizenWelcomeTemplate,
+  lawyerWelcomeTemplate,
+  passwordResetTemplate,
+  caseFiledCitizenTemplate,
+  caseFiledLawyerNotificationTemplate
 }
