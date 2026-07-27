@@ -5,6 +5,11 @@ const LawyerSchema = new mongoose.Schema({
   email: { type: String, required: true, unique: true },
   password: { type: String, required: true },
   role: { type: String, default: "lawyer" },
+  barId: { type: String, default: null },
+  certificateUrl: { type: String, default: null },
+  avatar: { type: String, default: null },
+  photo: { type: String, default: null },
+  verificationStatus: { type: String, default: "pending" },
   specialization: { type: String },
   experience: { type: String },
   fees: { type: String },
@@ -12,18 +17,15 @@ const LawyerSchema = new mongoose.Schema({
   location: { type: String, default: "NEW DELHI, INDIA" },
   isVerified: { type: Boolean, default: false },
   phone: { type: String, default: null },
+  preferredLanguage: { type: String, default: "en" },
   tier: {
     type: String,
     default: "tier3"
   },
   minFeePerCase: { type: Number, default: 0 },
   maxFeePerCase: { type: Number, default: 0 },
-  courtLevels: [{
-    type: String
-  }],
-  caseComplexity: [{
-    type: String
-  }],
+  courtLevels: [{ type: String }],
+  caseComplexity: [{ type: String }],
   state: { type: String, default: null },
   city:  { type: String, default: null },
   subscriptionTier: { 
