@@ -133,12 +133,12 @@ export default function PendingVerification() {
         </h1>
         <p style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.95rem', lineHeight: 1.6, margin: '0 0 24px 0' }}>
           {status === "verified" ? (
-            "Your Bar Council enrollment certificate and practice credentials have been authenticated. You are being redirected to your Practitioner Workspace..."
+            "Your Bar Council enrollment certificate and practice credentials have been authenticated by the Institutional Admin. You are being redirected to your Practitioner Workspace..."
           ) : status === "rejected" ? (
-            "We were unable to automatically verify your enrollment certificate against State Bar Council records. Please ensure your document is legible or contact institutional support."
+            "We were unable to verify your enrollment certificate against State Bar Council records. Please ensure your document is legible or contact institutional support."
           ) : (
             <>
-              Your application with Bar Council ID <strong style={{ color: '#c9a84c' }}>{user.barId || "Submitted"}</strong> is undergoing rigorous automated credential analysis. Our AI verifier checks enrollment certificates in real-time.
+              Your application with Bar Council ID <strong style={{ color: '#c9a84c' }}>{user.barId || "Submitted"}</strong> has been scanned by our AI verifier and is currently <strong style={{ color: '#fcd34d' }}>awaiting final Institutional Admin approval</strong>. You will gain full access once an administrator verifies your credentials.
             </>
           )}
         </p>

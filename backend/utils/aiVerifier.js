@@ -31,12 +31,13 @@ const verifyLawyerCredentials = async (userId, filePath) => {
     }
 
     if (mockExtraction.isDocumentValid) {
-       lawyer.isVerified = true;
-       lawyer.verificationStatus = "verified";
-       console.log(`✅ AI Verified: ${lawyer.email}`);
+       lawyer.isVerified = false;
+       lawyer.verificationStatus = "pending";
+       console.log(`✅ AI Analysis Complete for ${lawyer.email}. Status: Pending Admin Institutional Approval.`);
     } else {
-       lawyer.verificationStatus = "rejected";
-       console.log(`❌ AI Rejected: ${lawyer.email}`);
+       lawyer.isVerified = false;
+       lawyer.verificationStatus = "pending";
+       console.log(`⚠ AI Analysis Flagged for ${lawyer.email}. Status: Pending Admin Institutional Approval.`);
     }
 
     await lawyer.save();
