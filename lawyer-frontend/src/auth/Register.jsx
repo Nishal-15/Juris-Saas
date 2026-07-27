@@ -16,6 +16,7 @@ export default function Register() {
   });
   const [file, setFile] = useState(null);
   const [avatar, setAvatar] = useState(null);
+  const [avatarPreview, setAvatarPreview] = useState(null);
   const [showPass, setShowPass] = useState(false);
   const [agreed, setAgreed] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -24,7 +25,11 @@ export default function Register() {
   const navigate = useNavigate();
 
   const handleFile = (e) => setFile(e.target.files[0]);
-  const handleAvatar = (e) => setAvatar(e.target.files[0]);
+  const handleAvatar = (e) => {
+    const f = e.target.files[0];
+    setAvatar(f);
+    if (f) setAvatarPreview(URL.createObjectURL(f));
+  };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
@@ -74,11 +79,16 @@ export default function Register() {
         .form-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; width: 100%; margin-bottom: 20px; }
         @media (max-width: 768px) { .form-grid { grid-template-columns: 1fr; gap: 15px; } }
 
-        /* Custom File Input */
-        .file-upload-wrapper { position: relative; width: 100%; height: 48px; border-radius: 10px; background: rgba(255,255,255,0.06); border: 1.5px dashed rgba(255,255,255,0.12); overflow: hidden; display: flex; align-items: center; justify-content: center; transition: all 0.3s; cursor: pointer; }
-        .file-upload-wrapper:hover { border-color: rgba(201,168,76,0.6); }
-        .file-upload-wrapper input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
-        .file-dummy { color: rgba(255,255,255,0.5); font-size: 0.85rem; font-family: 'Inter', sans-serif; }
+        /* Rich File Upload Card */
+        .upload-card { position: relative; width: 100%; border-radius: 14px; background: rgba(255,255,255,0.04); border: 1.5px dashed rgba(255,255,255,0.15); overflow: hidden; display: flex; flex-direction: column; align-items: center; justify-content: center; transition: all 0.3s; cursor: pointer; padding: 18px 12px; box-sizing: border-box; gap: 8px; min-height: 120px; }
+        .upload-card:hover { border-color: rgba(201,168,76,0.7); background: rgba(201,168,76,0.06); }
+        .upload-card.has-file { border-color: rgba(201,168,76,0.5); background: rgba(201,168,76,0.08); }
+        .upload-card input[type="file"] { position: absolute; top: 0; left: 0; width: 100%; height: 100%; opacity: 0; cursor: pointer; }
+        .upload-icon { font-size: 2rem; line-height: 1; }
+        .upload-title { font-size: 0.8rem; font-weight: 700; color: rgba(255,255,255,0.75); font-family: 'Inter', sans-serif; text-align: center; }
+        .upload-sub { font-size: 0.7rem; color: rgba(255,255,255,0.35); font-family: 'Inter', sans-serif; text-align: center; }
+        .upload-fname { font-size: 0.75rem; color: #c9a84c; font-weight: 600; font-family: 'Inter', sans-serif; text-align: center; max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+        .upload-preview { width: 60px; height: 60px; object-fit: cover; border-radius: 8px; border: 2px solid rgba(201,168,76,0.5); }
       `}</style>
 
       {/* Orbs */}
@@ -135,22 +145,46 @@ export default function Register() {
               <input type="text" required className="login-input" value={formData.specialization} onChange={e => setFormData({ ...formData, specialization: e.target.value })} placeholder="Criminal, Corporate, etc." />
             </div>
 
+            {/* Professional Portrait Upload */}
             <div>
               <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: 600 }}>Professional Portrait *</label>
-              <div className="file-upload-wrapper">
+              <div className={`upload-card ${avatar ? 'has-file' : ''}`}>
                 <input type="file" required onChange={handleAvatar} accept="image/*" />
-                <div className="file-dummy">
-                  <span>{avatar ? avatar.name : "Select Portrait (Image)"}</span>
-                </div>
+                {avatar && avatarPreview ? (
+                  <>
+                    <img src={avatarPreview} alt="preview" className="upload-preview" />
+                    <span className="upload-fname">✓ {avatar.name}</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="upload-icon">🤳</span>
+                    <span className="upload-title">Click to upload your portrait</span>
+                    <span className="upload-sub">Accepted: JPG, PNG · Max 5MB</span>
+                    <span className="upload-sub" style={{ fontStyle: 'italic', color: 'rgba(201,168,76,0.6)' }}>Used for your public practitioner profile</span>
+                  </>
+                )}
               </div>
             </div>
+
+            {/* Enrollment Certificate Upload */}
             <div>
-              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: 600 }}>Enrollment Certificate *</label>
-              <div className="file-upload-wrapper">
+              <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: 600 }}>Enrollment Certificate / ID Card *</label>
+              <div className={`upload-card ${file ? 'has-file' : ''}`}>
                 <input type="file" required onChange={handleFile} accept=".pdf,.jpg,.jpeg,.png" />
-                <div className="file-dummy">
-                  <span>{file ? file.name : "Upload Document (PDF/Image)"}</span>
-                </div>
+                {file ? (
+                  <>
+                    <span className="upload-icon">{file.name.endsWith('.pdf') ? '📄' : '🪪'}</span>
+                    <span className="upload-fname">✓ {file.name}</span>
+                    <span className="upload-sub">Click to replace</span>
+                  </>
+                ) : (
+                  <>
+                    <span className="upload-icon">🪪</span>
+                    <span className="upload-title">Upload Enrollment Certificate or Bar ID Card</span>
+                    <span className="upload-sub">Accepted: PDF, JPG, PNG · Max 5MB</span>
+                    <span className="upload-sub" style={{ fontStyle: 'italic', color: 'rgba(201,168,76,0.6)' }}>Required for institutional Bar Council verification</span>
+                  </>
+                )}
               </div>
             </div>
           </div>
