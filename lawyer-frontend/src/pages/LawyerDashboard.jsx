@@ -93,6 +93,11 @@ export default function LawyerDashboard() {
   };
 
   useEffect(() => {
+    if (user && user.verificationStatus !== "verified") {
+      navigate("/lawyer/verification-pending");
+      return;
+    }
+
     if (user?._id) {
       socket.emit("join", user._id);
       console.log("Joined real-time room:", user._id);

@@ -1,4 +1,5 @@
 const User = require("../models/User");
+const Lawyer = require("../models/Lawyer");
 
 /**
  * MOCK AI VERIFICATION WORKER
@@ -20,8 +21,14 @@ const verifyLawyerCredentials = async (userId, filePath) => {
       barIdStatus: "ACTIVE"
     };
 
-    const lawyer = await User.findById(userId);
-    if (!lawyer) return;
+    let lawyer = await Lawyer.findById(userId);
+    if (!lawyer) {
+      lawyer = await User.findById(userId);
+    }
+    if (!lawyer) {
+      console.log(`❌ Lawyer document not found in DB for ID: ${userId}`);
+      return;
+    }
 
     if (mockExtraction.isDocumentValid) {
        lawyer.isVerified = true;

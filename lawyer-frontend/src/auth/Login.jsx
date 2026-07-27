@@ -27,7 +27,11 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      navigate("/lawyer/dashboard");
+      if (res.data.user && res.data.user.verificationStatus !== "verified") {
+        navigate("/lawyer/verification-pending");
+      } else {
+        navigate("/lawyer/dashboard");
+      }
 
     } catch (err) {
       setError("Invalid credentials. Access denied.");

@@ -43,11 +43,15 @@ export default function Register() {
       if (file) data.append("certificate", file);
       if (avatar) data.append("avatar", avatar);
 
-      const res = await axios.post("/auth/register-lawyer", data, {
-        headers: { "Content-Type": "multipart/form-data" }
-      });
-      alert(res.data.message);
-      navigate("/");
+      const res = await axios.post("/auth/register-lawyer", data);
+      if (res.data.token && res.data.user) {
+        localStorage.setItem("token", res.data.token);
+        localStorage.setItem("user", JSON.stringify(res.data.user));
+        navigate("/lawyer/verification-pending");
+      } else {
+        alert(res.data.message);
+        navigate("/");
+      }
     } catch (err) {
       setError(err.response?.data?.message || err.message || "Registration failed");
     } finally {

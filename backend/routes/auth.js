@@ -367,9 +367,9 @@ await user.save()
 /* GET USER INFO */
 router.get("/user/:id", async (req, res) => {
   try {
-    let user = await User.findById(req.params.id).select("name role");
+    let user = await User.findById(req.params.id).select("-password");
     if (!user) {
-      user = await Lawyer.findById(req.params.id).select("name role");
+      user = await Lawyer.findById(req.params.id).select("-password");
     }
     
     if (!user) return res.status(404).json({ message: "User not found" });
