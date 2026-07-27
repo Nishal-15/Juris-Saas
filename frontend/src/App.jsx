@@ -17,6 +17,7 @@ import RealTimeChat from "./pages/RealTimeChat";
 import MessagesList from "./pages/MessagesList";
 import VideoCall from "./pages/VideoCall";
 import GlobalCallNotification from "./components/layout/GlobalCallNotification";
+import PwaInstallPill from "./components/common/PwaInstallPill";
 import Terms from "./pages/Terms";
 import CaseDetails from "./pages/CaseDetails";
 import Alerts from "./pages/Alerts";
@@ -107,6 +108,7 @@ export default function App() {
           </button>
         </div>
       )}
+      <PwaInstallPill />
       <GlobalCallNotification />
       <Routes>
     <Route path="/" element={<Login />} />

@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { NavLink, useNavigate } from "react-router-dom";
 import "./sidebar.css";
 
@@ -80,7 +80,18 @@ const NAV_ITEMS = [
 export default function Sidebar() {
   const navigate = useNavigate();
   const [collapsed, setCollapsed] = useState(false);
+  const [deferredPrompt, setDeferredPrompt] = useState(null);
+  const [showPwaModal, setShowPwaModal] = useState(false);
   const user = JSON.parse(localStorage.getItem("user") || "{}");
+
+  useEffect(() => {
+    const pwaHandler = (e) => {
+      e.preventDefault();
+      setDeferredPrompt(e);
+    };
+    window.addEventListener("beforeinstallprompt", pwaHandler);
+    return () => window.removeEventListener("beforeinstallprompt", pwaHandler);
+  }, []);
 
   const logout = () => {
     localStorage.clear();
@@ -145,6 +156,22 @@ export default function Sidebar() {
         ))}
 
         <div className="sidebar-section-title" style={{ marginTop: "12px" }}>{collapsed ? "—" : "Account"}</div>
+        <button
+          className="sidebar-link"
+          onClick={() => {
+            if (deferredPrompt) {
+              deferredPrompt.prompt();
+              deferredPrompt.userChoice.then(() => setDeferredPrompt(null));
+            } else {
+              setShowPwaModal(true);
+            }
+          }}
+          style={{ background: "rgba(201, 168, 76, 0.15)", border: "1px solid rgba(201, 168, 76, 0.4)", marginTop: "6px", width: "100%", cursor: "pointer", textAlign: "left" }}
+          title={collapsed ? "Install Lawyer PWA" : ""}
+        >
+          <span className="link-icon" style={{ fontSize: "1.2rem" }}>📲</span>
+          {!collapsed && <span className="link-label fade-in" style={{ color: "#c9a84c", fontWeight: 700 }}>Install PWA App</span>}
+        </button>
       </nav>
 
       {/* User Footer */}
@@ -173,6 +200,40 @@ export default function Sidebar() {
           {!collapsed && <span className="fade-in">Sign Out</span>}
         </button>
       </div>
+
+      {showPwaModal && (
+        <div 
+          onClick={() => setShowPwaModal(false)}
+          style={{ position: "fixed", inset: 0, background: "rgba(0,0,0,0.85)", backdropFilter: "blur(8px)", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 999999, padding: "20px" }}
+        >
+          <div 
+            onClick={(e) => e.stopPropagation()}
+            style={{ background: "#131722", border: "1px solid #c9a84c", borderRadius: "18px", padding: "24px", maxWidth: "420px", width: "100%", color: "#fff", textAlign: "left", boxShadow: "0 20px 50px rgba(0,0,0,0.8)" }}
+          >
+            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px" }}>
+              <h3 style={{ margin: 0, color: "#c9a84c", fontSize: "1.2rem", fontFamily: "'Playfair Display', serif" }}>📲 Install JurisBot Lawyer PWA</h3>
+              <button onClick={() => setShowPwaModal(false)} style={{ background: "none", border: "none", color: "#aaa", fontSize: "1.2rem", cursor: "pointer" }}>✕</button>
+            </div>
+            <p style={{ fontSize: "0.95rem", lineHeight: 1.5, color: "#ccc", marginBottom: "16px" }}>
+              Install JurisBot Lawyer Dashboard directly to your mobile home screen or desktop for fast, offline practice management:
+            </p>
+            <div style={{ background: "rgba(255,255,255,0.04)", padding: "12px", borderRadius: "10px", marginBottom: "12px", fontSize: "0.88rem", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <strong style={{ color: "#fff" }}>🤖 Android / Chrome:</strong>
+              <div style={{ color: "#aaa", marginTop: "4px" }}>Tap browser menu (⋮) → <span style={{ color: "#c9a84c" }}>Install app</span> or <span style={{ color: "#c9a84c" }}>Add to Home screen</span>.</div>
+            </div>
+            <div style={{ background: "rgba(255,255,255,0.04)", padding: "12px", borderRadius: "10px", marginBottom: "20px", fontSize: "0.88rem", border: "1px solid rgba(255,255,255,0.08)" }}>
+              <strong style={{ color: "#fff" }}>🍎 iOS / Safari:</strong>
+              <div style={{ color: "#aaa", marginTop: "4px" }}>Tap Share button (⎋) → Scroll down and tap <span style={{ color: "#c9a84c" }}>Add to Home Screen ➕</span>.</div>
+            </div>
+            <button 
+              onClick={() => setShowPwaModal(false)} 
+              style={{ width: "100%", background: "linear-gradient(135deg, #c9a84c 0%, #a6852e 100%)", border: "none", color: "#000", fontWeight: 800, padding: "12px", borderRadius: "10px", cursor: "pointer" }}
+            >
+              Got it!
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

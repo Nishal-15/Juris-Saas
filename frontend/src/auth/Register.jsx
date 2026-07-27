@@ -4,9 +4,11 @@ import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
 import Visibility from "@mui/icons-material/Visibility";
 import VisibilityOff from "@mui/icons-material/VisibilityOff";
+import LanguageModal, { ALL_LANGUAGES } from "../components/common/LanguageModal";
 
 export default function Register() {
   const [form, setForm] = useState({ preferredLanguage: "en" });
+  const [showLangModal, setShowLangModal] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [loading, setLoading] = useState(false);
   const [showTerms, setShowTerms] = useState(false);
@@ -100,31 +102,17 @@ export default function Register() {
           <input type="email" required className="login-input" style={{ marginBottom: '20px' }} value={form.email || ""} onChange={e => setForm({ ...form, email: e.target.value })} placeholder="example@gmail.com" />
 
           <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: 600 }}>Preferred Language *</label>
-          <select required className="login-input" style={{ marginBottom: '20px' }} value={form.preferredLanguage} onChange={e => setForm({ ...form, preferredLanguage: e.target.value })}>
-            <option value="en">English (🇬🇧)</option>
-            <option value="hi">हिंदी (Hindi) 🇮🇳</option>
-            <option value="bn">বাংলা (Bengali) 🇮🇳</option>
-            <option value="te">తెలుగు (Telugu) 🇮🇳</option>
-            <option value="mr">मराठी (Marathi) 🇮🇳</option>
-            <option value="ta">தமிழ் (Tamil) 🇮🇳</option>
-            <option value="ur">اردو (Urdu) 🇮🇳</option>
-            <option value="gu">ગુજરાતી (Gujarati) 🇮🇳</option>
-            <option value="kn">ಕನ್ನಡ (Kannada) 🇮🇳</option>
-            <option value="ml">മലയാളം (Malayalam) 🇮🇳</option>
-            <option value="or">ଓଡ଼ିଆ (Odia) 🇮🇳</option>
-            <option value="pa">ਪੰਜਾਬੀ (Punjabi) 🇮🇳</option>
-            <option value="as">অসমীয়া (Assamese) 🇮🇳</option>
-            <option value="mai">मैथिली (Maithili) 🇮🇳</option>
-            <option value="sat">ᱥᱟᱱᱛᱟᱲᱤ (Santali) 🇮🇳</option>
-            <option value="ks">کٲشُر (Kashmiri) 🇮🇳</option>
-            <option value="ne">नेपाली (Nepali) 🇮🇳</option>
-            <option value="kok">कोंकणी (Konkani) 🇮🇳</option>
-            <option value="sd">سنڌي (Sindhi) 🇮🇳</option>
-            <option value="doi">डोगरी (Dogri) 🇮🇳</option>
-            <option value="mni">ꯃꯩꯇꯩꯂꯣꯟ (Manipuri) 🇮🇳</option>
-            <option value="brx">बड़ो (Bodo) 🇮🇳</option>
-            <option value="sa">संस्कृतम् (Sanskrit) 🇮🇳</option>
-          </select>
+          <button
+            type="button"
+            className="login-input"
+            style={{ marginBottom: '20px', display: 'flex', alignItems: 'center', justifyContent: 'space-between', cursor: 'pointer', textAlign: 'left', width: '100%' }}
+            onClick={() => setShowLangModal(true)}
+          >
+            <span>
+              {ALL_LANGUAGES.find(l => l.code === form.preferredLanguage)?.flag || "🇬🇧"} {ALL_LANGUAGES.find(l => l.code === form.preferredLanguage)?.native || "English"} ({ALL_LANGUAGES.find(l => l.code === form.preferredLanguage)?.name || "English"})
+            </span>
+            <span style={{ fontSize: '0.8rem', color: '#c9a84c' }}>▾</span>
+          </button>
           
           <label style={{ display: 'block', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.8px', color: 'rgba(255,255,255,0.5)', marginBottom: '8px', fontWeight: 600 }}>Password *</label>
           <div style={{ position: 'relative', marginBottom: '20px' }}>
@@ -168,6 +156,13 @@ export default function Register() {
           </div>
         </div>
       )}
+
+      <LanguageModal
+        isOpen={showLangModal}
+        onClose={() => setShowLangModal(false)}
+        selectedLang={form.preferredLanguage}
+        onSelect={(code) => setForm({ ...form, preferredLanguage: code })}
+      />
 
     </div>
   );

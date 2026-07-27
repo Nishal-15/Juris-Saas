@@ -15,6 +15,7 @@ import Notifications from "./pages/Notifications";
 import Subscription from "./pages/Subscription";
 import DocumentAnalyzer from "./pages/DocumentAnalyzer";
 import LegalDrafter from "./pages/LegalDrafter";
+import PwaInstallPill from "./components/PwaInstallPill";
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
   
@@ -91,6 +92,7 @@ export default function App() {
           </button>
         </div>
       )}
+      <PwaInstallPill />
       <GlobalCallNotification />
     <Routes>
 
