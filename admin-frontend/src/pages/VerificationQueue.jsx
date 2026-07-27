@@ -1,18 +1,32 @@
 import React, { useState, useEffect } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
-import { UserCheck, ShieldAlert, CheckCircle, XCircle, FileText, User, Mail, Search, RefreshCw } from 'lucide-react';
+import { UserCheck, ShieldAlert, CheckCircle, XCircle, FileText, Mail, Search, RefreshCw, X, CreditCard } from 'lucide-react';
 
 const COLORS = ["#c9a84c","#3b82f6","#10b981","#8b5cf6","#ef4444","#f59e0b"];
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+/** Convert a local disk path like backend\uploads\... → http://localhost:5000/uploads/... */
+function buildFileUrl(rawPath) {
+  if (!rawPath) return null;
+  // If it already starts with http, return as-is
+  if (rawPath.startsWith("http")) return rawPath;
+  // Normalize backslashes → forward slashes
+  const normalized = rawPath.replace(/\\/g, "/");
+  // Extract path from 'uploads/' onward
+  const idx = normalized.indexOf("uploads/");
+  if (idx === -1) return null;
+  return `${API_BASE}/${normalized.slice(idx)}`;
+}
 
 export default function VerificationQueue() {
   const [pending, setPending] = useState([]);
   const [loading, setLoading] = useState(true);
-  
   const [search, setSearch] = useState("");
   const [acting, setActing] = useState({});
   const [confirmId, setConfirmId] = useState(null);
-  
+  const [lightbox, setLightbox] = useState(null); // { url, type: 'image'|'pdf' }
+
   const toast = useToast();
 
   useEffect(() => {
@@ -20,13 +34,14 @@ export default function VerificationQueue() {
   }, []);
 
   const fetchPending = async () => {
+    setLoading(true);
     try {
       const res = await API.get('/admin/pending-lawyers');
       setPending(res.data);
-      setLoading(false);
     } catch (err) {
       console.error("Fetch Pending Error:", err);
       toast.error("Failed to load queue");
+    } finally {
       setLoading(false);
     }
   };
@@ -36,110 +51,184 @@ export default function VerificationQueue() {
       setConfirmId(`${id}-${status}`);
       return;
     }
-    
     setActing(prev => ({ ...prev, [id]: true }));
     setConfirmId(null);
-    
     try {
       await API.patch(`/admin/verify-lawyer/${id}`, { status });
-      toast.success(`Lawyer ${status === 'verified' ? 'approved' : 'rejected'}`);
+      toast.success(`Lawyer ${status === 'verified' ? 'approved ✅' : 'rejected ❌'}`);
       fetchPending();
     } catch (err) {
-      toast.error(err.response?.data?.message || err.message || "Verification failed");
+      toast.error(err.response?.data?.message || "Verification failed");
     } finally {
       setActing(prev => ({ ...prev, [id]: false }));
     }
   };
 
+  const openCertificate = (rawPath) => {
+    const url = buildFileUrl(rawPath);
+    if (!url) { toast.error("Certificate URL not available."); return; }
+    const isPdf = rawPath.toLowerCase().endsWith(".pdf");
+    setLightbox({ url, type: isPdf ? "pdf" : "image" });
+  };
+
   const filtered = pending.filter(l => {
     const s = search.toLowerCase();
-    return !search || 
+    return !search ||
       (l.name || "").toLowerCase().includes(s) ||
       (l.email || "").toLowerCase().includes(s) ||
-      (l.specialization || "").toLowerCase().includes(s);
+      (l.specialization || "").toLowerCase().includes(s) ||
+      (l.barId || "").toLowerCase().includes(s);
   });
 
   return (
     <div>
       <style>{`
-        .search-wrap { position: relative; max-width: 400px; margin-bottom: 24px; }
-        .search-wrap input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); outline: none; transition: var(--transition); }
+        .search-wrap { position: relative; max-width: 440px; margin-bottom: 24px; }
+        .search-wrap input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); outline: none; transition: var(--transition); box-sizing: border-box; }
         .search-wrap input:focus { border-color: var(--gold); }
         .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        
+
         .lawyer-card {
           background: var(--bg-card);
           border: 1px solid var(--border);
-          border-radius: 12px;
-          padding: 24px;
+          border-radius: 14px;
+          padding: 22px;
           transition: transform 0.2s, box-shadow 0.2s;
         }
-        .lawyer-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 25px rgba(0,0,0,0.05);
-        }
+        .lawyer-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.07); }
+
         .lawyer-details-grid {
           display: grid;
           grid-template-columns: 1fr 1fr;
-          gap: 16px;
-          margin: 20px 0;
-          padding: 16px;
+          gap: 12px;
+          margin: 16px 0;
+          padding: 14px;
           background: var(--bg-base);
-          border-radius: 8px;
+          border-radius: 10px;
         }
-        .detail-item { display: flex; flex-direction: column; gap: 4px; }
-        .detail-label { font-size: 0.75rem; color: var(--text-muted); text-transform: uppercase; font-weight: 600; letter-spacing: 0.5px; }
+        .detail-item { display: flex; flex-direction: column; gap: 3px; }
+        .detail-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.6px; }
         .detail-val { font-size: 0.85rem; color: var(--text-primary); font-weight: 500; }
+        .bar-id-badge {
+          display: inline-flex; align-items: center; gap: 6px;
+          background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.4);
+          color: #c9a84c; padding: 4px 10px; border-radius: 20px;
+          font-size: 0.75rem; font-weight: 700; letter-spacing: 0.4px;
+          margin-top: 4px;
+        }
+
+        /* Lightbox */
+        .lightbox-overlay {
+          position: fixed; inset: 0; background: rgba(0,0,0,0.88); z-index: 9999;
+          display: flex; align-items: center; justify-content: center;
+        }
+        .lightbox-inner {
+          position: relative; max-width: 90vw; max-height: 90vh;
+          background: #111; border-radius: 16px; overflow: hidden;
+          border: 1px solid rgba(255,255,255,0.1);
+          box-shadow: 0 40px 80px rgba(0,0,0,0.8);
+        }
+        .lightbox-close {
+          position: absolute; top: 12px; right: 12px; z-index: 10;
+          background: rgba(0,0,0,0.7); border: none; color: white;
+          width: 36px; height: 36px; border-radius: 50%; cursor: pointer;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1rem; transition: background 0.2s;
+        }
+        .lightbox-close:hover { background: rgba(239,68,68,0.8); }
+
+        .cert-btn {
+          display: inline-flex; align-items: center; gap: 7px;
+          padding: 9px 14px;
+          background: linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.08));
+          border: 1px solid rgba(201,168,76,0.4);
+          border-radius: 8px; font-size: 0.82rem;
+          color: #c9a84c; font-weight: 700; cursor: pointer;
+          transition: all 0.2s; margin-bottom: 18px;
+        }
+        .cert-btn:hover { background: rgba(201,168,76,0.25); transform: translateY(-1px); }
+        
+        .avatar-ring {
+          width: 56px; height: 56px; border-radius: 50%;
+          border: 2px solid; overflow: hidden; flex-shrink: 0;
+          display: flex; align-items: center; justify-content: center;
+          font-size: 1.3rem; font-weight: 700;
+        }
+
+        @keyframes fadeIn { from { opacity:0; transform:scale(0.97); } to { opacity:1; transform:scale(1); } }
+        .lightbox-inner { animation: fadeIn 0.2s ease-out; }
       `}</style>
-      
+
       <header className="page-header" style={{ marginBottom: '20px' }}>
-        <h2>Identity & Credentials Verification</h2>
+        <h2>Identity &amp; Credentials Verification</h2>
       </header>
 
-      <div className="search-wrap">
-        <Search size={18} />
-        <input 
-          type="text" 
-          placeholder="Search by name, email, or specialization..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
+        <div className="search-wrap" style={{ marginBottom: 0, flex: 1 }}>
+          <Search size={18} />
+          <input
+            type="text"
+            placeholder="Search by name, email, Bar ID, or specialization..."
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <button
+          onClick={fetchPending}
+          style={{ display:'flex', alignItems:'center', gap:'6px', padding:'10px 16px', background:'var(--bg-card)', border:'1px solid var(--border)', borderRadius:'8px', cursor:'pointer', color:'var(--text-primary)', fontSize:'0.85rem', fontWeight:600 }}
+        >
+          <RefreshCw size={15} /> Refresh
+        </button>
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', color: 'var(--text-muted)' }}>
-          <RefreshCw size={32} className="animate-spin" style={{ marginBottom: '16px', color: 'var(--gold)' }} />
-          <p>Loading queue...</p>
+        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px', color: 'var(--text-muted)' }}>
+          <RefreshCw size={36} className="animate-spin" style={{ marginBottom: '16px', color: 'var(--gold)' }} />
+          <p style={{ fontWeight: 600 }}>Loading verification queue...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '3rem', marginBottom: '16px' }}>✅</div>
-          <p>{search ? "No matching lawyers found." : "No verification requests pending."}</p>
+        <div className="empty-state" style={{ padding: '80px', textAlign: 'center', color: 'var(--text-muted)' }}>
+          <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>✅</div>
+          <p style={{ fontWeight: 600 }}>{search ? "No matching lawyers found." : "No pending verification requests."}</p>
         </div>
       ) : (
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(340px, 1fr))', gap: '20px' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(360px, 1fr))', gap: '20px' }}>
           {filtered.map(l => {
             const charCode = (l.name || "A").charCodeAt(0);
             const color = COLORS[charCode % COLORS.length];
             const isActing = acting[l._id];
-            
+            const avatarUrl = buildFileUrl(l.avatar || l.photo);
+            const certUrl = l.certificateUrl;
+
             return (
               <div key={l._id} className="lawyer-card" style={{ borderTop: `3px solid ${color}` }}>
-                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between' }}>
-                  <div style={{ display: 'flex', gap: '16px', alignItems: 'center' }}>
-                    <div style={{ width: '52px', height: '52px', borderRadius: '50%', background: `${color}15`, color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: '1.2rem', fontWeight: 700, flexShrink: 0 }}>
-                      {(l.name || "U")[0].toUpperCase()}
+
+                {/* Header: Avatar + Name + Badge */}
+                <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', marginBottom: '4px' }}>
+                  <div style={{ display: 'flex', gap: '14px', alignItems: 'center' }}>
+                    <div className="avatar-ring" style={{ borderColor: color, background: `${color}18`, color }}>
+                      {avatarUrl ? (
+                        <img src={avatarUrl} alt={l.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                      ) : (
+                        (l.name || "U")[0].toUpperCase()
+                      )}
                     </div>
                     <div>
-                      <h3 style={{ margin: '0 0 4px 0', fontSize: '1.1rem', color: 'var(--text-primary)' }}>{l.name}</h3>
-                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.8rem', color: 'var(--text-muted)' }}>
-                        <Mail size={12} /> {l.email}
+                      <h3 style={{ margin: '0 0 3px 0', fontSize: '1.05rem', color: 'var(--text-primary)' }}>{l.name}</h3>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '6px', fontSize: '0.78rem', color: 'var(--text-muted)' }}>
+                        <Mail size={11} /> {l.email}
                       </div>
+                      {l.barId && (
+                        <div className="bar-id-badge">
+                          <CreditCard size={12} /> {l.barId}
+                        </div>
+                      )}
                     </div>
                   </div>
-                  <span className="badge badge-pending" style={{ fontSize: '0.7rem' }}>Pending</span>
+                  <span className="badge badge-pending" style={{ fontSize: '0.68rem', whiteSpace: 'nowrap' }}>PENDING</span>
                 </div>
 
+                {/* Details Grid */}
                 <div className="lawyer-details-grid">
                   <div className="detail-item">
                     <span className="detail-label">Specialization</span>
@@ -147,49 +236,80 @@ export default function VerificationQueue() {
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Experience</span>
-                    <span className="detail-val">{l.experience || "Not specified"}</span>
+                    <span className="detail-val">{l.experience ? `${l.experience} yrs` : "Not specified"}</span>
                   </div>
                   <div className="detail-item">
-                    <span className="detail-label">Location</span>
-                    <span className="detail-val">{l.city ? `${l.city}, ${l.state}` : (l.location || "Not specified")}</span>
+                    <span className="detail-label">Phone</span>
+                    <span className="detail-val">{l.phone || "Not provided"}</span>
                   </div>
                   <div className="detail-item">
                     <span className="detail-label">Applied On</span>
-                    <span className="detail-val">{new Date(l.createdAt).toLocaleDateString()}</span>
+                    <span className="detail-val">{new Date(l.createdAt).toLocaleDateString('en-IN', { day: '2-digit', month: 'short', year: 'numeric' })}</span>
                   </div>
                 </div>
 
-                {l.certificateUrl && (
-                  <div style={{ marginBottom: '20px' }}>
-                    <a href={l.certificateUrl} target="_blank" rel="noreferrer" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center', gap: '6px', padding: '8px 12px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', borderRadius: '6px', fontSize: '0.8rem', color: 'var(--text-primary)', fontWeight: 600 }}>
-                      <FileText size={14} /> View Certificate
-                    </a>
+                {/* View Certificate */}
+                {certUrl ? (
+                  <div>
+                    <button className="cert-btn" onClick={() => openCertificate(certUrl)}>
+                      <FileText size={14} /> View Enrollment Certificate
+                    </button>
+                  </div>
+                ) : (
+                  <div style={{ marginBottom: '18px', fontSize: '0.8rem', color: 'var(--text-muted)', fontStyle: 'italic' }}>
+                    ⚠ No certificate uploaded
                   </div>
                 )}
 
-                <div style={{ display: 'flex', gap: '12px' }}>
-                  <button 
-                    className="btn-success" 
+                {/* Action Buttons */}
+                <div style={{ display: 'flex', gap: '10px' }}>
+                  <button
+                    className="btn-success"
                     disabled={isActing}
                     onClick={() => handleVerify(l._id, 'verified')}
-                    style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', gap: '8px', cursor: isActing ? 'not-allowed' : 'pointer', opacity: isActing ? 0.6 : 1 }}
+                    style={{ flex: 1, padding: '10px 8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', cursor: isActing ? 'not-allowed' : 'pointer', opacity: isActing ? 0.6 : 1, fontWeight: 700 }}
                   >
-                    {isActing ? <RefreshCw size={16} className="animate-spin" /> : <CheckCircle size={16} />}
-                    {confirmId === `${l._id}-verified` ? "Confirm" : "Approve"}
+                    {isActing ? <RefreshCw size={15} className="animate-spin" /> : <CheckCircle size={15} />}
+                    {confirmId === `${l._id}-verified` ? "Confirm Approve" : "Approve"}
                   </button>
-                  <button 
-                    className="btn-danger" 
+                  <button
+                    className="btn-danger"
                     disabled={isActing}
                     onClick={() => handleVerify(l._id, 'rejected')}
-                    style={{ flex: 1, padding: '10px', display: 'flex', justifyContent: 'center', gap: '8px', cursor: isActing ? 'not-allowed' : 'pointer', opacity: isActing ? 0.6 : 1 }}
+                    style={{ flex: 1, padding: '10px 8px', display: 'flex', justifyContent: 'center', alignItems: 'center', gap: '7px', cursor: isActing ? 'not-allowed' : 'pointer', opacity: isActing ? 0.6 : 1, fontWeight: 700 }}
                   >
-                    {isActing ? <RefreshCw size={16} className="animate-spin" /> : <XCircle size={16} />}
-                    {confirmId === `${l._id}-rejected` ? "Confirm" : "Reject"}
+                    {isActing ? <RefreshCw size={15} className="animate-spin" /> : <XCircle size={15} />}
+                    {confirmId === `${l._id}-rejected` ? "Confirm Reject" : "Reject"}
                   </button>
                 </div>
               </div>
             );
           })}
+        </div>
+      )}
+
+      {/* Certificate Lightbox Modal */}
+      {lightbox && (
+        <div className="lightbox-overlay" onClick={() => setLightbox(null)}>
+          <div className="lightbox-inner" onClick={e => e.stopPropagation()}>
+            <button className="lightbox-close" onClick={() => setLightbox(null)}>
+              <X size={16} />
+            </button>
+            {lightbox.type === "pdf" ? (
+              <iframe
+                src={lightbox.url}
+                style={{ width: '80vw', height: '85vh', border: 'none', display: 'block' }}
+                title="Enrollment Certificate"
+              />
+            ) : (
+              <img
+                src={lightbox.url}
+                alt="Enrollment Certificate"
+                style={{ maxWidth: '85vw', maxHeight: '85vh', display: 'block', objectFit: 'contain' }}
+                onError={e => { e.target.src = 'https://via.placeholder.com/600x400?text=Certificate+Not+Found'; }}
+              />
+            )}
+          </div>
         </div>
       )}
     </div>
