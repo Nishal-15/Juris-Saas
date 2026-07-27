@@ -21,6 +21,7 @@ import PwaInstallPill from "./components/common/PwaInstallPill";
 import Terms from "./pages/Terms";
 import CaseDetails from "./pages/CaseDetails";
 import Alerts from "./pages/Alerts";
+import ResetPassword from "./auth/ResetPassword";
 
 import { primeAudio } from "./api/socket";
 
