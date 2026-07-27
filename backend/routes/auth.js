@@ -67,16 +67,18 @@ if (password.length < 8) {
   })
 }
 
-/* Phone format */
-const phoneRegex = /^[6-9]\d{9}$/
-if (phone && !phoneRegex.test(
-  phone.replace(/[\s\-\+]/g, "")
-)) {
-  return res.status(400).json({
-    message:
-      "Enter a valid 10-digit " +
-      "Indian mobile number."
-  })
+/* Phone format — handles +91 prefix */
+if (phone) {
+  let normalizedPhone = phone.replace(/[\s\-\+]/g, "");
+  if (normalizedPhone.startsWith("91") && normalizedPhone.length === 12) {
+    normalizedPhone = normalizedPhone.slice(2);
+  }
+  const phoneRegex = /^[6-9]\d{9}$/;
+  if (!phoneRegex.test(normalizedPhone)) {
+    return res.status(400).json({
+      message: "Enter a valid 10-digit Indian mobile number (e.g. 9876543210)."
+    });
+  }
 }
 
 /* Name length */
