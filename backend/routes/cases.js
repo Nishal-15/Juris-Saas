@@ -1024,15 +1024,16 @@ router.post("/check-mediation", auth(), async (req, res) => {
       "licensing", "royalty", "ip assignment", "trademark", "copyright", "patent",
       "software", "saas", "it service", "marketplace", "online service",
       "fee refund", "admission", "hospital billing", "medical billing", "school",
-      "noise", "shared access", "water usage", "resident welfare", "rwa", "society", "neighbour", "co-operative"
+      "noise", "shared access", "water usage", "resident welfare", "rwa", "society", "neighbour", "co-operative",
+      "mediation", "settle", "settlement", "partner", "partition", "garment", "dispute", "friend", "inheritance", "inherited", "agreement", "divide", "division", "mutual", "civil", "share", "investment", "profit", "expense", "sibling"
     ];
     const isEligibleCategory = [
       "civil law", "family law", "labor law", "consumer protection", "commercial law", "corporate law",
       "property & real estate", "matrimonial & family disputes", "employment & labor rights",
-      "general civil law", "consumer protection", "financial fraud & cheating"
+      "general civil law", "consumer protection", "financial fraud & cheating", "civil", "family", "commercial", "property", "labor", "corporate"
     ].some(cat => typeStr.includes(cat));
 
-    const isEligible = isEligibleCategory || MED_ELIGIBLE_KEYWORDS.some(kw => combinedStr.includes(kw));
+    const isEligible = isEligibleCategory || MED_ELIGIBLE_KEYWORDS.some(kw => combinedStr.includes(kw)) || combinedStr.includes("mediation") || combinedStr.includes("settle") || combinedStr.includes("dispute") || combinedStr.includes("partner") || combinedStr.includes("partition");
 
     if (!isEligible) {
       return res.json({ eligible: false });

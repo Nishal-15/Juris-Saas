@@ -80,7 +80,9 @@ MEDIATION_ELIGIBLE = [
   "fee refund", "admission refund", "school fees", "hospital billing", "medical service billing",
   # Neighbourhood & Community Disputes
   "noise complaint", "shared access", "water usage", "resident welfare", "rwa",
-  "society maintenance", "co-operative", "neighbourhood dispute", "society dispute"
+  "society maintenance", "co-operative", "neighbourhood dispute", "society dispute",
+  # General Consensual & Civil Dispute Keywords
+  "mediation", "settle", "settlement", "partner", "partition", "garment", "dispute", "friend", "inheritance", "inherited", "agreement", "divide", "division", "mutual", "civil", "share", "investment", "profit", "expense", "sibling"
 ]
 
 MEDIATION_EXCLUSIONS = [
