@@ -35,50 +35,8 @@ export default function PwaInstallPill() {
   };
   handleClickRef.current = handleClick;
 
-  if (!isMobile && !deferredPrompt) return null;
-
   return (
     <>
-      <style>{`
-        .pwa-floating-pill {
-          position: fixed;
-          top: 68px;
-          right: 14px;
-          z-index: 9999999;
-          background: linear-gradient(135deg, #c9a84c 0%, #fcd34d 100%);
-          color: #0f111a;
-          padding: 10px 18px;
-          border-radius: 50px;
-          font-weight: 800;
-          font-size: 0.88rem;
-          font-family: 'Inter', sans-serif;
-          box-shadow: 0 8px 25px rgba(201, 168, 76, 0.6), 0 0 15px rgba(0,0,0,0.8);
-          border: 1.5px solid #fff;
-          display: flex;
-          align-items: center;
-          gap: 8px;
-          cursor: pointer;
-          transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
-          animation: pwaPulse 3s infinite;
-        }
-        .pwa-floating-pill:hover {
-          transform: translateY(-2px) scale(1.05);
-          box-shadow: 0 12px 30px rgba(201, 168, 76, 0.8);
-        }
-        @keyframes pwaPulse {
-          0%, 100% { box-shadow: 0 8px 25px rgba(201, 168, 76, 0.5); }
-          50% { box-shadow: 0 8px 35px rgba(201, 168, 76, 0.9); }
-        }
-        @media (min-width: 769px) {
-          .pwa-floating-pill { display: none; }
-        }
-      `}</style>
-
-      <button onClick={handleClick} className="pwa-floating-pill" title="Install JurisBot Citizen App">
-        <span style={{ fontSize: "1.1rem" }}>📲</span>
-        <span>Install App</span>
-      </button>
-
       {showModal && (
         <div 
           onClick={() => setShowModal(false)}
