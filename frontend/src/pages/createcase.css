@@ -463,4 +463,22 @@
   }
   .wizard-btn-back { flex: 1; padding: 16px; }
   .wizard-btn-next, .wizard-btn-submit { flex: 2; padding: 16px; }
+
+  /* ⚖️ MOBILE OVERRIDES FOR EXPERT / MEDIATION MODAL */
+  .expert-modal-overlay {
+    align-items: flex-start !important;
+    padding: 10px !important;
+    overflow-y: auto !important;
+  }
+  .expert-modal-card {
+    max-height: 92vh !important;
+    overflow-y: auto !important;
+    padding: 16px !important;
+    margin: 10px auto !important;
+    border-radius: 16px !important;
+  }
+  .expert-modal-card video, .expert-modal-card div[style*="height: 290px"] {
+    height: 170px !important;
+  }
 }
+

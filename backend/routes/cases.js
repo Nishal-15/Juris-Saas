@@ -1012,7 +1012,6 @@ router.post("/check-mediation", auth(), async (req, res) => {
       console.warn("AI Mediation microservice check failed, falling back to local taxonomy:", aiErr.message);
     }
 
-    // 3. Fallback: Local Taxonomy Eligibility Check
     const MED_ELIGIBLE_KEYWORDS = [
       "divorce", "custody", "visitation", "alimony", "maintenance", "matrimonial", "family",
       "property", "boundary", "easement", "landlord", "tenant", "rent", "lease", "builder", "possession",
@@ -1027,7 +1026,13 @@ router.post("/check-mediation", auth(), async (req, res) => {
       "fee refund", "admission", "hospital billing", "medical billing", "school",
       "noise", "shared access", "water usage", "resident welfare", "rwa", "society", "neighbour", "co-operative"
     ];
-    const isEligible = MED_ELIGIBLE_KEYWORDS.some(kw => combinedStr.includes(kw));
+    const isEligibleCategory = [
+      "civil law", "family law", "labor law", "consumer protection", "commercial law", "corporate law",
+      "property & real estate", "matrimonial & family disputes", "employment & labor rights",
+      "general civil law", "consumer protection", "financial fraud & cheating"
+    ].some(cat => typeStr.includes(cat));
+
+    const isEligible = isEligibleCategory || MED_ELIGIBLE_KEYWORDS.some(kw => combinedStr.includes(kw));
 
     if (!isEligible) {
       return res.json({ eligible: false });

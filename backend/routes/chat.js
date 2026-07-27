@@ -6,7 +6,40 @@ const { getAIChatURL } = require("../utils/aiUrl");
 
 const Message = require("../models/Message");
 
+// 📁 FETCH ACTIVE CHAT CONTACTS
+router.get("/contacts", auth(), async (req, res) => {
+  try {
+    const myId = req.user.id;
+    const messages = await Message.find({
+      $or: [{ from: myId }, { to: myId }]
+    }).sort({ createdAt: -1 });
 
+    const contactIds = new Set();
+    messages.forEach(m => {
+      if (m.from && m.from.toString() !== myId) contactIds.add(m.from.toString());
+      if (m.to && m.to.toString() !== myId) contactIds.add(m.to.toString());
+    });
+
+    const User = require("../models/User");
+    const Lawyer = require("../models/Lawyer");
+
+    const contacts = [];
+    for (let cid of contactIds) {
+      let u = await User.findById(cid).select("name email phone");
+      if (!u) {
+        u = await Lawyer.findById(cid).select("name email phone specialization");
+      }
+      if (u) {
+        contacts.push({ userId: u, date: "Direct Message", time: "Active" });
+      }
+    }
+
+    res.json(contacts);
+  } catch (err) {
+    console.error("❌ Contacts Retrieval Failure:", err.message);
+    res.status(500).json({ message: "Could not fetch chat contacts." });
+  }
+});
 
 // 📁 FETCH CHAT HISTORY BETWEEN TWO USERS
 router.get("/:id", auth(), async (req, res) => {

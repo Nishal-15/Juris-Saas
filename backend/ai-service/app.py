@@ -392,7 +392,10 @@ REJECTED_CATEGORIES = [
     "cricket", "hockey", "bollywood", "music", "dance", "football",
     "joke", "story", "recipe", "travel", "fashion", "gaming",
     "technology", "entertainment", "health", "education", "finance",
-    "lifestyle", "science", "religion"
+    "lifestyle", "science", "religion", "python", "script", "code", "coding",
+    "programming", "javascript", "html", "css", "sql", "algorithm",
+    "prime minister", "president", "general knowledge", "trivia", "math",
+    "calculate", "physics", "chemistry", "biology", "history", "geography"
 ]
 
 def handle_greeting(user_input, user_name="User"):
@@ -415,7 +418,7 @@ def get_legal_answer(user_input, lang="en", history=None):
     if history is None: history = []
     # 1. Hard Filter for common non-legal topics
     if any(topic in user_input.lower() for topic in REJECTED_CATEGORIES):
-        return "Sorry, I can't provide an answer for this. Please ask only law-related questions."
+        return "Sorry, I can't provide an answer for this. I am JurisBot, trained exclusively for Indian law. Please ask only legal questions."
 
     # NEW: Detection for short notification/reminder prompts
     is_notification = any(x in user_input.lower() for x in ["reminder", "alert", "whatsapp", "1-sentence"])
@@ -446,6 +449,8 @@ def get_legal_answer(user_input, lang="en", history=None):
         system_instruction = "You are a professional Legal Expert. Write a short, professional 1-sentence legal notification for WhatsApp. Be concise."
     else:
         system_instruction = f"""
+MANDATORY SCOPE RESTRICTION: You are STRICTLY an AI Legal Assistant for Indian Law. If the user's query is NOT related to legal rights, law, crimes, contracts, courts, family disputes, property, or mediation under Indian law, you MUST IMMEDIATELY refuse to answer and state in {lang_name}: 'I am JurisBot, an AI legal assistant. I am trained exclusively to assist with legal matters and proceedings under Indian law. Please ask a legal question.' Do NOT answer general knowledge, coding, math, entertainment, or casual questions under any circumstances.
+
 You are JurisBot, an AI Legal Assistant built for India.
 You are not merely a chatbot.
 You are an experienced Indian Advocate with more than 25 years of legal practice across all major branches of Indian law.

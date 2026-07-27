@@ -3,6 +3,7 @@ import axios from "../api/axios";
 import { useNavigate } from "react-router-dom";
 import Sidebar from "../components/layout/Sidebar";
 import MaterialDatePicker from "../components/chat/MaterialDatePicker";
+import LanguageModal, { ALL_LANGUAGES } from "../components/common/LanguageModal";
 import "./createcase.css";
 
 // 🌍 22 Scheduled Languages of India
@@ -58,6 +59,7 @@ export default function FilingConsole() {
   const [showMediationInterception, setShowMediationInterception] = useState(false);
   const [interceptionData, setInterceptionData] = useState(null);
   const [avatarLang, setAvatarLang] = useState("en");
+  const [isLangModalOpen, setIsLangModalOpen] = useState(false);
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [speechSynthesisActive, setSpeechSynthesisActive] = useState(false);
   const [activeCaption, setActiveCaption] = useState("");
@@ -575,23 +577,14 @@ export default function FilingConsole() {
                 </div>
 
                 {/* SLEEK GOLD PILL LANGUAGE SELECTOR */}
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(201,168,76,0.1)", border: "1px solid rgba(201,168,76,0.6)", padding: "6px 14px", borderRadius: "30px", boxShadow: "0 4px 10px rgba(0,0,0,0.3)" }}>
+                <div 
+                  onClick={() => setIsLangModalOpen(true)}
+                  style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.6)", padding: "6px 16px", borderRadius: "30px", boxShadow: "0 4px 10px rgba(0,0,0,0.3)", cursor: "pointer", transition: "all 0.2s" }}
+                >
                   <span style={{ fontSize: "0.78rem", color: "#c9a84c", fontWeight: 700 }}>🗣️ Language:</span>
-                  <select
-                    value={avatarLang}
-                    onChange={(e) => {
-                      setAvatarLang(e.target.value);
-                      if (isPlayingVideo) handleStopAvatarVideo();
-                    }}
-                    style={{ background: "#0e1626", color: "#fff", border: "none", borderRadius: "6px", padding: "2px 6px", fontSize: "0.82rem", fontWeight: 700, cursor: "pointer", outline: "none", appearance: "auto" }}
-                    title="Choose from 22 Official Indian Languages"
-                  >
-                    {Object.entries(avatarScripts).map(([code, lang]) => (
-                      <option key={code} value={code} style={{ background: "#0e1626", color: "#fff", padding: "6px" }}>
-                        {lang.flag} {lang.name}
-                      </option>
-                    ))}
-                  </select>
+                  <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.85rem" }}>
+                    {avatarScripts[avatarLang]?.flag || "🌐"} {avatarScripts[avatarLang]?.name || "English"} ▾
+                  </span>
                 </div>
               </div>
 
@@ -870,6 +863,15 @@ export default function FilingConsole() {
             </div>
           </div>
         )}
+        <LanguageModal
+          isOpen={isLangModalOpen}
+          onClose={() => setIsLangModalOpen(false)}
+          selectedLang={avatarLang}
+          onSelect={(code) => {
+            setAvatarLang(code);
+            if (isPlayingVideo) handleStopAvatarVideo();
+          }}
+        />
       </main>
     </div>
   );

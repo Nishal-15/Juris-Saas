@@ -12,14 +12,17 @@ export default function MessagesList() {
   useEffect(() => {
     const fetchChats = async () => {
       try {
-        // For lawyers, we fetch received appointments to see whom they can chat with
-        const res = await axios.get("/appointments/received");
-        // Only accepted appointments can have active chats
-        const activeChats = res.data.filter(app => app.status === "Accepted");
+        const [appRes, contactRes] = await Promise.all([
+          axios.get("/appointments/received").catch(() => ({ data: [] })),
+          axios.get("/chat/contacts").catch(() => ({ data: [] }))
+        ]);
         
-        // Remove duplicates if the same user has multiple accepted appointments
-        const uniqueUsers = Array.from(new Set(activeChats.map(a => a.userId?._id)))
-          .map(id => activeChats.find(a => a.userId?._id === id));
+        const activeChats = (appRes.data || []).filter(app => app.status === "Accepted");
+        const directContacts = contactRes.data || [];
+        const combined = [...activeChats, ...directContacts];
+        
+        const uniqueUsers = Array.from(new Set(combined.map(a => a.userId?._id).filter(Boolean)))
+          .map(id => combined.find(a => a.userId?._id === id));
         
         setChats(uniqueUsers);
       } catch (err) {

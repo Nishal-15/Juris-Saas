@@ -230,6 +230,7 @@ app.use((err, req, res, next) => {
    SOCKET.IO LOGIC
 ======================= */
 const Message = require("./models/Message"); // Moved to top-level
+const Notification = require("./models/Notification");
 
 io.on("connection", (socket) => {
   console.log("Workspace Link Established:", socket.id);
@@ -254,8 +255,19 @@ io.on("connection", (socket) => {
         to: to,
         text: message.text
       });
+      try {
+        await Notification.create({
+          user: to,
+          title: "New Message",
+          message: message.text || "You received a new message",
+          icon: "💬"
+        });
+      } catch (notifErr) {
+        console.error("Notification Creation Error:", notifErr);
+      }
       // Broadcast to specific recipient room
       io.to(to).emit("receive-message", message);
+      io.to(to).emit("notification", { text: `New message: ${message.text || "💬"}` });
     } catch (err) {
       console.error("Socket Data Persistence Error:", err);
     }
