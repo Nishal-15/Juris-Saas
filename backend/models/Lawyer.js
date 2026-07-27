@@ -14,28 +14,20 @@ const LawyerSchema = new mongoose.Schema({
   phone: { type: String, default: null },
   tier: {
     type: String,
-    enum: ["tier1","tier2","tier3"],
     default: "tier3"
   },
   minFeePerCase: { type: Number, default: 0 },
   maxFeePerCase: { type: Number, default: 0 },
   courtLevels: [{
-    type: String,
-    enum: [
-      "District Court","High Court",
-      "Supreme Court","Consumer Forum",
-      "Tribunal","Family Court"
-    ]
+    type: String
   }],
   caseComplexity: [{
-    type: String,
-    enum: ["Low","Mid","High"]
+    type: String
   }],
   state: { type: String, default: null },
   city:  { type: String, default: null },
   subscriptionTier: { 
     type: String, 
-    enum: ["Trial", "Starter", "Pro", "Expired"], 
     default: "Trial" 
   },
   caseLimit: { type: Number, default: 2 }, // Trial limit

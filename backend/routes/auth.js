@@ -115,7 +115,7 @@ if (name.trim().length < 2) {
       certificateUrl,
       avatar: avatarUrl,
       verificationStatus: "pending",
-      subscriptionTier: "trial",
+      subscriptionTier: "Trial",
       subscriptionExpiresAt: new Date(+new Date() + 14 * 24 * 60 * 60 * 1000)
     });
 
