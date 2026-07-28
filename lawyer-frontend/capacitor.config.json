@@ -1,6 +1,6 @@
 {
-  "appId": "com.jurisbot.citizen",
-  "appName": "JurisBot Citizen",
+  "appId": "com.jurisbot.lawyer",
+  "appName": "JurisBot PRO",
   "webDir": "dist",
   "bundledWebRuntime": false,
   "server": {
@@ -9,29 +9,23 @@
     "allowNavigation": ["localhost:5000", "*.jurisbot.com"]
   },
   "android": {
-    "buildOptions": {
-      "keystorePath": null,
-      "keystoreAlias": null
-    },
-    "backgroundColor": "#0a0a0a",
+    "backgroundColor": "#0f111a",
     "allowMixedContent": true
   },
   "ios": {
-    "backgroundColor": "#0a0a0a",
+    "backgroundColor": "#0f111a",
     "contentInset": "automatic"
   },
   "plugins": {
     "SplashScreen": {
       "launchShowDuration": 2000,
-      "backgroundColor": "#0a0a0a",
+      "backgroundColor": "#0f111a",
       "showSpinner": false,
-      "androidSpinnerStyle": "small",
-      "iosSpinnerStyle": "small",
       "spinnerColor": "#c9a84c"
     },
     "StatusBar": {
       "style": "DARK",
-      "backgroundColor": "#0a0a0a"
+      "backgroundColor": "#0f111a"
     }
   }
 }

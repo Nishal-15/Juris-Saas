@@ -1,12 +1,56 @@
 {
-  "name": "lawyer-frontend",
+  "name": "jurisbot-lawyer",
   "private": true,
-  "version": "0.0.0",
+  "version": "1.0.0",
+  "description": "JurisBot PRO — Lawyer Practitioner Portal",
+  "author": "JurisBot Team",
   "type": "module",
+  "main": "electron/main.js",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "electron:dev": "concurrently \"vite --port 5174\" \"cross-env NODE_ENV=development electron .\"",
+    "electron:build": "vite build && electron-builder",
+    "electron:build:win": "vite build && electron-builder --win",
+    "electron:build:mac": "vite build && electron-builder --mac",
+    "cap:sync": "npx cap sync",
+    "cap:android": "npx cap open android"
+  },
+  "build": {
+    "appId": "com.jurisbot.lawyer",
+    "productName": "JurisBot PRO",
+    "copyright": "Copyright © 2025 JurisBot",
+    "directories": {
+      "output": "dist-electron"
+    },
+    "files": [
+      "dist/**/*",
+      "electron/**/*",
+      "public/logo.png"
+    ],
+    "win": {
+      "target": [
+        { "target": "nsis", "arch": ["x64"] }
+      ],
+      "icon": "public/logo.png"
+    },
+    "mac": {
+      "target": "dmg",
+      "icon": "public/logo.png",
+      "category": "public.app-category.productivity"
+    },
+    "linux": {
+      "target": "AppImage",
+      "icon": "public/logo.png"
+    },
+    "nsis": {
+      "oneClick": false,
+      "allowToChangeInstallationDirectory": true,
+      "createDesktopShortcut": true,
+      "createStartMenuShortcut": true,
+      "shortcutName": "JurisBot PRO"
+    }
   },
   "dependencies": {
     "@emotion/react": "^11.14.0",
@@ -23,6 +67,10 @@
   },
   "devDependencies": {
     "@vitejs/plugin-react": "^4.2.1",
+    "concurrently": "^8.2.2",
+    "cross-env": "^7.0.3",
+    "electron": "^31.0.0",
+    "electron-builder": "^24.13.3",
     "vite": "^5.2.0",
     "vite-plugin-pwa": "^1.3.0"
   }

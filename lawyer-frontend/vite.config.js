@@ -3,31 +3,26 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
+  base: './',  // Required for Electron file:// loading
+  server: { port: 5174 },
   plugins: [
     react(),
     VitePWA({
       registerType: 'autoUpdate',
       includeAssets: ['logo.png'],
       manifest: {
-        name: 'JurisBot Advocates',
-        short_name: 'JurisBot Adv',
+        name: 'JurisBot PRO',
+        short_name: 'JurisBot PRO',
         description: 'AI Legal Tools for Advocates',
-        theme_color: '#0a0a0a',
-        background_color: '#0a0a0a',
+        theme_color: '#0f111a',
+        background_color: '#0f111a',
         display: 'standalone',
         icons: [
-          {
-            src: 'logo.png',
-            sizes: '192x192',
-            type: 'image/png'
-          },
-          {
-            src: 'logo.png',
-            sizes: '512x512',
-            type: 'image/png'
-          }
+          { src: 'logo.png', sizes: '192x192', type: 'image/png' },
+          { src: 'logo.png', sizes: '512x512', type: 'image/png' }
         ]
       }
     })
   ],
 })
+
