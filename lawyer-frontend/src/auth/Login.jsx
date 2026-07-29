@@ -27,10 +27,15 @@ export default function Login() {
 
       localStorage.setItem("token", res.data.token);
       localStorage.setItem("user", JSON.stringify(res.data.user));
-      if (res.data.user && res.data.user.verificationStatus !== "verified") {
-        navigate("/lawyer/verification-pending");
-      } else {
+
+      // ✅ Redirect: verified if admin approved (isVerified=true OR verificationStatus='verified')
+      const u = res.data.user;
+      const isFullyVerified = u.isVerified === true || u.verificationStatus === "verified";
+
+      if (isFullyVerified) {
         navigate("/lawyer/dashboard");
+      } else {
+        navigate("/lawyer/verification-pending");
       }
 
     } catch (err) {

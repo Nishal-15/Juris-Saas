@@ -54,11 +54,16 @@ export default function Register() {
         localStorage.setItem("user", JSON.stringify(res.data.user));
         navigate("/lawyer/verification-pending");
       } else {
-        alert(res.data.message);
-        navigate("/");
+        setError(res.data.message || "Registration failed. Please try again.");
       }
     } catch (err) {
-      setError(err.response?.data?.message || err.message || "Registration failed");
+      const msg = err.response?.data?.message || err.message || "Registration failed";
+      // Detect duplicate account specifically
+      if (msg.toLowerCase().includes("already exists") || msg.toLowerCase().includes("already registered")) {
+        setError("DUPLICATE_ACCOUNT");
+      } else {
+        setError(msg);
+      }
     } finally {
       setLoading(false);
     }
@@ -109,11 +114,29 @@ export default function Register() {
 
         <p style={{ color: 'rgba(255,255,255,0.6)', margin: '0 0 30px 0', fontSize: '0.9rem', textAlign: 'center' }}>Legal Practitioner Onboarding. Join India's elite legal network.</p>
 
-        {error && (
+        {error && error === "DUPLICATE_ACCOUNT" ? (
+          <div style={{ width: '100%', background: 'rgba(201,168,76,0.1)', border: '1.5px solid rgba(201,168,76,0.5)', borderRadius: '12px', padding: '16px', marginBottom: '20px', textAlign: 'center' }}>
+            <div style={{ fontSize: '1.5rem', marginBottom: '6px' }}>⚠️</div>
+            <div style={{ color: '#fcd34d', fontWeight: 700, fontSize: '0.9rem', marginBottom: '6px' }}>
+              Account Already Registered
+            </div>
+            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: '0.82rem', marginBottom: '12px' }}>
+              A practitioner account already exists with this email address.
+            </div>
+            <button
+              type="button"
+              onClick={() => navigate("/")}
+              style={{ background: 'linear-gradient(135deg, #c9a84c, #fcd34d)', color: '#0f111a', border: 'none', borderRadius: '8px', padding: '9px 20px', fontWeight: 800, fontSize: '0.82rem', cursor: 'pointer' }}
+            >
+              → Login to Existing Account
+            </button>
+          </div>
+        ) : error ? (
           <div style={{ width: '100%', background: 'rgba(239,68,68,0.12)', border: '1px solid rgba(239,68,68,0.3)', color: '#fca5a5', borderRadius: '10px', padding: '12px', fontSize: '0.85rem', marginBottom: '20px', textAlign: 'center' }}>
             {error}
           </div>
-        )}
+        ) : null}
+
 
         <form onSubmit={handleSubmit} style={{ width: '100%' }}>
           

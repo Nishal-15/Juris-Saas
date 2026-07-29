@@ -312,6 +312,13 @@ await user.save()
     const userResponse = user.toObject();
     delete userResponse.password;
 
+    // 🔄 Ensure verificationStatus is in sync with isVerified for lawyers
+    if (userResponse.role === "lawyer" && userResponse.isVerified && userResponse.verificationStatus !== "verified") {
+      userResponse.verificationStatus = "verified";
+      // Also persist the fix to DB silently
+      Lawyer.findByIdAndUpdate(user._id, { verificationStatus: "verified" }).exec();
+    }
+
     console.log("🚀 Sending success response...");
     res.json({
   token,

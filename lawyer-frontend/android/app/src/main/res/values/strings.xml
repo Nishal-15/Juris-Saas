@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">JurisBot PRO</string>
+    <string name="title_activity_main">JurisBot PRO</string>
+    <string name="package_name">com.jurisbot.lawyer</string>
+    <string name="custom_url_scheme">com.jurisbot.lawyer</string>
+</resources>
