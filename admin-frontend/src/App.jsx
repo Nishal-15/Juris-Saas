@@ -23,6 +23,15 @@ const Login = ({ setAuth }) => {
   const [step, setStep] = useState(1); // 1 = Login, 2 = OTP
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
+  const [timeLeft, setTimeLeft] = useState(60);
+
+  useEffect(() => {
+    let timer;
+    if (step === 2 && timeLeft > 0) {
+      timer = setInterval(() => setTimeLeft(prev => prev - 1), 1000);
+    }
+    return () => clearInterval(timer);
+  }, [step, timeLeft]);
 
   const handleLogin = async () => {
     setError("");
@@ -41,6 +50,7 @@ const Login = ({ setAuth }) => {
       
       if (res.ok && data.requireOtp) {
         setStep(2);
+        setTimeLeft(60);
       } else if (res.ok && data.token) {
         localStorage.setItem("token", data.token);
         if (data.refreshToken) {
@@ -261,12 +271,29 @@ const Login = ({ setAuth }) => {
             >
               {loading ? <><span className="spinner"></span>Authenticating...</> : "Verify & Access"}
             </button>
-            <button 
-              onClick={() => { setStep(1); setOtp(""); setError(""); }}
-              style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', marginTop: '20px', cursor: 'pointer' }}
-            >
-              ← Back to login
-            </button>
+            <div style={{ marginTop: '24px', display: 'flex', flexDirection: 'column', gap: '12px' }}>
+              <div style={{ display: 'flex', justifyContent: 'center', alignItems: 'center' }}>
+                {timeLeft > 0 ? (
+                  <span style={{ fontSize: '0.85rem', color: 'rgba(255,255,255,0.6)' }}>
+                    Resend code in <span style={{ color: 'var(--gold)', fontWeight: 'bold' }}>00:{timeLeft < 10 ? `0${timeLeft}` : timeLeft}</span>
+                  </span>
+                ) : (
+                  <button 
+                    onClick={handleLogin} 
+                    disabled={loading}
+                    style={{ background: 'none', border: 'none', color: 'var(--gold)', fontSize: '0.85rem', cursor: loading ? 'not-allowed' : 'pointer', fontWeight: 600, textDecoration: 'underline' }}
+                  >
+                    Resend Code
+                  </button>
+                )}
+              </div>
+              <button 
+                onClick={() => { setStep(1); setOtp(""); setError(""); }}
+                style={{ background: 'none', border: 'none', color: 'rgba(255,255,255,0.5)', fontSize: '0.85rem', cursor: 'pointer' }}
+              >
+                ← Back to login
+              </button>
+            </div>
           </div>
         )}
         

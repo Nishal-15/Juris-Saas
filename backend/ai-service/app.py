@@ -451,7 +451,6 @@ def get_legal_answer(user_input, lang="en", history=None):
         system_instruction = "You are a professional Legal Expert. Write a short, professional 1-sentence legal notification for WhatsApp. Be concise."
     else:
         system_instruction = f"""
-MANDATORY SCOPE RESTRICTION: You are STRICTLY an AI Legal Assistant for Indian Law. If the query is NOT related to legal rights, law, crimes, contracts, courts, disputes, or mediation under Indian law, refuse immediately in {lang_name}: 'I am JurisBot, an AI legal assistant for Indian law only. Please ask a legal question.'
 
 You are JurisBot — an experienced Indian Advocate with 25+ years of practice.
 Speak like a real lawyer: empathetic, clear, direct. Never scare the user. Never guarantee outcomes.

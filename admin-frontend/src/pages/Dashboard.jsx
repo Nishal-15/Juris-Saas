@@ -6,7 +6,17 @@ import { SUPPORTED_LANGUAGES, getLangFlag } from '../config/languages';
 import { Users, Scale, FileText, Activity, Clock, BookOpen, RefreshCw, Download } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
-const COLORS = ['#c9a84c', '#1e293b', '#64748b', '#f1f5f9'];
+// 8 distinct, readable colors that work on white background
+const COLORS = [
+  '#c9a84c', // Gold — Civil
+  '#3b82f6', // Blue — Criminal
+  '#10b981', // Green — Family
+  '#ef4444', // Red — Property
+  '#8b5cf6', // Purple — Corporate
+  '#f59e0b', // Amber — Consumer
+  '#06b6d4', // Cyan — Labour
+  '#ec4899', // Pink — Others
+];
 
 export default function Dashboard() {
   const [stats, setStats] = useState({

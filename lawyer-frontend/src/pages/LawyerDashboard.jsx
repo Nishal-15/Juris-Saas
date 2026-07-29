@@ -17,7 +17,9 @@ export default function LawyerDashboard() {
   const [subInfo, setSubInfo] = useState({ tier: "Trial", count: 0, expiry: null, isBlocked: false });
   const [broadcast, setBroadcast] = useState(null);
   
-  const notificationAudio = new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3");
+  // ✅ Fixed lag: Move Audio outside of render to prevent recreation on every state change
+  const [notificationAudio] = useState(() => new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"));
+
   const user = JSON.parse(localStorage.getItem("user") || "{}");
 
   const fetchData = async () => {

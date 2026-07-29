@@ -7,11 +7,37 @@ const auth = require("../middleware/auth");
 const axios = require("axios");
 const checkSub = require("../middleware/checkSubscription");
 const { sendAIWhatsApp } = require("../utils/notifier");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 const {
   getAIChatURL,
   getAIMediationURL,
   getAIMediationStatusURL
 } = require("../utils/aiUrl");
+
+// ✅ Evidence Upload Config
+const evidenceStorage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, '../uploads/evidence');
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    const safe = file.originalname.replace(/\s+/g, '_').replace(/[^\w.-]/g, '');
+    cb(null, `${Date.now()}_${safe}`);
+  }
+});
+const uploadEvidence = multer({
+  storage: evidenceStorage,
+  limits: { fileSize: 20 * 1024 * 1024 }, // 20MB per file
+  fileFilter: (req, file, cb) => {
+    const allowed = /jpeg|jpg|png|gif|webp|pdf|mp4|mov|doc|docx/;
+    const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
+    if (allowed.test(ext)) cb(null, true);
+    else cb(null, false); // Skip unsupported silently
+  }
+}).array('evidence', 10); // Max 10 files
 
 function detectComplexity(legalType,
   urgency, type) {
@@ -174,7 +200,14 @@ function mapIncomeToLawyerTier(incomeTier) {
 }
 
 /* Create Case */
-router.post("/", auth(), async (req, res) => {
+router.post("/", auth(), (req, res, next) => {
+  uploadEvidence(req, res, (err) => {
+    if (err && err.code === 'LIMIT_FILE_SIZE') {
+      return res.status(400).json({ message: 'Each evidence file must be under 20MB.' });
+    }
+    next(); // Continue even if no files
+  });
+}, async (req, res) => {
   try {
     const { title, description, type, urgency, category, legalType, incidentDate } = req.body;
 
@@ -213,7 +246,9 @@ const sanitized = {
       incidentDate,
       urgency: urgency || "Normal",
       user: req.user.id,
-      assignedLawyer: null
+      assignedLawyer: null,
+      // ✅ Store evidence file paths
+      evidence: (req.files || []).map(f => `/uploads/evidence/${f.filename}`)
     });
 
     await newCase.save();

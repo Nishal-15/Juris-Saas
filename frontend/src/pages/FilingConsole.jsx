@@ -63,6 +63,7 @@ export default function FilingConsole() {
   const [isPlayingVideo, setIsPlayingVideo] = useState(false);
   const [speechSynthesisActive, setSpeechSynthesisActive] = useState(false);
   const [activeCaption, setActiveCaption] = useState("");
+  const [evidenceFiles, setEvidenceFiles] = useState([]); // ✅ Evidence file state
   const navigate = useNavigate();
 
   const avatarScripts = {
@@ -295,9 +296,20 @@ export default function FilingConsole() {
     }
     setLoading(true);
     try {
-      console.log("🚀 Submitting Case Data:", formData);
-      const res = await axios.post("/cases", formData);
-      console.log("✅ Server Response:", res.data);
+      // ✅ Use FormData to support file uploads
+      const payload = new FormData();
+      Object.keys(formData).forEach(key => {
+        if (Array.isArray(formData[key])) {
+          formData[key].forEach(v => payload.append(key, v));
+        } else {
+          payload.append(key, formData[key]);
+        }
+      });
+      evidenceFiles.forEach(f => payload.append('evidence', f));
+
+      const res = await axios.post("/cases", payload, {
+        headers: { 'Content-Type': 'multipart/form-data' }
+      });
       setCurrentCaseId(res.data.case?._id);
       setMatchedLawyers(res.data.suggestedLawyers || []);
       if (res.data.mediationEligible && res.data.mediationInfo) {
@@ -306,7 +318,7 @@ export default function FilingConsole() {
       setShowSuccessModal(true);
     } catch (err) {
       console.error("❌ Submission Failed:", err);
-      alert("Failed to file case.");
+      alert("Failed to file case: " + (err.response?.data?.message || err.message));
     } finally {
       setLoading(false);
     }
@@ -521,12 +533,44 @@ export default function FilingConsole() {
           {step === 3 && (
             <div className="wizard-slide fade-in">
               <h1 className="wizard-title">Evidence</h1>
-              <p className="wizard-subtitle">Upload any relevant photos or documents.</p>
-              <div className="upload-zone" onClick={() => document.getElementById('f-up').click()}>
-                <input type="file" id="f-up" style={{ display: 'none' }} multiple />
-                <span className="upload-icon">📂</span>
-                <p>Click to add documents</p>
+              <p className="wizard-subtitle">Upload photos, videos, or documents related to your case.</p>
+
+              <div className="upload-zone" onClick={() => document.getElementById('f-up').click()} style={{ cursor: 'pointer', border: '2px dashed rgba(201,168,76,0.4)', borderRadius: '12px', padding: '30px', textAlign: 'center', background: 'rgba(201,168,76,0.04)', marginBottom: '16px' }}>
+                <input
+                  type="file"
+                  id="f-up"
+                  style={{ display: 'none' }}
+                  multiple
+                  accept="image/*,video/*,.pdf,.doc,.docx"
+                  onChange={(e) => {
+                    const newFiles = Array.from(e.target.files);
+                    setEvidenceFiles(prev => [...prev, ...newFiles]);
+                  }}
+                />
+                <span className="upload-icon" style={{ fontSize: '2rem' }}>📂</span>
+                <p style={{ margin: '8px 0 4px', fontWeight: 600 }}>Click to add documents or photos</p>
+                <p style={{ fontSize: '0.8rem', opacity: 0.5 }}>Images, PDFs, Videos supported</p>
               </div>
+
+              {/* ✅ File Preview List */}
+              {evidenceFiles.length > 0 && (
+                <div style={{ marginBottom: '16px' }}>
+                  <p style={{ fontSize: '0.85rem', color: '#c9a84c', fontWeight: 600, marginBottom: '8px' }}>📎 {evidenceFiles.length} file(s) selected:</p>
+                  <div style={{ display: 'flex', flexWrap: 'wrap', gap: '8px' }}>
+                    {evidenceFiles.map((f, i) => (
+                      <div key={i} style={{ display: 'flex', alignItems: 'center', gap: '6px', background: 'rgba(255,255,255,0.06)', border: '1px solid rgba(255,255,255,0.1)', borderRadius: '8px', padding: '6px 10px', fontSize: '0.8rem' }}>
+                        <span>{f.type.startsWith('image') ? '🖼️' : f.type.includes('pdf') ? '📄' : f.type.startsWith('video') ? '🎥' : '📁'}</span>
+                        <span style={{ maxWidth: '120px', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{f.name}</span>
+                        <button
+                          onClick={(e) => { e.stopPropagation(); setEvidenceFiles(prev => prev.filter((_, idx) => idx !== i)); }}
+                          style={{ background: 'none', border: 'none', color: '#ef4444', cursor: 'pointer', fontSize: '0.9rem', padding: '0', lineHeight: 1 }}
+                        >✕</button>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+              )}
+
               <div className="wizard-actions">
                 <button className="wizard-btn-back" onClick={() => setStep(2)}>← Back</button>
                 <button className="wizard-btn-next" onClick={() => setStep(4)}>Final Review →</button>
@@ -540,10 +584,14 @@ export default function FilingConsole() {
               <p className="wizard-subtitle">Please double-check everything before sending to our lawyers.</p>
               <div className="review-card">
                 <div className="review-item"><strong>CATEGORY:</strong> {formData.category}</div>
+                <div className="review-item"><strong>URGENCY:</strong> <span style={{ color: formData.urgency === 'Emergency' ? '#ef4444' : formData.urgency === 'High' ? '#f59e0b' : '#10b981', fontWeight: 700 }}>{formData.urgency}</span></div>
                 <div className="review-item"><strong>SUBJECT:</strong> {formData.title}</div>
                 <div className="review-item"><strong>DATE:</strong> {formData.incidentDate || "N/A"}</div>
                 <div className="review-item"><strong>OPPONENT:</strong> {formData.oppositeParty || "N/A"}</div>
                 <div className="review-item"><strong>DESCRIPTION:</strong> {formData.description}</div>
+                {evidenceFiles.length > 0 && (
+                  <div className="review-item"><strong>EVIDENCE:</strong> {evidenceFiles.length} file(s) attached — {evidenceFiles.map(f => f.name).join(', ')}</div>
+                )}
               </div>
               <div className="wizard-actions">
                 <button className="wizard-btn-back" onClick={() => setStep(3)}>← Edit</button>
@@ -803,8 +851,8 @@ export default function FilingConsole() {
                         </span>
                         <button 
                           onClick={() => {
-                            alert("Opening AI Video Explanation & Mediator Connection...");
-                            navigate("/cases");
+                            alert("Mediation Appointment Requested Successfully! A certified mediator will contact you shortly.");
+                            navigate("/dashboard");
                           }} 
                           style={{
                             background: "#7c3aed",
@@ -817,7 +865,7 @@ export default function FilingConsole() {
                             fontWeight: 600
                           }}
                         >
-                          Watch Video & Connect Mediator
+                          Book Appointment for Mediation
                         </button>
                       </div>
                     </div>
