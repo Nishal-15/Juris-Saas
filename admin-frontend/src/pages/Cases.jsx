@@ -37,19 +37,20 @@ export default function Cases() {
   };
 
   const filteredCases = cases.filter(c => {
-    const s = search.toLowerCase();
-    const matchSearch = !search || 
+    const s = search.toLowerCase().trim();
+    const matchSearch = !s || 
       (c.title || "").toLowerCase().includes(s) ||
       (c.user?.name || "").toLowerCase().includes(s) ||
       (c.assignedLawyer?.name || "").toLowerCase().includes(s) ||
       (c._id || "").slice(-6).includes(s);
       
-    const statusLower = (c.status || "Active").toLowerCase();
+    const statusLower = (c.status || "Open").toLowerCase();
     const filterStatLower = statusFilter.toLowerCase();
-    const matchStatus = statusFilter === "All" || statusLower.includes(filterStatLower) || filterStatLower.includes(statusLower);
+    const matchStatus = statusFilter === "All" || statusLower.includes(filterStatLower) || (filterStatLower === "active" && statusLower.includes("progress"));
     
     const urgLower = (c.urgency || "Normal").toLowerCase();
-    const matchUrg = urgencyFilter === "All" || urgLower === urgencyFilter.toLowerCase();
+    const filterUrgLower = urgencyFilter.toLowerCase();
+    const matchUrg = urgencyFilter === "All" || urgLower === filterUrgLower || (filterUrgLower === "high" && urgLower === "urgent");
     
     return matchSearch && matchStatus && matchUrg;
   });
@@ -156,16 +157,15 @@ export default function Cases() {
           <select className="filter-select" value={statusFilter} onChange={(e) => setStatusFilter(e.target.value)}>
             <option value="All">All Status</option>
             <option value="Open">Open</option>
-            <option value="Active">Active / In Progress</option>
+            <option value="Active">In Progress</option>
             <option value="Pending">Pending</option>
             <option value="Closed">Closed</option>
           </select>
           <select className="filter-select" value={urgencyFilter} onChange={(e) => setUrgencyFilter(e.target.value)}>
             <option value="All">All Urgency</option>
             <option value="Emergency">Emergency</option>
-            <option value="High">High</option>
+            <option value="Urgent">Urgent</option>
             <option value="Normal">Normal</option>
-            <option value="Low">Low</option>
           </select>
         </div>
 

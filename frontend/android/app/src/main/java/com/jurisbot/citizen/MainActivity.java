@@ -1,4 +1,4 @@
-package com.jurisbot.app;
+package com.jurisbot.citizen;
 
 import com.getcapacitor.BridgeActivity;
 

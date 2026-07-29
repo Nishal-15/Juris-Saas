@@ -2,36 +2,5 @@
   "appId": "com.jurisbot.citizen",
   "appName": "JurisBot Citizen",
   "webDir": "dist",
-  "bundledWebRuntime": false,
-  "server": {
-    "androidScheme": "https",
-    "cleartext": true,
-    "allowNavigation": ["localhost:5000", "*.jurisbot.com"]
-  },
-  "android": {
-    "buildOptions": {
-      "keystorePath": null,
-      "keystoreAlias": null
-    },
-    "backgroundColor": "#0a0a0a",
-    "allowMixedContent": true
-  },
-  "ios": {
-    "backgroundColor": "#0a0a0a",
-    "contentInset": "automatic"
-  },
-  "plugins": {
-    "SplashScreen": {
-      "launchShowDuration": 2000,
-      "backgroundColor": "#0a0a0a",
-      "showSpinner": false,
-      "androidSpinnerStyle": "small",
-      "iosSpinnerStyle": "small",
-      "spinnerColor": "#c9a84c"
-    },
-    "StatusBar": {
-      "style": "DARK",
-      "backgroundColor": "#0a0a0a"
-    }
-  }
+  "bundledWebRuntime": false
 }
