@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
 import Visibility from "@mui/icons-material/Visibility";
@@ -11,6 +11,26 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
   const navigate = useNavigate();
+
+  // ✅ Auto-login if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userStr = localStorage.getItem("user");
+    if (token && userStr) {
+      try {
+        const u = JSON.parse(userStr);
+        const isFullyVerified = u.isVerified === true || u.verificationStatus === "verified";
+        if (isFullyVerified) {
+          navigate("/lawyer/dashboard");
+        } else {
+          navigate("/lawyer/verification-pending");
+        }
+      } catch (e) {
+        localStorage.removeItem("token");
+        localStorage.removeItem("user");
+      }
+    }
+  }, [navigate]);
 
   const handleLogin = async (e) => {
     e.preventDefault();

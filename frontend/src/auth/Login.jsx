@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import axios, { setAuthToken } from "../api/axios";
 import { AuthContext } from "../context/AuthContext";
 import { useNavigate } from "react-router-dom";
@@ -12,8 +12,24 @@ export default function Login() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState("");
 
-  const { login } = useContext(AuthContext);
+  const { login, user: contextUser } = useContext(AuthContext);
   const navigate = useNavigate();
+
+  // ✅ Auto-login redirect if already authenticated
+  useEffect(() => {
+    const token = localStorage.getItem("token");
+    const userStr = localStorage.getItem("user");
+    if (token && userStr) {
+      try {
+        const parsedUser = JSON.parse(userStr);
+        if (parsedUser.role === "lawyer") navigate("/lawyer");
+        else if (parsedUser.role === "admin") {} // don't auto-redirect admin here
+        else navigate("/user");
+      } catch (e) {
+        localStorage.clear();
+      }
+    }
+  }, [navigate]);
 
   const submit = async () => {
     if (!email || !password) return;
