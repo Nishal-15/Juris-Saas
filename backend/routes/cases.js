@@ -210,6 +210,7 @@ router.post("/", auth(), (req, res, next) => {
 }, async (req, res) => {
   try {
     const { title, description, type, urgency, category, legalType, incidentDate } = req.body;
+    const citizen = await User.findById(req.user.id);
 
 if (!title || title.trim().length < 3) {
   return res.status(400).json({
@@ -237,6 +238,8 @@ const sanitized = {
     .slice(0, 100),
 }
 
+    const isMediationReq = (req.body.mediationRequested === "true" || req.body.mediationRequested === true);
+
     const newCase = new Case({
       title: sanitized.title,
       description: sanitized.description,
@@ -245,6 +248,8 @@ const sanitized = {
       legalType: sanitized.legalType,
       incidentDate,
       urgency: urgency || "Normal",
+      status: isMediationReq ? "Pending Mediation" : "Open",
+      isMediationTrack: isMediationReq,
       user: req.user.id,
       assignedLawyer: null,
       // ✅ Store evidence file paths
@@ -282,7 +287,9 @@ const sanitized = {
       await newCase.save()
 
       /* PRIMARY MATCH — exact legalType match, respecting tier */
-      const specializationKeyword = (legalType || type || "").replace(" Law", "").replace(" Protection", "").trim();
+      const specializationKeyword = isMediationReq
+        ? "Mediation|Arbitration" 
+        : (legalType || type || "").replace(" Law", "").replace(" Protection", "").trim();
 
       matchedLawyers = await Lawyer.find({
         isVerified: true,
@@ -410,15 +417,21 @@ const sanitized = {
     const enrichedLawyers = matchedLawyers.map(l => {
       const lawyerObj = l.toObject ? l.toObject() : l;
       const isDirect = (lawyerObj.specialization || "").toLowerCase().includes(specKeyword.toLowerCase());
+      const isMediationMatch = isMediationReq;
+      
       return {
         ...lawyerObj,
-        isDirectMatch: isDirect,
-        matchExplanation: isDirect
-          ? `Direct Specialist in ${specKeyword} Law`
-          : `Cross-Specialization Expert · Primary specialization: ${lawyerObj.specialization || "General Practice"}. Certified to handle ${specKeyword} matters, settlement drafting, and court filings.`,
-        capablePracticeAreas: isDirect
-          ? [`${specKeyword} Law`, "Court Litigation", "Legal Counseling"]
-          : [`${specKeyword} Disputes & Filings`, "Civil & District Court Representation", "Settlement Drafting", lawyerObj.specialization || "General Litigation"]
+        isDirectMatch: isDirect || isMediationMatch,
+        matchExplanation: isMediationMatch
+          ? `Certified ADR Professional · Primary specialization: ${lawyerObj.specialization || "General Practice"}. Qualified to act as a neutral third-party mediator for this dispute.`
+          : isDirect
+            ? `Direct Specialist in ${specKeyword} Law`
+            : `Cross-Specialization Expert · Primary specialization: ${lawyerObj.specialization || "General Practice"}. Certified to handle ${specKeyword} matters, settlement drafting, and court filings.`,
+        capablePracticeAreas: isMediationMatch
+          ? ["Pre-Litigation Mediation", "Arbitration & Conciliation", "Settlement Drafting"]
+          : isDirect
+            ? [`${specKeyword} Law`, "Court Litigation", "Legal Counseling"]
+            : [`${specKeyword} Disputes & Filings`, "Civil & District Court Representation", "Settlement Drafting", lawyerObj.specialization || "General Litigation"]
       };
     });
 
@@ -778,7 +791,7 @@ function smartHeuristicTriage(description) {
     };
   }
 
-  // 5. Property / Civil Law (Default Civil)
+  // 5. Property / Civil Law
   if (text.includes("property") || text.includes("land") || text.includes("tenant") || text.includes("rent") || text.includes("evict") || text.includes("lease") || text.includes("ownership")) {
     return {
       title: "Suit for Declaration of Title, Permanent Injunction, and Possession",
@@ -787,6 +800,30 @@ function smartHeuristicTriage(description) {
       sections: ["Specific Relief Act, 1963 (Sec 34 & 38)", "Transfer of Property Act, 1882"],
       court: "Senior Civil Judge / District Civil Court",
       draft: `The Plaintiff submits that the Defendant is interfering with peaceful possession and title over the suit scheduled property without any valid legal right. The Plaintiff prays for a decree of declaration of title and a permanent injunction restraining the Defendant from altering the nature of the property.`
+    };
+  }
+
+  // 6. Tax Law
+  if (text.includes("tax") || text.includes("gst") || text.includes("customs") || text.includes("income tax") || text.includes("tds")) {
+    return {
+      title: "Appeal against Tax Assessment and Penalty Order",
+      category: "Taxation Disputes",
+      legalType: "Tax Law",
+      sections: ["Income Tax Act, 1961", "Central Goods and Services Tax Act, 2017"],
+      court: "Income Tax Appellate Tribunal (ITAT) / GST Tribunal",
+      draft: `The Appellant respectfully submits that the impugned assessment order/penalty is bad in law, arbitrary, and contrary to the statutory provisions. It is prayed that the Hon'ble Tribunal quash the demand and grant consequential relief.`
+    };
+  }
+
+  // 7. Corporate Law
+  if (text.includes("corporate") || text.includes("company") || text.includes("shareholder") || text.includes("director") || text.includes("nclt") || text.includes("insolvency") || text.includes("sebi") || text.includes("startup") || text.includes("founder") || text.includes("spa") || text.includes("equity") || text.includes("investment")) {
+    return {
+      title: "Petition for Oppression, Mismanagement, and Corporate Dispute",
+      category: "Corporate & Commercial Law",
+      legalType: "Corporate Law",
+      sections: ["Companies Act, 2013", "Insolvency and Bankruptcy Code, 2016"],
+      court: "National Company Law Tribunal (NCLT)",
+      draft: `The Petitioner submits that the affairs of the Respondent Company are being conducted in a manner prejudicial to public interest and oppressive to the minority shareholders. It is prayed that the Hon'ble Tribunal issue necessary directions to safeguard corporate governance and shareholder rights.`
     };
   }
 
@@ -932,12 +969,13 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     CRITICAL CLASSIFICATION RULE:
     - If the story involves assault, bodily hurt, threats, criminal intimidation, abusive language, murder, rape, robbery, theft, kidnapping, cheating, fraud, police FIR, Bharatiya Nyaya Sanhita (BNS), or Indian Penal Code (IPC) offences — legalType MUST be "Criminal Law".
-    - If the story involves property, contract, money recovery, consumer complaint — legalType is "Civil Law".
+    - If the story involves property, personal loans, or civil money recovery (non-corporate) — legalType is "Civil Law".
+    - If the story involves defective products, deficient service, warranty, or consumer disputes — legalType is "Consumer Protection".
     - If the story involves divorce, custody, dowry, alimony, marriage — legalType is "Family Law".
     - If the story involves unpaid salary, job termination, PF — legalType is "Labor Law".
     - If the story involves hacking, online fraud, UPI fraud, cybercrime — legalType is "Cyber Law".
-    - If the story involves GST, income tax, customs — legalType is "Tax Law".
-    - If the story involves company insolvency, SEBI, shareholder — legalType is "Corporate Law".
+    - If the story involves GST, income tax, customs, tds — legalType is "Tax Law".
+    - If the story involves company insolvency, SEBI, shareholder, corporate, Share Purchase Agreement (SPA), equity, investment, startup, or business contracts — legalType is "Corporate Law".
 
     ALLOWED legalType VALUES (use EXACTLY one of these):
     "Criminal Law" | "Civil Law" | "Family Law" | "Labor Law" | "Consumer Protection" | "Cyber Law" | "Tax Law" | "Corporate Law"
@@ -1127,13 +1165,16 @@ router.post("/check-mediation", auth(), async (req, res) => {
 router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   try {
     const { caseId, lawyerId } = req.params;
-    
-    // Set status to 'Pending Expert Acceptance' - Lawyer is NOT officially assigned yet
+    const caseToConnect = await Case.findById(caseId);
+    const isMediation = caseToConnect.status.includes("Mediation");
+    const newStatus = isMediation ? "Pending Mediation Acceptance" : "Pending Expert Acceptance";
+
+    // Set status to pending acceptance - Lawyer is NOT officially assigned yet
     const updatedCase = await Case.findByIdAndUpdate(
       caseId,
       { 
         assignedLawyer: lawyerId,
-        status: "Pending Expert Acceptance",
+        status: newStatus,
         $push: { trackingHistory: { status: "Connection Requested", date: new Date() } }
       },
       { new: true }
@@ -1174,7 +1215,7 @@ router.get("/requested", auth(["lawyer"]), async (req, res) => {
     // Find cases specifically assigned to this lawyer that are awaiting acceptance
     const requestedCases = await Case.find({ 
       assignedLawyer: lawyerId,
-      status: { $in: ["Pending Expert Acceptance", "Requested"] } 
+      status: { $in: ["Pending Expert Acceptance", "Pending Mediation Acceptance", "Requested"] } 
     }).populate("user", "name");
 
     console.log(`Found ${requestedCases.length} direct requests for Lawyer ${lawyerId}`);
@@ -1190,7 +1231,7 @@ router.get("/requested", auth(["lawyer"]), async (req, res) => {
 router.get("/my", auth(["lawyer"]), async (req, res) => {
   try {
     const lawyerId = req.user.id;
-    const activeStatuses = ["In Progress", "Hearing Scheduled", "Verdict Pending"];
+    const activeStatuses = ["In Progress", "Hearing Scheduled", "Verdict Pending", "Mediation in Progress", "Mediation Session Scheduled", "Mutual Settlement Reached"];
     
     const cases = await Case.find({ 
       assignedLawyer: lawyerId,
@@ -1209,11 +1250,15 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
   try {
     const { caseId } = req.params;
     
+    const caseToAccept = await Case.findById(caseId);
+    const isMediation = caseToAccept.status.includes("Mediation");
+    const newStatus = isMediation ? "Mediation in Progress" : "In Progress";
+    
     // Officially set status to 'In Progress' and confirm the lawyer
     const acceptedCase = await Case.findByIdAndUpdate(
       caseId,
       { 
-        status: "In Progress",
+        status: newStatus,
         $push: { trackingHistory: { status: "Lawyer Accepted", date: new Date() } }
       },
       { new: true }
@@ -1321,4 +1366,18 @@ router.get(
 )
 
 router.smartHeuristicTriage = smartHeuristicTriage;
+/* Update Case Status */
+router.put("/:id/status", auth(), async (req, res) => {
+  try {
+    const updated = await Case.findByIdAndUpdate(
+      req.params.id,
+      { $set: { status: req.body.status } },
+      { new: true }
+    );
+    res.json(updated);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
 module.exports = router;

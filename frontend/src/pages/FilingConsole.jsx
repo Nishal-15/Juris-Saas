@@ -45,7 +45,8 @@ export default function FilingConsole() {
     urgency: "Normal",
     sections: [],
     court: "",
-    draft: ""
+    draft: "",
+    mediationRequested: false
   });
   const [aiMessage, setAiMessage] = useState("Ready to help. I can assist you with your legal case filing!");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -147,6 +148,77 @@ export default function FilingConsole() {
     brx: { name: "Bodo (बड़ो)", flag: "🇮🇳", voiceLang: "brx-IN", script: "खुलुमबाय। आं जुरिसभल्ट, नोंथांनि AI आइनि हेफाजाबगिरि। नोंथांनि थासारि बेखेवना होनायनि थाखाय हामबाय। नोंथांआ सेयार खालामनाय खौरांनि सायात, आं नोंथांनि आइनि जेंनानि सायात सेथि बुजिमोन्नाय मोनबाय। बे खोन्दोआव, बेयो नुयो दि जुदि गोनांथार आइनि सर्तफोरखौ आबुं खालामोब्ला गेजेरथि बा आर्बिट्रेशन मोनसे आरजाथाव उफाय जानो हागौ। बे बिखान्थिया नियमित अदालत बिजिरनायनि सोलाय सासे उदां आखा-फाखा सुबुंनि गेजेरजों दावराव-दावसि सुस्राङो, जाय समय आरो खरसा बाचायो आरो खामानिखौ गोहोनां लाखियो।" },
     sa: { name: "Sanskrit (संस्कृतम्)", flag: "🇮🇳", voiceLang: "sa-IN", script: "नमस्ते। अहम् भवताम् ज्यूरिसवॉल्ट् विधि-सलाहकारः अस्मि। भवताम् कथनस्य आधारेण, भवताम् प्रकरणम् मध्यस्थता-अधिनियमः २०२३ इत्यस्य धारा ४ अन्तर्गतम् पूर्व-वाद-मध्यस्थतायाः योग्यम् अस्ति। एकः प्रमाणितः मध्यस्थः ३० तः ९० दिनेषु वैधानिक-समझौताम् प्राप्तुम् सहायताम् करिष्यति।" }
   };
+
+  const compDict = {
+    en: {
+      mTitle: "Mediation",
+      mPoints: ["Mutual settlement focus", "Highly confidential", "Fraction of court costs", "Resolved in 30-90 days"],
+      lTitle: "Litigation",
+      lPoints: ["Adversarial court battle", "Public record", "High court & lawyer fees", "Takes 2-5 years on average"]
+    },
+    hi: {
+      mTitle: "मध्यस्थता (Mediation)",
+      mPoints: ["पारस्परिक समझौते पर जोर", "अत्यंत गोपनीय", "अदालती खर्च का एक अंश", "30-90 दिनों में समाधान"],
+      lTitle: "मुकदमेबाजी (Litigation)",
+      lPoints: ["विरोधात्मक अदालती लड़ाई", "सार्वजनिक रिकॉर्ड", "उच्च न्यायालय और वकील की फीस", "औसतन 2-5 साल लगते हैं"]
+    },
+    bn: {
+      mTitle: "মধ্যস্থতা",
+      mPoints: ["পারস্পরিক মীমাংসার উপর জোর", "অত্যন্ত গোপনীয়", "আদালতের খরচের একটি ভগ্নাংশ", "৩০-৯০ দিনের মধ্যে সমাধান"],
+      lTitle: "মোকদ্দমা",
+      lPoints: ["প্রতিকূল আইনি লড়াই", "পাবলিক রেকর্ড", "উচ্চ আদালত এবং আইনজীবীর ফি", "গড়ে ২-৫ বছর সময় লাগে"]
+    },
+    ta: {
+      mTitle: "சமரசம்",
+      mPoints: ["பரஸ்பர தீர்வு", "மிகவும் ரகசியமானது", "நீதிமன்ற செலவுகளில் ஒரு பகுதி", "30-90 நாட்களில் தீர்வு"],
+      lTitle: "வழக்கு",
+      lPoints: ["எதிர்நீதிமன்றப் போராட்டம்", "பொது பதிவு", "அதிக நீதிமன்ற மற்றும் வழக்கறிஞர் கட்டணம்", "சராசரியாக 2-5 ஆண்டுகள் ஆகும்"]
+    },
+    te: {
+      mTitle: "మధ్యవర్తిత్వం",
+      mPoints: ["పరస్పర పరిష్కారం", "అత్యంత గోప్యమైనది", "కోర్టు ఖర్చులలో కొంత భాగం", "30-90 రోజుల్లో పరిష్కారం"],
+      lTitle: "వ్యాజ్యం",
+      lPoints: ["కోర్టు పోరాటం", "పబ్లిక్ రికార్డ్", "అధిక కోర్టు & న్యాయవాది ఫీజులు", "సగటున 2-5 సంవత్సరాలు పడుతుంది"]
+    },
+    mr: {
+      mTitle: "मध्यस्थी",
+      mPoints: ["परस्पर समझोत्यावर भर", "अत्यंत गोपनीय", "न्यायालयाच्या खर्चाचा एक अंश", "३०-९० दिवसांत निराकरण"],
+      lTitle: "खटला",
+      lPoints: ["न्यायालयीन लढा", "सार्वजनिक रेकॉर्ड", "उच्च न्यायालय आणि वकील फी", "सरासरी २-५ वर्षे लागतात"]
+    },
+    gu: {
+      mTitle: "મધ્યસ્થી",
+      mPoints: ["પરસ્પર સમાધાન પર ભાર", "અત્યંત ગોપનીય", "કોર્ટના ખર્ચનો એક અંશ", "30-90 દિવસમાં ઉકેલ"],
+      lTitle: "મુદ્દમા",
+      lPoints: ["પ્રતિકૂળ કાનૂની લડાઈ", "જાહેર રેકોર્ડ", "ઉચ્ચ અદાલત અને વકીલની ફી", "સરેરાશ 2-5 વર્ષ લાગે છે"]
+    },
+    kn: {
+      mTitle: "ಮಧ್ಯಸ್ಥಿಕೆ",
+      mPoints: ["ಪರಸ್ಪರ ಇತ್ಯರ್ಥ", "ಅತ್ಯಂತ ಗೌಪ್ಯ", "ನ್ಯಾಯಾಲಯದ ವೆಚ್ಚದ ಒಂದು ಭಾಗ", "30-90 ದಿನಗಳಲ್ಲಿ ಪರಿಹಾರ"],
+      lTitle: "ವ್ಯಾಜ್ಯ",
+      lPoints: ["ನ್ಯಾಯಾಲಯದ ಹೋರಾಟ", "ಸಾರ್ವಜನಿಕ ದಾಖಲೆ", "ಹೆಚ್ಚಿನ ನ್ಯಾಯಾಲಯ ಮತ್ತು ವಕೀಲರ ಶುಲ್ಕಗಳು", "ಸರಾಸರಿ 2-5 ವರ್ಷಗಳನ್ನು ತೆಗೆದುಕೊಳ್ಳುತ್ತದೆ"]
+    },
+    ml: {
+      mTitle: "മധ്യസ്ഥത",
+      mPoints: ["പരസ്പര ഒത്തുതീർപ്പ്", "വളരെ രഹസ്യമായത്", "കോടതി ചെലവുകളുടെ ഒരു ഭാഗം", "30-90 ദിവസങ്ങൾക്കുള്ളിൽ പരിഹാരം"],
+      lTitle: "വ്യവഹാരം",
+      lPoints: ["കോടതി പോരാട്ടം", "പൊതു രേഖ", "ഉയർന്ന കോടതി & അഭിഭാഷക ഫീസ്", "ശരാശരി 2-5 വർഷമെടുക്കും"]
+    },
+    pa: {
+      mTitle: "ਵਿਚੋਲਗੀ",
+      mPoints: ["ਆਪਸੀ ਸਮਝੌਤੇ 'ਤੇ ਜ਼ੋਰ", "ਬਹੁਤ ਗੁਪਤ", "ਅਦਾਲਤੀ ਖਰਚਿਆਂ ਦਾ ਇੱਕ ਹਿੱਸਾ", "30-90 ਦਿਨਾਂ ਵਿੱਚ ਹੱਲ"],
+      lTitle: "ਮੁਕੱਦਮੇਬਾਜ਼ੀ",
+      lPoints: ["ਵਿਰੋਧੀ ਅਦਾਲਤੀ ਲੜਾਈ", "ਜਨਤਕ ਰਿਕਾਰਡ", "ਹਾਈ ਕੋਰਟ ਅਤੇ ਵਕੀਲ ਦੀ ਫੀਸ", "ਔਸਤਨ 2-5 ਸਾਲ ਲੱਗਦੇ ਹਨ"]
+    },
+    ur: {
+      mTitle: "ثالثی (Mediation)",
+      mPoints: ["باہمی تصفیہ پر زور", "انتہائی خفیہ", "عدالتی اخراجات کا ایک حصہ", "30-90 دنوں میں حل"],
+      lTitle: "مقدمہ بازی (Litigation)",
+      lPoints: ["مخالفانہ قانونی جنگ", "عوامی ریکارڈ", "ہائی کورٹ اور وکیل کی فیس", "اوسطاً 2-5 سال لگتے ہیں"]
+    }
+  };
+
+  const activeComp = compDict[avatarLang] || compDict.en;
 
   const handlePlayAvatarVideo = () => {
     setIsPlayingVideo(true);
@@ -306,6 +378,9 @@ export default function FilingConsole() {
         }
       });
       evidenceFiles.forEach(f => payload.append('evidence', f));
+      
+      // Append the mediation preference
+      payload.append('mediationRequested', formData.mediationRequested || false);
 
       const res = await axios.post("/cases", payload, {
         headers: { 'Content-Type': 'multipart/form-data' }
@@ -471,6 +546,19 @@ export default function FilingConsole() {
                   </select>
                 </div>
 
+                <div className="form-group">
+                  <label>Urgency Level</label>
+                  <select 
+                    className="wizard-input"
+                    value={formData.urgency}
+                    onChange={e => setFormData({...formData, urgency: e.target.value})}
+                  >
+                    <option value="Normal">Normal — Standard Processing</option>
+                    <option value="Urgent">Urgent — Requires Prompt Action</option>
+                    <option value="Emergency">Emergency — Immediate Life/Liberty Threat</option>
+                  </select>
+                </div>
+
                 {formData.sections && formData.sections.length > 0 && (
                   <div className="form-group">
                     <label>Applicable Law Sections</label>
@@ -603,23 +691,23 @@ export default function FilingConsole() {
           )}
         </div>
 
-        {/* ⚖️ PRE-FILING MEDIATION INTERCEPTION MODAL (ULTRA-PREMIUM AI STUDIO) */}
+        {/* ⚖️ PRE-FILING MEDIATION INTERCEPTION MODAL (COMPACT AI STUDIO) */}
         {showMediationInterception && interceptionData && (
-          <div className="expert-modal-overlay" style={{ padding: "20px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000, background: "rgba(5, 8, 16, 0.85)", backdropFilter: "blur(12px)" }}>
-            <div className="expert-modal-card" style={{ maxWidth: "760px", width: "100%", background: "linear-gradient(145deg, #0e1626 0%, #080c16 100%)", border: "1px solid rgba(201,168,76,0.4)", borderRadius: "22px", padding: "24px 28px", boxShadow: "0 30px 60px -15px rgba(0,0,0,0.9), 0 0 40px rgba(201,168,76,0.12)", color: "#fff", textAlign: "left", position: "relative" }}>
+          <div className="expert-modal-overlay" style={{ padding: "16px", display: "flex", alignItems: "center", justifyContent: "center", zIndex: 10000, background: "rgba(5, 8, 16, 0.85)", backdropFilter: "blur(12px)" }}>
+            <div className="expert-modal-card" style={{ maxWidth: "580px", width: "100%", background: "linear-gradient(145deg, #0e1626 0%, #080c16 100%)", border: "1px solid rgba(201,168,76,0.3)", borderRadius: "20px", padding: "20px 24px", boxShadow: "0 30px 60px -15px rgba(0,0,0,0.9), 0 0 40px rgba(201,168,76,0.1)", color: "#fff", textAlign: "left", position: "relative" }}>
               
               {/* TOP HEADER & LANGUAGE DROPDOWN */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "16px", marginBottom: "20px", flexWrap: "wrap", gap: "12px" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "12px" }}>
-                  <div style={{ width: "44px", height: "44px", borderRadius: "12px", background: "linear-gradient(135deg, rgba(201,168,76,0.25) 0%, rgba(201,168,76,0.05) 100%)", border: "1px solid rgba(201,168,76,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.4rem", boxShadow: "0 0 15px rgba(201,168,76,0.2)" }}>
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
+                  <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, rgba(201,168,76,0.25) 0%, rgba(201,168,76,0.05) 100%)", border: "1px solid rgba(201,168,76,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", boxShadow: "0 0 10px rgba(201,168,76,0.2)" }}>
                     ⚖️
                   </div>
                   <div>
-                    <h2 style={{ margin: 0, fontSize: "1.25rem", fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif", letterSpacing: "0.3px" }}>
-                      JurisVault™ Pre-Litigation Mediation Studio
+                    <h2 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif", letterSpacing: "0.2px" }}>
+                      JurisVault™ Mediation Studio
                     </h2>
-                    <span style={{ fontSize: "0.76rem", color: "#c9a84c", fontWeight: 700, letterSpacing: "0.8px", textTransform: "uppercase" }}>
-                      Governed by {interceptionData.actName} • Mandatory Protocol
+                    <span style={{ fontSize: "0.7rem", color: "#c9a84c", fontWeight: 700, letterSpacing: "0.5px", textTransform: "uppercase" }}>
+                      Governed by {interceptionData.actName || "The Mediation Act, 2023"}
                     </span>
                   </div>
                 </div>
@@ -627,17 +715,17 @@ export default function FilingConsole() {
                 {/* SLEEK GOLD PILL LANGUAGE SELECTOR */}
                 <div 
                   onClick={() => setIsLangModalOpen(true)}
-                  style={{ display: "flex", alignItems: "center", gap: "8px", background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.6)", padding: "6px 16px", borderRadius: "30px", boxShadow: "0 4px 10px rgba(0,0,0,0.3)", cursor: "pointer", transition: "all 0.2s" }}
+                  style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.5)", padding: "4px 12px", borderRadius: "20px", boxShadow: "0 4px 10px rgba(0,0,0,0.2)", cursor: "pointer", transition: "all 0.2s" }}
                 >
-                  <span style={{ fontSize: "0.78rem", color: "#c9a84c", fontWeight: 700 }}>🗣️ Language:</span>
-                  <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.85rem" }}>
+                  <span style={{ fontSize: "0.7rem", color: "#c9a84c", fontWeight: 700 }}>🗣️ Lang:</span>
+                  <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.75rem" }}>
                     {avatarScripts[avatarLang]?.flag || "🌐"} {avatarScripts[avatarLang]?.name || "English"} ▾
                   </span>
                 </div>
               </div>
 
               {/* CENTER: WIDESCREEN CINEMATIC EXECUTIVE AI PRESENTER SCREEN */}
-              <div style={{ position: "relative", width: "100%", height: "290px", background: "linear-gradient(135deg, #0a0f1d 0%, #050811 100%)", borderRadius: "16px", overflow: "hidden", border: "1px solid rgba(201,168,76,0.4)", boxShadow: "0 15px 35px rgba(0,0,0,0.7), inset 0 0 20px rgba(0,0,0,0.5)", marginBottom: "20px" }}>
+              <div style={{ position: "relative", width: "100%", height: "220px", background: "linear-gradient(135deg, #0a0f1d 0%, #050811 100%)", borderRadius: "12px", overflow: "hidden", border: "1px solid rgba(201,168,76,0.3)", boxShadow: "0 10px 25px rgba(0,0,0,0.6), inset 0 0 15px rgba(0,0,0,0.5)", marginBottom: "16px" }}>
                 
                 {/* ALWAYS-PRESENT VIDEO BACKGROUND WITH DUAL CDNS FOR ZERO FAILURE */}
                 <video
@@ -670,34 +758,34 @@ export default function FilingConsole() {
                       alignItems: "center",
                       justifyContent: "center",
                       background: "radial-gradient(circle, rgba(14,22,38,0.5) 0%, rgba(5,8,16,0.8) 100%)",
-                      backdropFilter: "blur(3px)",
+                      backdropFilter: "blur(2px)",
                       cursor: "pointer",
                       transition: "all 0.3s ease"
                     }}
                   >
                     <div style={{
-                      width: "72px",
-                      height: "72px",
+                      width: "56px",
+                      height: "56px",
                       borderRadius: "50%",
                       background: "linear-gradient(135deg, #c9a84c 0%, #a88520 100%)",
                       display: "flex",
                       alignItems: "center",
                       justifyContent: "center",
-                      boxShadow: "0 0 30px rgba(201,168,76,0.6)",
-                      marginBottom: "14px",
+                      boxShadow: "0 0 20px rgba(201,168,76,0.5)",
+                      marginBottom: "10px",
                       border: "2px solid #fff",
                       transition: "transform 0.2s"
                     }}
                     onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"}
                     onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
                     >
-                      <span style={{ fontSize: "1.8rem", marginLeft: "5px", color: "#090d16" }}>▶️</span>
+                      <span style={{ fontSize: "1.4rem", marginLeft: "4px", color: "#090d16" }}>▶️</span>
                     </div>
-                    <span style={{ fontSize: "1.05rem", fontWeight: 800, color: "#fff", letterSpacing: "1px", textShadow: "0 2px 6px rgba(0,0,0,0.9)", textTransform: "uppercase" }}>
+                    <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#fff", letterSpacing: "1px", textShadow: "0 2px 4px rgba(0,0,0,0.9)", textTransform: "uppercase" }}>
                       Start AI Legal Presenter
                     </span>
-                    <span style={{ fontSize: "0.8rem", color: "#c9a84c", fontWeight: 600, marginTop: "6px", background: "rgba(0,0,0,0.6)", padding: "4px 12px", borderRadius: "12px", border: "1px solid rgba(201,168,76,0.3)" }}>
-                      🎥 Synchronized Video & Audio Guidance in {avatarScripts[avatarLang]?.name}
+                    <span style={{ fontSize: "0.75rem", color: "#c9a84c", fontWeight: 600, marginTop: "6px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "10px", border: "1px solid rgba(201,168,76,0.3)" }}>
+                      🎥 Sync Video/Audio in {avatarScripts[avatarLang]?.name}
                     </span>
                   </div>
                 )}
@@ -705,19 +793,19 @@ export default function FilingConsole() {
                 {/* ACTIVE PLAYING STATE: LIVE TELEPROMPTER & EQUALIZER WAVES */}
                 {isPlayingVideo && (
                   <>
-                    <div style={{ position: "absolute", top: "14px", right: "14px", background: "rgba(9, 13, 22, 0.9)", padding: "6px 12px", borderRadius: "20px", display: "flex", alignItems: "center", gap: "8px", border: "1px solid rgba(34,197,94,0.5)", boxShadow: "0 4px 12px rgba(0,0,0,0.6)" }}>
-                      <span style={{ display: "inline-block", width: "8px", height: "8px", borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 10px #22c55e" }}></span>
-                      <span style={{ fontSize: "0.72rem", color: "#22c55e", fontWeight: 800, letterSpacing: "1px" }}>AI NARRATION LIVE</span>
-                      <div style={{ display: "flex", gap: "3px", alignItems: "center", height: "14px", marginLeft: "4px" }}>
-                        <span style={{ display: "inline-block", width: "3px", height: speechSynthesisActive ? "14px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
-                        <span style={{ display: "inline-block", width: "3px", height: speechSynthesisActive ? "8px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
-                        <span style={{ display: "inline-block", width: "3px", height: speechSynthesisActive ? "16px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
-                        <span style={{ display: "inline-block", width: "3px", height: speechSynthesisActive ? "10px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
+                    <div style={{ position: "absolute", top: "10px", right: "10px", background: "rgba(9, 13, 22, 0.9)", padding: "4px 10px", borderRadius: "16px", display: "flex", alignItems: "center", gap: "6px", border: "1px solid rgba(34,197,94,0.5)", boxShadow: "0 4px 10px rgba(0,0,0,0.5)" }}>
+                      <span style={{ display: "inline-block", width: "6px", height: "6px", borderRadius: "50%", background: "#22c55e", boxShadow: "0 0 8px #22c55e" }}></span>
+                      <span style={{ fontSize: "0.65rem", color: "#22c55e", fontWeight: 800, letterSpacing: "1px" }}>AI NARRATION</span>
+                      <div style={{ display: "flex", gap: "2px", alignItems: "center", height: "12px", marginLeft: "4px" }}>
+                        <span style={{ display: "inline-block", width: "2px", height: speechSynthesisActive ? "12px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
+                        <span style={{ display: "inline-block", width: "2px", height: speechSynthesisActive ? "6px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
+                        <span style={{ display: "inline-block", width: "2px", height: speechSynthesisActive ? "14px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
+                        <span style={{ display: "inline-block", width: "2px", height: speechSynthesisActive ? "8px" : "3px", background: "#38bdf8", transition: "height 0.2s" }}></span>
                       </div>
                     </div>
 
-                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(5, 8, 16, 0.96) 0%, rgba(9, 13, 22, 0.85) 75%, transparent 100%)", padding: "20px 20px 14px 20px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
-                      <p style={{ margin: 0, fontSize: "0.9rem", color: "#fff", lineHeight: 1.5, fontStyle: "italic", textShadow: "0 2px 4px rgba(0,0,0,0.9)", maxHeight: "56px", overflowY: "auto", fontWeight: 500 }}>
+                    <div style={{ position: "absolute", bottom: 0, left: 0, right: 0, background: "linear-gradient(to top, rgba(5, 8, 16, 0.96) 0%, rgba(9, 13, 22, 0.85) 75%, transparent 100%)", padding: "16px 16px 10px 16px", borderTop: "1px solid rgba(255,255,255,0.1)" }}>
+                      <p style={{ margin: 0, fontSize: "0.85rem", color: "#fff", lineHeight: 1.4, fontStyle: "italic", textShadow: "0 2px 4px rgba(0,0,0,0.9)", maxHeight: "48px", overflowY: "auto", fontWeight: 500 }}>
                         "{activeCaption}"
                       </p>
                     </div>
@@ -725,51 +813,76 @@ export default function FilingConsole() {
                 )}
               </div>
 
-              {/* BELOW VIDEO: CLEAN EXECUTIVE CASE STATEMENT (TIMELINE REMOVED!) */}
-              <div style={{ background: "rgba(255, 255, 255, 0.025)", border: "1px solid rgba(255, 255, 255, 0.08)", borderLeft: "4px solid #c9a84c", padding: "16px 20px", borderRadius: "10px", marginBottom: "22px", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)" }}>
-                <div style={{ display: "flex", alignItems: "center", gap: "8px", marginBottom: "8px" }}>
-                  <span style={{ fontSize: "0.95rem" }}>📜</span>
-                  <span style={{ fontSize: "0.78rem", color: "#c9a84c", fontWeight: 800, letterSpacing: "0.8px", textTransform: "uppercase" }}>
-                    Case Assessment & Rights Summary
+              {/* BELOW VIDEO: CLEAN EXECUTIVE CASE STATEMENT */}
+              <div style={{ background: "rgba(255, 255, 255, 0.025)", border: "1px solid rgba(255, 255, 255, 0.08)", borderLeft: "4px solid #c9a84c", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)" }}>
+                <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
+                  <span style={{ fontSize: "0.9rem" }}>📜</span>
+                  <span style={{ fontSize: "0.75rem", color: "#c9a84c", fontWeight: 800, letterSpacing: "0.6px", textTransform: "uppercase" }}>
+                    Case Assessment Summary
                   </span>
                 </div>
-                <p style={{ fontSize: "0.85rem", color: "rgba(255, 255, 255, 0.9)", lineHeight: 1.6, margin: 0, maxHeight: "85px", overflowY: "auto", paddingRight: "8px" }}>
+                <p style={{ fontSize: "0.8rem", color: "rgba(255, 255, 255, 0.9)", lineHeight: 1.5, margin: 0, maxHeight: "70px", overflowY: "auto", paddingRight: "6px" }}>
                   {(avatarLang === "en" && interceptionData?.script) 
                     ? interceptionData.script 
                     : (avatarScripts[avatarLang]?.script || interceptionData?.script)}
                 </p>
               </div>
 
-              {/* BOTTOM ACTIONS BAR (EXECUTIVE LAYOUT) */}
-              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "18px", flexWrap: "wrap", gap: "12px" }}>
+              {/* MEDIATION VS LITIGATION COMPARISON (DARK THEME) */}
+              <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
+                <div style={{ background: "rgba(22, 163, 74, 0.1)", border: "1px solid rgba(34, 197, 94, 0.3)", padding: "12px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+                  <div style={{ fontWeight: 800, color: "#4ade80", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <span style={{ fontSize: "1rem" }}>⚖️</span> {activeComp.mTitle}
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: "18px", color: "rgba(255, 255, 255, 0.8)", fontSize: "0.75rem", lineHeight: 1.6 }}>
+                    {activeComp.mPoints.map((pt, idx) => (
+                      <li key={idx}>{pt}</li>
+                    ))}
+                  </ul>
+                </div>
+                <div style={{ background: "rgba(220, 38, 38, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "12px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
+                  <div style={{ fontWeight: 800, color: "#f87171", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                    <span style={{ fontSize: "1rem" }}>🏛️</span> {activeComp.lTitle}
+                  </div>
+                  <ul style={{ margin: 0, paddingLeft: "18px", color: "rgba(255, 255, 255, 0.8)", fontSize: "0.75rem", lineHeight: 1.6 }}>
+                    {activeComp.lPoints.map((pt, idx) => (
+                      <li key={idx}>{pt}</li>
+                    ))}
+                  </ul>
+                </div>
+              </div>
+
+              {/* BOTTOM ACTIONS BAR */}
+              <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderTop: "1px solid rgba(255,255,255,0.1)", paddingTop: "16px", flexWrap: "wrap", gap: "10px" }}>
                 <button
                   onClick={() => {
                     if (isPlayingVideo) handleStopAvatarVideo();
                     setShowMediationInterception(false);
+                    setFormData(prev => ({...prev, mediationRequested: false}));
                     setStep(3);
                   }}
                   style={{
                     background: "transparent",
                     color: "rgba(255,255,255,0.65)",
                     border: "1px solid rgba(255,255,255,0.25)",
-                    padding: "10px 16px",
-                    borderRadius: "10px",
+                    padding: "8px 12px",
+                    borderRadius: "8px",
                     fontWeight: 600,
-                    fontSize: "0.8rem",
+                    fontSize: "0.75rem",
                     cursor: "pointer",
                     transition: "all 0.2s"
                   }}
                   onMouseOver={(e) => { e.target.style.color = "#fff"; e.target.style.borderColor = "rgba(255,255,255,0.5)"; e.target.style.background = "rgba(255,255,255,0.05)"; }}
                   onMouseOut={(e) => { e.target.style.color = "rgba(255,255,255,0.65)"; e.target.style.borderColor = "rgba(255,255,255,0.25)"; e.target.style.background = "transparent"; }}
                 >
-                  ⚡ Skip Mediation & Proceed Directly
+                  ⚡ Skip & Proceed to Court Filing
                 </button>
                 
-                <div style={{ display: "flex", gap: "10px", alignItems: "center" }}>
+                <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
                   {isPlayingVideo && (
                     <button
                       onClick={handleStopAvatarVideo}
-                      style={{ background: "rgba(239,68,68,0.15)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.4)", padding: "10px 16px", borderRadius: "10px", fontSize: "0.8rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
+                      style={{ background: "rgba(239,68,68,0.15)", color: "#fca5a5", border: "1px solid rgba(239,68,68,0.4)", padding: "8px 12px", borderRadius: "8px", fontSize: "0.75rem", fontWeight: 700, cursor: "pointer", transition: "all 0.2s" }}
                       onMouseOver={(e) => e.target.style.background = "rgba(239,68,68,0.3)"}
                       onMouseOut={(e) => e.target.style.background = "rgba(239,68,68,0.15)"}
                     >
@@ -780,26 +893,27 @@ export default function FilingConsole() {
                     onClick={() => {
                       if (isPlayingVideo) handleStopAvatarVideo();
                       setShowMediationInterception(false);
+                      setFormData(prev => ({...prev, mediationRequested: true}));
                       setStep(3);
                     }}
                     style={{
                       background: "linear-gradient(135deg, #c9a84c 0%, #a88520 100%)",
                       color: "#090d16",
                       border: "1px solid #e2c46e",
-                      padding: "10px 22px",
-                      borderRadius: "10px",
+                      padding: "8px 16px",
+                      borderRadius: "8px",
                       fontWeight: 800,
-                      fontSize: "0.85rem",
+                      fontSize: "0.75rem",
                       cursor: "pointer",
-                      boxShadow: "0 6px 20px rgba(201,168,76,0.35)",
+                      boxShadow: "0 4px 15px rgba(201,168,76,0.3)",
                       transition: "all 0.2s",
                       textTransform: "uppercase",
-                      letterSpacing: "0.5px"
+                      letterSpacing: "0.3px"
                     }}
-                    onMouseOver={(e) => { e.target.style.boxShadow = "0 8px 25px rgba(201,168,76,0.5)"; e.target.style.transform = "translateY(-1px)"; }}
-                    onMouseOut={(e) => { e.target.style.boxShadow = "0 6px 20px rgba(201,168,76,0.35)"; e.target.style.transform = "translateY(0)"; }}
+                    onMouseOver={(e) => { e.target.style.boxShadow = "0 6px 20px rgba(201,168,76,0.4)"; e.target.style.transform = "translateY(-1px)"; }}
+                    onMouseOut={(e) => { e.target.style.boxShadow = "0 4px 15px rgba(201,168,76,0.3)"; e.target.style.transform = "translateY(0)"; }}
                   >
-                    ✅ Agree & Continue Filing →
+                    Opt-in for Pre-Litigation Mediation →
                   </button>
                 </div>
               </div>
@@ -826,51 +940,6 @@ export default function FilingConsole() {
                     We've found {matchedLawyers.length} verified advocate{matchedLawyers.length === 1 ? '' : 's'} qualified to represent your {formData.legalType} case.
                   </p>
                   
-                  {mediationData && (
-                    <div style={{
-                      background: "rgba(139, 92, 246, 0.08)",
-                      border: "1px solid rgba(139, 92, 246, 0.3)",
-                      borderRadius: "12px",
-                      padding: "14px",
-                      margin: "12px 0",
-                      textAlign: "left"
-                    }}>
-                      <div style={{ display: "flex", alignItems: "center", gap: "10px", marginBottom: "6px" }}>
-                        <span style={{ fontSize: "1.3rem" }}>⚖️</span>
-                        <div>
-                          <h4 style={{ margin: 0, color: "#7c3aed", fontSize: "0.95rem" }}>Eligible for The Mediation Act, 2023</h4>
-                          <span style={{ fontSize: "0.72rem", color: "#64748b" }}>Faster (30-90 days), private & mutually acceptable settlement</span>
-                        </div>
-                      </div>
-                      <p style={{ fontSize: "0.82rem", color: "#334155", fontStyle: "italic", lineHeight: 1.4, margin: "6px 0" }}>
-                        "{mediationData.script || "Based on your willingness to discuss custody and maintenance with a neutral mediator, this dispute qualifies for pre-litigation mediation."}"
-                      </p>
-                      <div style={{ display: "flex", alignItems: "center", justifyContent: "space-between", marginTop: "10px", flexWrap: "wrap", gap: "8px" }}>
-                        <span style={{ fontSize: "0.78rem", color: "#10b981", fontWeight: 600, display: "flex", alignItems: "center", gap: "5px" }}>
-                          ✅ AI Explanation Video Ready
-                        </span>
-                        <button 
-                          onClick={() => {
-                            alert("Mediation Appointment Requested Successfully! A certified mediator will contact you shortly.");
-                            navigate("/dashboard");
-                          }} 
-                          style={{
-                            background: "#7c3aed",
-                            color: "#fff",
-                            border: "none",
-                            padding: "6px 12px",
-                            borderRadius: "6px",
-                            fontSize: "0.78rem",
-                            cursor: "pointer",
-                            fontWeight: 600
-                          }}
-                        >
-                          Book Appointment for Mediation
-                        </button>
-                      </div>
-                    </div>
-                  )}
-
                   <div className="matched-lawyers-list" style={{ marginTop: "14px" }}>
                     {matchedLawyers.length > 0 ? (
                       matchedLawyers.map(lawyer => (

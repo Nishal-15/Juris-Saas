@@ -30,31 +30,12 @@ const server = http.createServer(app);
    SOCKET.IO CONFIG
 ======================= */
 // ✅ DYNAMIC CORS: Fixes the Localhost -> Vercel cross-domain blocking for Video & Chat
-const io = socketio(server, {
-  cors: {
-    origin: ["http://localhost:5173", "http://localhost:5174", "http://localhost:5175", "https://jurisbot.vercel.app"],
-    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
-    credentials: true
-  }
-});
-
-app.set("io", io);
-
-/* =======================
-   DATABASE
-======================= */
-connectDB();
-
-/* =======================
-   MIDDLEWARE
-======================= */
 const ALLOWED = (
   process.env.ALLOWED_ORIGINS || ""
 ).split(",")
   .map(o => o.trim())
   .filter(Boolean)
 
-/* Always allow these in development and production */
 const DEV_ORIGINS = [
   "http://localhost:5173",
   "http://localhost:5174",
@@ -71,6 +52,31 @@ const DEV_ORIGINS = [
 const ALL_ALLOWED = [
   ...new Set([...ALLOWED, ...DEV_ORIGINS])
 ]
+
+const io = socketio(server, {
+  cors: {
+    origin: function(origin, callback) {
+      if (!origin || ALL_ALLOWED.includes(origin) || process.env.NODE_ENV !== "production") {
+        return callback(null, true);
+      }
+      return callback(new Error(`Socket CORS blocked origin: ${origin}`), false);
+    },
+    methods: ["GET", "POST", "PATCH", "PUT", "DELETE"],
+    credentials: true
+  }
+});
+
+app.set("io", io);
+
+/* =======================
+   DATABASE
+======================= */
+connectDB();
+
+/* =======================
+   MIDDLEWARE
+======================= */
+/* Moved to top */
 
 app.use(cors({
   origin: function (origin, callback) {

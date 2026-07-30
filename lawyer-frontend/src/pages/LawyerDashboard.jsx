@@ -24,15 +24,20 @@ export default function LawyerDashboard() {
 
   const fetchData = async () => {
     try {
-      const [statsRes, pendingRes, openRes, requestedCasesRes, activeCasesRes] = await Promise.all([
+      const [statsRes, pendingRes, openRes, requestedCasesRes, activeCasesRes, userRes] = await Promise.all([
         axios.get("/analytics/lawyer"),
         axios.get("/appointments/received"),
         axios.get("/cases/open"),
         axios.get("/cases/requested"),
-        axios.get("/cases/my") // Fetching already accepted cases
+        axios.get("/cases/my"), // Fetching already accepted cases
+        axios.get(`/auth/user/${user._id}`) // Fetch latest user status
       ]);
       setStats(statsRes.data);
       setSubInfo(statsRes.data.subscription || subInfo);
+
+      if (userRes.data && userRes.data.isBlocked) {
+        setStats(prev => ({ ...prev, isBlockedByAdmin: true }));
+      }
 
       // 1. Pending Queue (Unaccepted Case Requests + Pending Appointments)
       const mergedPending = [
@@ -47,8 +52,7 @@ export default function LawyerDashboard() {
           time: new Date(c.createdAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
         }))
       ];
-      setPending(mergedPending);
-
+      
       // 2. Active Workspace (Accepted Cases + Scheduled Appointments)
       const activeStatuses = ["In Progress", "Hearing Scheduled", "Verdict Pending", "Accepted"];
       const activeCaseList = activeCasesRes.data.filter(c => activeStatuses.includes(c.status));
@@ -75,18 +79,27 @@ export default function LawyerDashboard() {
           status: "ACCEPTED"
         }))
       ];
-      setActiveWorkspace(mergedActive);
 
-      // REAL-TIME STAT SYNC (Calculate locally for 100% accuracy)
+      // Filter for UI display (Strictly Litigations)
+      const litigationPending = mergedPending.filter(p => !p.caseId?.isMediationTrack);
+      const litigationActive = mergedActive.filter(a => !a.caseId?.isMediationTrack);
+
+      setPending(litigationPending);
+      setActiveWorkspace(litigationActive);
+
+      // REAL-TIME STAT SYNC (Calculate locally for 100% accuracy using ALL cases including mediation)
       const uniqueClients = new Set(mergedActive.map(a => a.userId?._id || a.userId));
+      const mediationCount = activeCasesRes.data.filter(c => c.isMediationTrack).length;
+      
       setStats({
         activeClients: uniqueClients.size,
-        activeCases: mergedActive.length,
-        pendingReviews: mergedPending.length,
+        activeCases: litigationActive.length, // Only count litigation for the main 'Cases' box
+        activeMediations: mediationCount,
+        pendingReviews: litigationPending.length,
         expertName: statsRes.data.expertName
       });
 
-      setOpenCases(openRes.data);
+      setOpenCases(openRes.data.filter(c => !c.isMediationTrack));
     } catch (err) {
       console.error("Dashboard fetch error:", err);
     } finally {
@@ -212,6 +225,30 @@ export default function LawyerDashboard() {
           </button>
         </div>
       )}
+      
+      {/* 🔴 ADMIN BLOCK OVERLAY */}
+      {stats.isBlockedByAdmin && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(15, 17, 26, 0.95)', zIndex: 999999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: 'white', backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '20px' }}>🛑</div>
+          <h1 style={{ fontSize: '2.5rem', color: '#ef4444', marginBottom: '10px' }}>Account Suspended</h1>
+          <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: '500px', textAlign: 'center', lineHeight: '1.6' }}>
+            Your JurisBot practitioner account has been blocked by the Administrator. 
+            You are currently in <strong>View-Only Mode</strong>. You cannot accept new cases, reply to clients, or access the marketplace.
+          </p>
+          <button 
+            onClick={() => { localStorage.clear(); window.location.href = '/login'; }}
+            style={{ marginTop: '30px', background: 'transparent', border: '1px solid #ef4444', color: '#ef4444', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+          >
+            Logout
+          </button>
+        </div>
+      )}
+      
       <Sidebar />
 
       <div className="ld-body">
@@ -269,6 +306,8 @@ export default function LawyerDashboard() {
               icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87M16 3.13a4 4 0 010 7.75"/></svg> },
             { label: "Active Cases", value: stats.activeCases || 0, accent: "#c9a84c",
               icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><rect x="2" y="7" width="20" height="14" rx="2"/><path d="M16 7V5a2 2 0 00-2-2h-4a2 2 0 00-2 2v2"/></svg> },
+            { label: "ADR / Mediations", value: stats.activeMediations || 0, accent: "#8b5cf6",
+              icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg> },
             { label: "Pending Reviews", value: stats.pendingReviews || 0, accent: "#10b981",
               icon: <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg> },
           ].map((s) => (
@@ -329,6 +368,11 @@ export default function LawyerDashboard() {
                         <div className="ld-client-avatar">{(p.userId?.name?.[0] || "A").toUpperCase()}</div>
                         <span className="ld-client-name">{p.userId?.name || "Anonymous Client"}</span>
                       </div>
+                      {p.caseId?.isMediationTrack && (
+                        <span style={{ fontSize: '11px', color: '#c4b5fd', fontWeight: '700', padding: '4px 8px', background: 'rgba(139, 92, 246, 0.15)', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                          Mediation Request
+                        </span>
+                      )}
                     </div>
 
                     <div className="ld-card-footer">
@@ -338,7 +382,7 @@ export default function LawyerDashboard() {
                           Accept
                         </button>
                         {p.caseId && (
-                          <button className="ld-card-btn secondary" onClick={() => navigate(`/case/${p.caseId._id}`)}>
+                          <button className="ld-card-btn secondary" onClick={() => navigate(p.caseId.isMediationTrack ? `/mediation-workspace/${p.caseId._id}` : `/case/${p.caseId._id}`)}>
                             Review Brief
                           </button>
                         )}
@@ -380,6 +424,11 @@ export default function LawyerDashboard() {
                         <div className="ld-client-avatar" style={{ background: '#3b82f6', color: '#fff' }}>{(p.userId?.name?.[0] || "A").toUpperCase()}</div>
                         <span className="ld-client-name">{p.userId?.name || "Anonymous Client"}</span>
                       </div>
+                      {p.caseId?.isMediationTrack && (
+                        <span style={{ fontSize: '11px', color: '#c4b5fd', fontWeight: '700', padding: '4px 8px', background: 'rgba(139, 92, 246, 0.15)', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                          Mediation Track
+                        </span>
+                      )}
                     </div>
 
                     <div className="ld-card-footer">
@@ -389,7 +438,7 @@ export default function LawyerDashboard() {
                           Consult
                         </button>
                         {p.caseId && (
-                          <button className="ld-card-btn secondary" onClick={() => navigate(`/case/${p.caseId._id}`)}>
+                          <button className="ld-card-btn secondary" onClick={() => navigate(p.caseId.isMediationTrack ? `/mediation-workspace/${p.caseId._id}` : `/case/${p.caseId._id}`)}>
                             Brief
                           </button>
                         )}
@@ -431,7 +480,13 @@ export default function LawyerDashboard() {
                         <div className="ld-client-avatar">{(c.user?.name?.[0] || "A").toUpperCase()}</div>
                         <span className="ld-client-name">{c.user?.name || "Anonymous Client"}</span>
                       </div>
-                      <span style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '700', padding: '4px 8px', background: 'rgba(201,168,76,0.1)', borderRadius: '6px' }}>{c.type}</span>
+                      {c.isMediationTrack ? (
+                        <span style={{ fontSize: '11px', color: '#c4b5fd', fontWeight: '700', padding: '4px 8px', background: 'rgba(139, 92, 246, 0.15)', borderRadius: '6px', border: '1px solid rgba(139, 92, 246, 0.3)' }}>
+                          Mediation Request
+                        </span>
+                      ) : (
+                        <span style={{ fontSize: '11px', color: 'var(--gold)', fontWeight: '700', padding: '4px 8px', background: 'rgba(201,168,76,0.1)', borderRadius: '6px' }}>{c.type}</span>
+                      )}
                     </div>
 
                     <div className="ld-card-footer">
@@ -439,7 +494,7 @@ export default function LawyerDashboard() {
                         <button className="ld-card-btn primary" onClick={() => handleTakeCase(c._id)}>
                           Claim Case
                         </button>
-                        <button className="ld-card-btn secondary" onClick={() => navigate(`/case/${c._id}`)}>
+                        <button className="ld-card-btn secondary" onClick={() => navigate(c.isMediationTrack ? `/mediation-workspace/${c._id}` : `/case/${c._id}`)}>
                           View Brief
                         </button>
                       </div>
