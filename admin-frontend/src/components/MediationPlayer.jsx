@@ -109,18 +109,41 @@ export default function MediationPlayer({
           70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(201,168,76,0); }
           100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(201,168,76,0); }
         }
+        .med-player-glass {
+          background: rgba(10, 12, 18, 0.65);
+          backdrop-filter: blur(24px);
+          -webkit-backdrop-filter: blur(24px);
+          border: 1px solid rgba(255, 255, 255, 0.08);
+          box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.06);
+        }
+        .med-btn-hover:hover {
+          transform: translateY(-1px);
+          box-shadow: 0 8px 20px -6px rgba(201, 168, 76, 0.4);
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+          width: 6px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+          background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+          background: rgba(255,255,255,0.1);
+          border-radius: 10px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
+          background: rgba(255,255,255,0.2);
+        }
       `}</style>
 
       <div
+        className="med-player-glass"
         style={{
-          maxWidth: "680px",
-          width: "100%",
-          background: "#0d0f1a",
-          border: "1px solid rgba(201,168,76,0.3)",
+          maxWidth: "520px",
+          width: "95%",
           borderRadius: "20px",
           overflow: "hidden",
           position: "relative",
-          boxShadow: "0 25px 50px -12px rgba(0, 0, 0, 0.7)"
+          animation: "slideDown 0.4s cubic-bezier(0.16, 1, 0.3, 1)"
         }}
       >
         {/* Close Button */}
@@ -128,13 +151,13 @@ export default function MediationPlayer({
           onClick={onClose}
           style={{
             position: "absolute",
-            top: "16px",
-            right: "16px",
-            background: "rgba(255,255,255,0.08)",
-            border: "1px solid rgba(255,255,255,0.12)",
+            top: "14px",
+            right: "14px",
+            background: "rgba(0,0,0,0.3)",
+            border: "1px solid rgba(255,255,255,0.1)",
             borderRadius: "50%",
-            width: "32px",
-            height: "32px",
+            width: "28px",
+            height: "28px",
             color: "white",
             cursor: "pointer",
             display: "flex",
@@ -143,36 +166,38 @@ export default function MediationPlayer({
             zIndex: 10
           }}
         >
-          <X size={18} />
+          <X size={14} />
         </button>
 
         {/* HEADER SECTION */}
         <div
           style={{
-            background: "linear-gradient(135deg, rgba(201,168,76,0.15), rgba(201,168,76,0.05))",
-            padding: "20px 24px",
-            borderBottom: "1px solid rgba(201,168,76,0.2)",
+            background: "linear-gradient(180deg, rgba(201,168,76,0.12) 0%, rgba(201,168,76,0) 100%)",
+            padding: "24px 24px 16px",
             position: "relative"
           }}
         >
           <div
             style={{
               display: "inline-block",
-              background: "rgba(201,168,76,0.2)",
-              color: "#c9a84c",
-              fontSize: "0.75rem",
+              background: "rgba(201,168,76,0.15)",
+              border: "1px solid rgba(201,168,76,0.3)",
+              color: "#e8c96a",
+              fontSize: "0.65rem",
               fontWeight: 700,
-              padding: "2px 10px",
+              padding: "3px 10px",
               borderRadius: "12px",
-              marginBottom: "8px"
+              marginBottom: "12px",
+              letterSpacing: "0.8px",
+              textTransform: "uppercase"
             }}
           >
             Mediation Act 2023
           </div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: "white", fontSize: "1.3rem", fontWeight: 700 }}>
+          <div style={{ fontFamily: "'Playfair Display', serif", color: "#ffffff", fontSize: "1.4rem", fontWeight: 600, letterSpacing: "-0.3px", lineHeight: "1.2" }}>
             {mediationInfo.mediationAct?.actName || "The Mediation Act, 2023"}
           </div>
-          <div style={{ color: "#8b949e", fontSize: "0.75rem", marginTop: "4px" }}>
+          <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", marginTop: "6px", fontWeight: 400 }}>
             Enforced {mediationInfo.mediationAct?.enforcedDate || "9 October 2023"}
           </div>
 
@@ -213,8 +238,8 @@ export default function MediationPlayer({
           </div>
         </div>
 
-        {/* VIDEO / CONTENT SECTION */}
-        <div style={{ padding: "24px", background: "#080a12" }}>
+        {/* CONTENT SECTION */}
+        <div style={{ padding: "0 24px 24px", background: "transparent" }}>
           {videoStatus === "loading" && (
             <div style={{ padding: "20px 0", textAlign: "center" }}>
               <div
@@ -294,19 +319,20 @@ export default function MediationPlayer({
 
           {videoStatus === "fallback" && (
             <div>
-              <div style={{ display: "flex", alignItems: "center", gap: "8px", color: "#c9a84c", fontWeight: 600, fontSize: "0.95rem", marginBottom: "12px" }}>
-                <BookOpen size={18} color="#c9a84c" />
-                <span>Your Mediation Explanation</span>
+              <div style={{ display: "flex", alignItems: "center", gap: "6px", color: "rgba(201,168,76,0.9)", fontWeight: 500, fontSize: "0.8rem", marginBottom: "8px", textTransform: "uppercase", letterSpacing: "0.5px" }}>
+                <BookOpen size={14} color="rgba(201,168,76,0.9)" />
+                <span>Mediation Explanation</span>
               </div>
               <div
+                className="custom-scrollbar"
                 style={{
-                  background: "rgba(255,255,255,0.04)",
-                  border: "1px solid rgba(201,168,76,0.15)",
+                  background: "rgba(0,0,0,0.2)",
+                  border: "1px solid rgba(255,255,255,0.05)",
                   borderRadius: "12px",
-                  padding: "20px",
-                  fontSize: "0.95rem",
-                  color: "rgba(255,255,255,0.85)",
-                  maxHeight: "280px",
+                  padding: "16px",
+                  fontSize: "0.85rem",
+                  color: "rgba(255,255,255,0.75)",
+                  maxHeight: "180px",
                   overflowY: "auto",
                   whiteSpace: "pre-wrap",
                   direction: isRTL(mediationInfo.lang || "en") ? "rtl" : "ltr",
@@ -314,62 +340,68 @@ export default function MediationPlayer({
                   fontFamily: isRTL(mediationInfo.lang || "en")
                     ? "'Noto Nastaliq Urdu', serif"
                     : "'Inter', sans-serif",
-                  lineHeight: isRTL(mediationInfo.lang || "en") ? 2.2 : 1.8
+                  lineHeight: isRTL(mediationInfo.lang || "en") ? 2.0 : 1.6
                 }}
               >
                 {scriptText}
               </div>
-              <div style={{ color: "#8b949e", fontSize: "0.72rem", textAlign: "center", marginTop: "12px" }}>
-                AI video unavailable — text explanation shown
-              </div>
             </div>
           )}
 
-          {/* BENEFITS STRIP */}
-          <div style={{ display: "flex", gap: "12px", marginTop: "24px" }}>
+          {/* BENEFITS STRIP - COMPACT */}
+          <div style={{ display: "flex", gap: "8px", marginTop: "16px" }}>
             <div
               style={{
                 flex: 1,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "12px",
-                padding: "14px 16px",
-                textAlign: "center"
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.04)",
+                borderRadius: "8px",
+                padding: "10px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start"
               }}
             >
-              <div style={{ fontSize: "1.6rem", marginBottom: "6px" }}>⏱</div>
-              <div style={{ fontWeight: 700, color: "#c9a84c", fontSize: "0.9rem" }}>30-90 Days</div>
-              <div style={{ color: "#8b949e", fontSize: "0.72rem" }}>vs 3-5 years in court</div>
+              <div style={{ fontWeight: 600, color: "#e8c96a", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span>⏱</span> 30-90 Days
+              </div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", marginTop: "2px" }}>vs 3-5 years</div>
             </div>
 
             <div
               style={{
                 flex: 1,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "12px",
-                padding: "14px 16px",
-                textAlign: "center"
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.04)",
+                borderRadius: "8px",
+                padding: "10px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start"
               }}
             >
-              <div style={{ fontSize: "1.6rem", marginBottom: "6px" }}>💰</div>
-              <div style={{ fontWeight: 700, color: "#c9a84c", fontSize: "0.9rem" }}>Fraction of Cost</div>
-              <div style={{ color: "#8b949e", fontSize: "0.72rem" }}>vs lakhs in court fees</div>
+              <div style={{ fontWeight: 600, color: "#e8c96a", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span>💰</span> Fraction of Cost
+              </div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", marginTop: "2px" }}>vs court fees</div>
             </div>
 
             <div
               style={{
                 flex: 1,
-                background: "rgba(255,255,255,0.04)",
-                border: "1px solid rgba(255,255,255,0.08)",
-                borderRadius: "12px",
-                padding: "14px 16px",
-                textAlign: "center"
+                background: "rgba(255,255,255,0.02)",
+                border: "1px solid rgba(255,255,255,0.04)",
+                borderRadius: "8px",
+                padding: "10px",
+                display: "flex",
+                flexDirection: "column",
+                alignItems: "flex-start"
               }}
             >
-              <div style={{ fontSize: "1.6rem", marginBottom: "6px" }}>🔒</div>
-              <div style={{ fontWeight: 700, color: "#c9a84c", fontSize: "0.9rem" }}>Private</div>
-              <div style={{ color: "#8b949e", fontSize: "0.72rem" }}>Nothing becomes public record</div>
+              <div style={{ fontWeight: 600, color: "#e8c96a", fontSize: "0.75rem", display: "flex", alignItems: "center", gap: "4px" }}>
+                <span>🔒</span> Private
+              </div>
+              <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.65rem", marginTop: "2px" }}>Confidential</div>
             </div>
           </div>
         </div>
@@ -379,29 +411,36 @@ export default function MediationPlayer({
           <div
             style={{
               padding: "20px 24px",
-              background: "rgba(0,0,0,0.3)",
-              borderTop: "1px solid rgba(255,255,255,0.06)"
+              background: "rgba(0,0,0,0.4)",
+              borderTop: "1px solid rgba(255,255,255,0.04)",
+              display: "flex",
+              flexDirection: "column",
+              gap: "12px"
             }}
           >
-            <div style={{ color: "white", fontSize: "0.9rem", fontWeight: 600, marginBottom: "12px" }}>
+            <div style={{ color: "rgba(255,255,255,0.7)", fontSize: "0.8rem", fontWeight: 500, textAlign: "center" }}>
               How would you like to proceed?
             </div>
-            <div style={{ display: "flex", gap: "12px", marginBottom: "12px" }}>
+            <div style={{ display: "flex", gap: "12px" }}>
               <button
+                className="med-btn-hover"
                 onClick={onChooseMediator}
                 style={{
-                  background: "linear-gradient(135deg, #059669, #10b981)",
+                  background: "linear-gradient(135deg, #10b981 0%, #059669 100%)",
                   color: "white",
-                  padding: "12px 20px",
+                  padding: "12px 16px",
                   borderRadius: "10px",
-                  border: "none",
-                  fontWeight: 700,
+                  border: "1px solid rgba(255,255,255,0.1)",
+                  fontWeight: 600,
+                  fontSize: "0.85rem",
                   cursor: "pointer",
                   flex: 1,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "8px"
+                  gap: "8px",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 8px rgba(16, 185, 129, 0.2)"
                 }}
               >
                 <Scale size={16} />
@@ -409,28 +448,29 @@ export default function MediationPlayer({
               </button>
 
               <button
+                className="med-btn-hover"
                 onClick={onChooseLawyer}
                 style={{
-                  background: "linear-gradient(135deg, #c9a84c, #e8c96a)",
-                  color: "#0f0e09",
-                  padding: "12px 20px",
+                  background: "linear-gradient(135deg, #d4af37 0%, #aa8c2c 100%)",
+                  color: "#0a0a0a",
+                  padding: "12px 16px",
                   borderRadius: "10px",
                   border: "none",
                   fontWeight: 700,
+                  fontSize: "0.85rem",
                   cursor: "pointer",
                   flex: 1,
                   display: "flex",
                   alignItems: "center",
                   justifyContent: "center",
-                  gap: "8px"
+                  gap: "8px",
+                  transition: "all 0.2s ease",
+                  boxShadow: "0 2px 8px rgba(212, 175, 55, 0.2)"
                 }}
               >
                 <Users size={16} />
                 <span>Find a Lawyer</span>
               </button>
-            </div>
-            <div style={{ color: "#8b949e", fontSize: "0.72rem", textAlign: "center" }}>
-              Both options are free to explore. JurisBot will match you to the right professional.
             </div>
           </div>
         )}

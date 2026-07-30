@@ -6,6 +6,7 @@ import Login from "./auth/Login";
 import Register from "./auth/Register";
 import LawyerDashboard from "./pages/LawyerDashboard";
 import AssignedCases from "./pages/AssignedCases";
+import MediationCases from "./pages/MediationCases";
 import MessagesList from "./pages/MessagesList";
 import VideoCall from "./pages/VideoCall";
 
@@ -18,6 +19,8 @@ import LegalDrafter from "./pages/LegalDrafter";
 import PendingVerification from "./pages/PendingVerification";
 import ResetPassword from "./auth/ResetPassword";
 import PwaInstallPill from "./components/PwaInstallPill";
+import MediationWorkspace from "./pages/MediationWorkspace";
+
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
   
@@ -107,12 +110,14 @@ export default function App() {
       {/* Lawyer Workspace */}
       <Route path="/lawyer/dashboard" element={<LawyerDashboard />} />
       <Route path="/lawyer/cases" element={<AssignedCases />} />
+      <Route path="/lawyer/mediation" element={<MediationCases />} />
       <Route path="/lawyer/notifications" element={<Notifications />} />
       <Route path="/lawyer/messages" element={<MessagesList />} />
       <Route path="/lawyer/subscription" element={<Subscription />} />
       <Route path="/lawyer/document-analyzer" element={<DocumentAnalyzer />} />
       <Route path="/lawyer/drafter" element={<LegalDrafter />} />
       <Route path="/case/:id" element={<CaseDetails />} />
+      <Route path="/mediation-workspace/:id" element={<MediationWorkspace />} />
 
       {/* Secure Consultation Console */}
       <Route path="/chat/:id" element={<ChatPage />} />

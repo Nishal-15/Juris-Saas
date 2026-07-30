@@ -32,7 +32,7 @@ const LawyerSchema = new mongoose.Schema({
     type: String, 
     default: "Trial" 
   },
-  caseLimit: { type: Number, default: 2 }, // Trial limit
+  caseLimit: { type: Number, default: 5 }, // Trial limit
   casesClaimedCount: { type: Number, default: 0 },
   subscriptionStartedAt: { type: Date, default: Date.now },
   subscriptionExpiresAt: { 

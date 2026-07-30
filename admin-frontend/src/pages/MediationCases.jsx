@@ -225,9 +225,15 @@ export default function MediationCases() {
               keyBenefit: "Faster private resolution"
             }
           }}
-          onChooseMediator={() => {
+          onChooseMediator={async () => {
             setShowPlayer(false);
-            toast.info("Mediator connection coming soon.");
+            try {
+              await API.put(`/admin/cases/${selectedCase._id}/status`, { status: "Mediation Active" });
+              toast.success("Mediator assigned successfully! Case moved to Mediation Active.");
+              fetchMediationCases();
+            } catch (err) {
+              toast.error("Failed to assign mediator.");
+            }
           }}
           onChooseLawyer={() => {
             setShowPlayer(false);

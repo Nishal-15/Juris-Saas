@@ -1,0 +1,31 @@
+directories:
+  output: dist-electron
+  buildResources: build
+appId: com.jurisbot.lawyer
+productName: JurisBot PRO
+copyright: Copyright © 2025 JurisBot
+files:
+  - filter:
+      - dist/**/*
+      - electron/**/*
+      - public/logo.png
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/logo.png
+mac:
+  target: dmg
+  icon: public/logo.png
+  category: public.app-category.productivity
+linux:
+  target: AppImage
+  icon: public/logo.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: JurisBot PRO
+electronVersion: 31.7.7

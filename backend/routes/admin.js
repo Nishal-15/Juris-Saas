@@ -246,27 +246,58 @@ router.get("/all-cases", auth(["admin"]), async (req, res) => {
   }
 });
 
+// 🔄 UPDATE CASE STATUS (ADMIN)
+router.put("/cases/:id/status", auth(["admin"]), async (req, res) => {
+  try {
+    const updatedCase = await Case.findByIdAndUpdate(
+      req.params.id,
+      { $set: { status: req.body.status } },
+      { new: true }
+    );
+    if (!updatedCase) return res.status(404).json({ message: "Case not found" });
+    res.json(updatedCase);
+  } catch (err) {
+    res.status(500).json({ message: err.message });
+  }
+});
+
+// Block/Unblock Lawyer
+router.patch("/block-lawyer/:id", auth(["admin"]), async (req, res) => {
+  try {
+    const { isBlocked } = req.body;
+    const lawyer = await User.findOneAndUpdate(
+      { _id: req.params.id, role: "lawyer" },
+      { $set: { isBlocked } },
+      { new: true }
+    );
+    if (!lawyer) return res.status(404).json({ message: "Lawyer not found." });
+    res.json({ message: `Lawyer ${isBlocked ? 'blocked' : 'unblocked'} successfully`, lawyer });
+  } catch (error) {
+    res.status(500).json({ message: "Server error blocking lawyer." });
+  }
+});
+
 // 📢 BROADCAST SIGNAL (TO ALL OR TARGETED)
 router.post("/broadcast", auth(["admin"]), async (req, res) => {
   try {
-    const { target, title, message, priority } = req.body;
+    const { target, title, message, priority, lang } = req.body;
     const io = req.app.get("io");
-
-    // 1. DATABASE PERSISTENCE (Optional: store in a Broadcasts collection)
-    // 2. REAL-TIME SIGNAL
-    if (target === "all") {
-      io.emit("institutional-broadcast", { title, message, priority });
+    
+    if (target === "lawyer") {
+      io.emit("institutional-broadcast-lawyer", { title, message, priority, lang });
+    } else if (target === "citizen") {
+      io.emit("institutional-broadcast", { title, message, priority, lang });
     } else {
-      // Logic for specific roles if needed
-      io.emit(`institutional-broadcast-${target}`, { title, message, priority });
+      io.emit("institutional-broadcast", { title, message, priority, lang });
+      io.emit("institutional-broadcast-lawyer", { title, message, priority, lang });
     }
-
-    console.log(`📡 BROADCAST: [${priority}] ${title} sent to ${target}`);
-    res.json({ message: "Signal transmitted successfully across the grid." });
-  } catch (err) {
-    res.status(500).json({ message: "Signal transmission failed." });
+    
+    res.json({ message: "Broadcast sent successfully" });
+  } catch (error) {
+    res.status(500).json({ message: "Failed to broadcast signal" });
   }
 });
+
 /* TRIGGER LAW AUTO-SYNC */
 router.post(
   "/trigger-law-sync",

@@ -1,0 +1,33 @@
+directories:
+  output: dist-electron
+  buildResources: build
+appId: com.jurisbot.citizen
+productName: JurisBot Citizen
+copyright: Copyright © 2025 JurisBot
+files:
+  - filter:
+      - dist/**/*
+      - electron/**/*
+      - public/logo.png
+win:
+  target:
+    - target: nsis
+      arch:
+        - x64
+  icon: public/logo.png
+mac:
+  target: dmg
+  icon: public/logo.png
+  category: public.app-category.productivity
+linux:
+  target: AppImage
+  icon: public/logo.png
+nsis:
+  oneClick: false
+  allowToChangeInstallationDirectory: true
+  installerIcon: public/logo.png
+  uninstallerIcon: public/logo.png
+  createDesktopShortcut: true
+  createStartMenuShortcut: true
+  shortcutName: JurisBot Citizen
+electronVersion: 28.3.3

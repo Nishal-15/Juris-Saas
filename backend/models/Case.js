@@ -14,7 +14,6 @@ const CaseSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Open", "Pending Expert Acceptance", "Requested", "In Progress", "Hearing Scheduled", "Verdict Pending", "Closed"],
     default: "Open"
   },
   user: {
@@ -58,6 +57,10 @@ const CaseSchema = new mongoose.Schema({
     default: "mid"
   },
   isMediationEligible: {
+    type: Boolean,
+    default: false
+  },
+  isMediationTrack: {
     type: Boolean,
     default: false
   },

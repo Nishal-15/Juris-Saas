@@ -47,18 +47,19 @@ router.patch("/upgrade", auth(["lawyer"]), async (req, res) => {
     const { planType } = req.body; // "Starter" or "Pro"
     
     if (!planType ||
-        !["Starter","Pro"].includes(planType)
+        !["Starter","Pro","Unlimited"].includes(planType)
     ) {
       return res.status(400).json({
         message:
           "Invalid plan. " +
-          "Choose Starter or Pro."
+          "Choose Starter, Pro, or Unlimited."
       })
     }
 
     const plans = {
-      "Starter": { limit: 10  },
-      "Pro":     { limit: 9999 } // Unlimited
+      "Starter":   { limit: 9999 }, // Now Unlimited cases for 1 user
+      "Pro":       { limit: 9999 }, // Unlimited cases for up to 10 users
+      "Unlimited": { limit: 9999 }  // True Enterprise Uncapped
     };
 
     if (!plans[planType]) {

@@ -14,14 +14,14 @@ export default function AssignedCases() {
 
   const fetchMyCases = async () => {
     setLoading(true);
-    try { const res = await axios.get("/cases/lawyer"); setCases(res.data); }
+    try { const res = await axios.get("/cases/lawyer"); setCases(res.data.filter(c => !c.isMediationTrack)); }
     catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
 
   const fetchAvailable = async () => {
     setLoading(true);
-    try { const res = await axios.get("/cases/open"); setAvailable(res.data); }
+    try { const res = await axios.get("/cases/open"); setAvailable(res.data.filter(c => !c.isMediationTrack)); }
     catch (err) { console.error(err); }
     finally { setLoading(false); }
   };
@@ -106,7 +106,7 @@ export default function AssignedCases() {
                     </>
                   )}
                 </div>
-                <button className="ac-card-btn" onClick={() => navigate(`/case/${c._id}`)}>
+                <button className="ac-card-btn" onClick={() => navigate(c.isMediationTrack ? `/mediation-workspace/${c._id}` : `/case/${c._id}`)}>
                   View Details
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
                     <line x1="5" y1="12" x2="19" y2="12"/><polyline points="12 5 19 12 12 19"/>
@@ -133,7 +133,7 @@ export default function AssignedCases() {
                 <div className="ac-muted">{c.user?.name || "Anonymous"}</div>
                 <div style={{ display: "flex", gap: "8px" }}>
                   <button className="ac-btn-gold" onClick={() => handleClaim(c._id)}>Claim</button>
-                  <button className="ac-btn-icon" onClick={() => navigate(`/case/${c._id}`)}>
+                  <button className="ac-btn-icon" onClick={() => navigate(c.isMediationTrack ? `/mediation-workspace/${c._id}` : `/case/${c._id}`)}>
                     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                       <path d="M1 12s4-8 11-8 11 8 11 8-4 8-11 8-11-8-11-8z"/>
                       <circle cx="12" cy="12" r="3"/>

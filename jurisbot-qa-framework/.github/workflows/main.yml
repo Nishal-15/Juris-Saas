@@ -1,0 +1,132 @@
+name: JurisBot Enterprise QA Pipeline
+
+on:
+  push:
+    branches: [ main, staging ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  # 1. Quality & Unit Tests
+  quality-and-unit:
+    name: Code Quality & Unit Tests
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Code
+        uses: actions/checkout@v4
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          cache: 'npm'
+          cache-dependency-path: 'jurisbot-qa-framework/package.json'
+
+      - name: Install QA Dependencies
+        working-directory: ./jurisbot-qa-framework
+        run: npm ci
+
+      - name: Run Linting
+        working-directory: ./jurisbot-qa-framework
+        run: npm run lint
+
+      - name: Run Frontend Unit Tests (Vitest)
+        working-directory: ./jurisbot-qa-framework
+        run: npm run test:unit:frontend
+
+      - name: Run Backend Unit Tests (Jest)
+        working-directory: ./jurisbot-qa-framework
+        run: npm run test:unit:backend
+
+  # 2. End-to-End & AI Validation
+  e2e-and-ai:
+    name: Playwright E2E & AI Validation
+    runs-on: ubuntu-latest
+    needs: quality-and-unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+      
+      - name: Install QA Dependencies
+        working-directory: ./jurisbot-qa-framework
+        run: npm ci
+        
+      - name: Install Playwright Browsers
+        working-directory: ./jurisbot-qa-framework
+        run: npx playwright install --with-deps
+        
+      - name: Run AI Legal Validation Suite
+        working-directory: ./jurisbot-qa-framework
+        run: npm run test:ai
+        env:
+          BACKEND_API_URL: ${{ secrets.BACKEND_API_URL }}
+          
+      - name: Run End-to-End Tests
+        working-directory: ./jurisbot-qa-framework
+        run: npm run test:e2e
+        env:
+          CITIZEN_URL: ${{ secrets.CITIZEN_URL }}
+          LAWYER_URL: ${{ secrets.LAWYER_URL }}
+          
+      - name: Upload Playwright Report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: playwright-report
+          path: jurisbot-qa-framework/reports/playwright-report/
+          retention-days: 14
+
+  # 3. Security & Performance (Run in Parallel with E2E)
+  security-and-perf:
+    name: ZAP Security & Lighthouse
+    runs-on: ubuntu-latest
+    needs: quality-and-unit
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '20'
+          
+      - name: Install QA Dependencies
+        working-directory: ./jurisbot-qa-framework
+        run: npm ci
+
+      - name: Run Google Lighthouse Audit
+        working-directory: ./jurisbot-qa-framework
+        run: npm run test:perf
+        env:
+          CITIZEN_URL: ${{ secrets.CITIZEN_URL }}
+          
+      - name: Run OWASP ZAP Baseline Scan
+        working-directory: ./jurisbot-qa-framework
+        run: npm run test:security
+        env:
+          CITIZEN_URL: ${{ secrets.CITIZEN_URL }}
+
+      - name: Upload Security & Perf Reports
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: security-perf-reports
+          path: jurisbot-qa-framework/reports/
+          retention-days: 14
+
+  # 4. Load Testing (Optional / Manual Trigger for 500 users)
+  load-testing:
+    name: k6 Load & Stress Testing
+    runs-on: ubuntu-latest
+    # Typically, load tests are triggered manually on staging so they don't DDOS prod on every commit
+    if: github.event_name == 'workflow_dispatch'
+    steps:
+      - uses: actions/checkout@v4
+      
+      - name: Setup k6
+        uses: grafana/setup-k6-action@v1
+        
+      - name: Run k6 Load Test
+        working-directory: ./jurisbot-qa-framework
+        run: k6 run k6/load-test.js
+        env:
+          BACKEND_API_URL: ${{ secrets.BACKEND_API_URL }}

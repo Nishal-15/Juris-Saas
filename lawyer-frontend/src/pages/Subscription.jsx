@@ -213,7 +213,7 @@ export default function Subscription() {
                             <button className="upgrade-btn" disabled>Already Used</button>
                         )}
                         <ul className="plan-features">
-                            <li><span className="feat-icon"><SVGCheck /></span>2 Active Cases</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>5 Active Cases</li>
                             <li><span className="feat-icon"><SVGAI /></span>Basic AI Legal Chat</li>
                             <li><span className="feat-icon"><SVGAI /></span>1 Document Analysis</li>
                             <li><span className="feat-icon"><SVGCheck /></span>Hearing Reminders</li>
@@ -236,7 +236,7 @@ export default function Subscription() {
                             <button className="upgrade-btn" onClick={() => handleOpenPayment("Starter", 499)}>Upgrade</button>
                         )}
                         <ul className="plan-features">
-                            <li><span className="feat-icon"><SVGCheck /></span>10 Active Cases</li>
+                            <li><span className="feat-icon"><SVGCheck /></span>Unlimited Active Cases</li>
                             <li><span className="feat-icon"><SVGAI /></span>Unlimited AI Legal Chat</li>
                             <li><span className="feat-icon"><SVGAI /></span>10 Document Analyses/mo</li>
                             <li><span className="feat-icon"><SVGCheck /></span>Video Consultations</li>

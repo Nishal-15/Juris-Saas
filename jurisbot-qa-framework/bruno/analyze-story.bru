@@ -1,0 +1,26 @@
+meta {
+  name: Analyze Story Triage
+  type: http
+  seq: 2
+}
+
+post {
+  url: {{baseUrl}}/cases/analyze-story
+  body: json
+  auth: bearer
+}
+
+auth:bearer {
+  token: {{citizenToken}}
+}
+
+body:json {
+  {
+    "description": "I need to file a complaint against my employer for not paying my PF."
+  }
+}
+
+assert {
+  res.status: eq 200
+  res.body.legalType: eq Labor Law
+}
