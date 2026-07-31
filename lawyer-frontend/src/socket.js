@@ -5,7 +5,7 @@ const SOCKET_URL = import.meta.env.VITE_API_URL
   : (import.meta.env.VITE_API_BASE ? import.meta.env.VITE_API_BASE.replace("/api", "") : "https://juris-saas.onrender.com");
 
 const socket = io(SOCKET_URL, {
-  transports: ["polling", "websocket"],
+  transports: ["websocket"], // Forced websocket for stable Cloudflare/Render connection
   withCredentials: true,
   reconnection: true
 });
