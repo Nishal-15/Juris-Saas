@@ -371,6 +371,7 @@ export default function FilingConsole() {
       // ✅ Use FormData to support file uploads
       const payload = new FormData();
       Object.keys(formData).forEach(key => {
+        if (key === 'mediationRequested') return; // Prevent duplicate appends
         if (Array.isArray(formData[key])) {
           formData[key].forEach(v => payload.append(key, v));
         } else {
