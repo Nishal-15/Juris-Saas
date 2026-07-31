@@ -682,7 +682,7 @@ export default function FilingConsole() {
                 )}
               </div>
               <div className="wizard-actions">
-                <button className="wizard-btn-back" onClick={() => setStep(3)}>← Edit</button>
+                <button className="wizard-btn-back" onClick={() => setStep(formData.mediationRequested ? 2 : 3)}>← Edit</button>
                 <button className="wizard-btn-submit" onClick={handleSubmit} disabled={loading}>
                   {loading ? "Filing..." : "FINALIZE & FILE CASE"}
                 </button>
@@ -894,7 +894,7 @@ export default function FilingConsole() {
                       if (isPlayingVideo) handleStopAvatarVideo();
                       setShowMediationInterception(false);
                       setFormData(prev => ({...prev, mediationRequested: true}));
-                      setStep(3);
+                      setStep(4);
                     }}
                     style={{
                       background: "linear-gradient(135deg, #c9a84c 0%, #a88520 100%)",
