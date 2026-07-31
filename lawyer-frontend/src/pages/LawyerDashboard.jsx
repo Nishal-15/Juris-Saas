@@ -17,9 +17,10 @@ export default function LawyerDashboard() {
   const [subInfo, setSubInfo] = useState({ tier: "Trial", count: 0, expiry: null, isBlocked: false });
   const [broadcast, setBroadcast] = useState(null);
   
-  // Dynamic quota calculation
-  const limit = subInfo.tier === "Trial" ? 2 : (subInfo.tier === "Unlimited" ? Infinity : 5);
-  const isQuotaExceeded = subInfo.tier !== "Unlimited" && subInfo.count >= limit;
+  // Dynamic quota calculation (safe fallback to prevent crash)
+  const safeSubInfo = subInfo || { tier: "Trial", count: 0, expiry: null, isBlocked: false };
+  const limit = safeSubInfo.tier === "Trial" ? 2 : (safeSubInfo.tier === "Unlimited" ? Infinity : 5);
+  const isQuotaExceeded = safeSubInfo.tier !== "Unlimited" && safeSubInfo.count >= limit;
 
   // ✅ Fixed lag: Move Audio outside of render to prevent recreation on every state change
   const [notificationAudio] = useState(() => new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"));
@@ -37,7 +38,7 @@ export default function LawyerDashboard() {
         axios.get(`/auth/user/${user._id}`) // Fetch latest user status
       ]);
       setStats(statsRes.data);
-      setSubInfo(statsRes.data.subscription || subInfo);
+      setSubInfo(statsRes.data.subscription || { tier: "Trial", count: 0, expiry: null, isBlocked: false });
 
       if (userRes.data && userRes.data.isBlocked) {
         setStats(prev => ({ ...prev, isBlockedByAdmin: true }));
