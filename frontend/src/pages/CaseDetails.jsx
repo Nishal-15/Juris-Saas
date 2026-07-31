@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import axios from "../api/axios";
+import socket from "../api/socket";
 import Sidebar from "../components/layout/Sidebar";
 import MobileHeader from "../components/layout/MobileHeader";
 import BottomNav from "../components/layout/BottomNav";
@@ -12,10 +13,23 @@ export default function CaseDetails() {
   const [loading, setLoading] = useState(true);
   const navigate = useNavigate();
 
-  useEffect(() => {
+  const fetchCaseDetails = () => {
     axios.get(`/cases/details/${id}`)
       .then(res => { setCaseData(res.data); setLoading(false); })
       .catch(() => setLoading(false));
+  };
+
+  useEffect(() => {
+    fetchCaseDetails();
+
+    const handleRefresh = () => fetchCaseDetails();
+    socket.on("notification", handleRefresh);
+    socket.on("marketplace-needs-refresh", handleRefresh);
+
+    return () => {
+      socket.off("notification", handleRefresh);
+      socket.off("marketplace-needs-refresh", handleRefresh);
+    };
   }, [id]);
 
   const urgencyColor = (u) =>

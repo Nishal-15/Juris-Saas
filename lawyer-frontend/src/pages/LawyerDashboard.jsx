@@ -119,10 +119,15 @@ export default function LawyerDashboard() {
       return;
     }
 
-    if (user?._id) {
-      socket.emit("join", user._id);
-      console.log("Joined real-time room:", user._id);
-    }
+    const handleSocketConnect = () => {
+      if (user?._id) {
+        socket.emit("join", user._id);
+        console.log("Joined real-time room:", user._id);
+      }
+    };
+
+    if (socket.connected) handleSocketConnect();
+    socket.on("connect", handleSocketConnect);
 
     fetchData();
     socket.on("notification", (data) => {
@@ -147,6 +152,7 @@ export default function LawyerDashboard() {
     socket.on("institutional-broadcast-lawyer", handleBroadcast);
 
     return () => {
+      socket.off("connect", handleSocketConnect);
       socket.off("notification");
       socket.off("marketplace-needs-refresh");
       socket.off("institutional-broadcast", handleBroadcast);
