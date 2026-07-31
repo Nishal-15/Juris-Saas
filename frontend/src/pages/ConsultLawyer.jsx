@@ -15,6 +15,10 @@ export default function ConsultLawyer() {
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [booking, setBooking] = useState(null);
+  
+  // Search & Filter State
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedSpec, setSelectedSpec] = useState("");
 
   useEffect(() => {
     const fetchData = async () => {
@@ -49,13 +53,30 @@ export default function ConsultLawyer() {
     return app ? app.status : null;
   };
 
+  // Extract unique specializations for the dropdown
+  const uniqueSpecializations = [...new Set(
+    lawyers.map(l => l.specialization?.split(",")[0]?.trim()).filter(Boolean)
+  )].sort();
+
+  // Filter Logic
+  const displayedLawyers = lawyers.filter(l => {
+    const matchesSearch = 
+      (l.name && l.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
+      (l.firm && l.firm.toLowerCase().includes(searchTerm.toLowerCase()));
+    
+    const spec = l.specialization?.split(",")[0]?.trim();
+    const matchesSpec = selectedSpec === "" || spec === selectedSpec;
+
+    return matchesSearch && matchesSpec;
+  });
+
   return (
     <div className="cl-page">
       <MobileHeader />
       <Sidebar />
       <div className="cl-body">
         <div className="cl-header">
-          <div>
+          <div className="cl-header-text">
             <h1 className="cl-title">Expert Advocates</h1>
             {filterType ? (
               <p className="cl-subtitle">Showing advocates specialising in <strong style={{ color: "#c9a84c" }}>{filterType}</strong></p>
@@ -65,23 +86,54 @@ export default function ConsultLawyer() {
           </div>
           {filterType && (
             <button className="cl-clear-filter" onClick={() => navigate("/lawyers")}>
-              Clear Filter
+              Clear Category Filter
             </button>
           )}
         </div>
 
+        {/* ── Search & Filter Controls ── */}
+        <div className="cl-controls">
+          <div className="cl-search-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <input 
+              type="text" 
+              placeholder="Search by advocate or firm name..." 
+              value={searchTerm} 
+              onChange={(e) => setSearchTerm(e.target.value)} 
+            />
+          </div>
+          <div className="cl-filter-box">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
+              <polygon points="22 3 2 3 10 12.46 10 19 14 21 14 12.46 22 3"/>
+            </svg>
+            <select value={selectedSpec} onChange={(e) => setSelectedSpec(e.target.value)}>
+              <option value="">All Specializations</option>
+              {uniqueSpecializations.map(spec => (
+                <option key={spec} value={spec}>{spec}</option>
+              ))}
+            </select>
+          </div>
+        </div>
+
         {loading ? (
           <div className="cl-empty"><div className="cl-spinner" /> Loading advocates...</div>
-        ) : lawyers.length === 0 ? (
+        ) : displayedLawyers.length === 0 ? (
           <div className="cl-empty">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round">
               <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
             </svg>
-            <p>No advocates available at this time.</p>
+            <p>No advocates match your search criteria.</p>
+            {(searchTerm || selectedSpec) && (
+              <button className="cl-clear-filter" onClick={() => { setSearchTerm(""); setSelectedSpec(""); }}>
+                Reset Filters
+              </button>
+            )}
           </div>
         ) : (
           <div className="cl-grid">
-            {lawyers.map(lawyer => {
+            {displayedLawyers.map(lawyer => {
               const status = getStatus(lawyer._id);
               const initials = lawyer.name?.split(" ").map(n => n[0]).join("").slice(0, 2).toUpperCase();
               return (
