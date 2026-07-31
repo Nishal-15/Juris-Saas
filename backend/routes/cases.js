@@ -1264,6 +1264,9 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
       { new: true }
     ).populate("user", "name");
 
+    // Increment Lawyer Case Count
+    await Lawyer.findByIdAndUpdate(req.user.id, { $inc: { casesClaimedCount: 1 } });
+
     // PERSIST NOTIFICATION FOR CITIZEN
     await Notification.create({
       user: acceptedCase.user?._id,
