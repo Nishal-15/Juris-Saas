@@ -65,25 +65,47 @@ async function generateAILegalAlert(caseData, isToday) {
 }
 
 async function sendWhatsApp(phone, text) {
-  const sid = process.env.TWILIO_ACCOUNT_SID;
-  const token = process.env.TWILIO_AUTH_TOKEN;
-  const from = process.env.TWILIO_WHATSAPP_NUMBER || "+14155238886";
+  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
-  if (!sid || !token || sid.includes("XXXXX")) {
+  if (!accessToken || !phoneNumberId || accessToken.includes("your_whatsapp")) {
     console.log(`[WhatsApp Simulation] To ${phone}: ${text}`);
     return;
   }
 
   try {
-    const client = twilio(sid, token);
-    await client.messages.create({
-      from: `whatsapp:${from}`,
-      body: text,
-      to: `whatsapp:${phone.startsWith("+") ? phone : "+91" + phone}` // Default to India if no prefix
-    });
-    console.log(`[WhatsApp Success] Sent to ${phone}`);
+    // WhatsApp Cloud API requires numbers without the '+' sign
+    const recipient = phone.startsWith("+") ? phone.substring(1) : (phone.startsWith("91") ? phone : "91" + phone);
+    
+    await axios.post(
+      `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
+      {
+        messaging_product: "whatsapp",
+        to: recipient,
+        type: "template",
+        template: {
+          name: "jurisbot_hearing_reminder",
+          language: { code: "en" },
+          components: [
+            {
+              type: "body",
+              parameters: [
+                { type: "text", text: text }
+              ]
+            }
+          ]
+        }
+      },
+      {
+        headers: {
+          "Authorization": `Bearer ${accessToken}`,
+          "Content-Type": "application/json"
+        }
+      }
+    );
+    console.log(`[WhatsApp Cloud API Success] Sent to ${phone}`);
   } catch (err) {
-    console.error(`[WhatsApp Failure] To ${phone}:`, err.message);
+    console.error(`[WhatsApp Cloud API Failure] To ${phone}:`, err.response?.data || err.message);
   }
 }
 
