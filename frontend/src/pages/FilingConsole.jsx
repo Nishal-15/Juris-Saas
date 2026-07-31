@@ -699,8 +699,8 @@ export default function FilingConsole() {
               {/* TOP HEADER & LANGUAGE DROPDOWN */}
               <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px", marginBottom: "16px", flexWrap: "wrap", gap: "10px" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "10px" }}>
-                  <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, rgba(201,168,76,0.25) 0%, rgba(201,168,76,0.05) 100%)", border: "1px solid rgba(201,168,76,0.5)", display: "flex", alignItems: "center", justifyContent: "center", fontSize: "1.2rem", boxShadow: "0 0 10px rgba(201,168,76,0.2)" }}>
-                    ⚖️
+                  <div style={{ width: "36px", height: "36px", borderRadius: "10px", background: "linear-gradient(135deg, rgba(201,168,76,0.25) 0%, rgba(201,168,76,0.05) 100%)", border: "1px solid rgba(201,168,76,0.5)", display: "flex", alignItems: "center", justifyContent: "center", color: "#c9a84c", boxShadow: "0 0 10px rgba(201,168,76,0.2)" }}>
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
                   </div>
                   <div>
                     <h2 style={{ margin: 0, fontSize: "1.1rem", fontWeight: 800, color: "#fff", fontFamily: "'Playfair Display', serif", letterSpacing: "0.2px" }}>
@@ -717,9 +717,12 @@ export default function FilingConsole() {
                   onClick={() => setIsLangModalOpen(true)}
                   style={{ display: "flex", alignItems: "center", gap: "6px", background: "rgba(201,168,76,0.15)", border: "1px solid rgba(201,168,76,0.5)", padding: "4px 12px", borderRadius: "20px", boxShadow: "0 4px 10px rgba(0,0,0,0.2)", cursor: "pointer", transition: "all 0.2s" }}
                 >
-                  <span style={{ fontSize: "0.7rem", color: "#c9a84c", fontWeight: 700 }}>🗣️ Lang:</span>
+                  <span style={{ fontSize: "0.7rem", color: "#c9a84c", fontWeight: 700, display: "flex", alignItems: "center", gap: "4px" }}>
+                    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><circle cx="12" cy="12" r="10"/><path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z"/><path d="M2 12h20"/></svg>
+                    Lang:
+                  </span>
                   <span style={{ color: "#fff", fontWeight: 800, fontSize: "0.75rem" }}>
-                    {avatarScripts[avatarLang]?.flag || "🌐"} {avatarScripts[avatarLang]?.name || "English"} ▾
+                    {avatarScripts[avatarLang]?.name || "English"} ▾
                   </span>
                 </div>
               </div>
@@ -779,13 +782,16 @@ export default function FilingConsole() {
                     onMouseOver={(e) => e.currentTarget.style.transform = "scale(1.1)"}
                     onMouseOut={(e) => e.currentTarget.style.transform = "scale(1)"}
                     >
-                      <span style={{ fontSize: "1.4rem", marginLeft: "4px", color: "#090d16" }}>▶️</span>
+                      <span style={{ marginLeft: "4px", color: "#090d16", display: "flex", alignItems: "center", justifyContent: "center" }}>
+                        <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><path d="M8 5v14l11-7z"/></svg>
+                      </span>
                     </div>
                     <span style={{ fontSize: "0.95rem", fontWeight: 800, color: "#fff", letterSpacing: "1px", textShadow: "0 2px 4px rgba(0,0,0,0.9)", textTransform: "uppercase" }}>
                       Start AI Legal Presenter
                     </span>
-                    <span style={{ fontSize: "0.75rem", color: "#c9a84c", fontWeight: 600, marginTop: "6px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "10px", border: "1px solid rgba(201,168,76,0.3)" }}>
-                      🎥 Sync Video/Audio in {avatarScripts[avatarLang]?.name}
+                    <span style={{ display: "flex", alignItems: "center", gap: "4px", fontSize: "0.75rem", color: "#c9a84c", fontWeight: 600, marginTop: "6px", background: "rgba(0,0,0,0.6)", padding: "4px 10px", borderRadius: "10px", border: "1px solid rgba(201,168,76,0.3)" }}>
+                      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="23 7 16 12 23 17 23 7"/><rect x="1" y="5" width="15" height="14" rx="2" ry="2"/></svg>
+                      Sync Video/Audio in {avatarScripts[avatarLang]?.name}
                     </span>
                   </div>
                 )}
@@ -816,7 +822,9 @@ export default function FilingConsole() {
               {/* BELOW VIDEO: CLEAN EXECUTIVE CASE STATEMENT */}
               <div style={{ background: "rgba(255, 255, 255, 0.025)", border: "1px solid rgba(255, 255, 255, 0.08)", borderLeft: "4px solid #c9a84c", padding: "12px 16px", borderRadius: "8px", marginBottom: "16px", boxShadow: "inset 0 2px 10px rgba(0,0,0,0.2)" }}>
                 <div style={{ display: "flex", alignItems: "center", gap: "6px", marginBottom: "6px" }}>
-                  <span style={{ fontSize: "0.9rem" }}>📜</span>
+                  <span style={{ color: "#c9a84c", display: "flex" }}>
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" y1="13" x2="8" y2="13"/><line x1="16" y1="17" x2="8" y2="17"/><line x1="10" y1="9" x2="8" y2="9"/></svg>
+                  </span>
                   <span style={{ fontSize: "0.75rem", color: "#c9a84c", fontWeight: 800, letterSpacing: "0.6px", textTransform: "uppercase" }}>
                     Case Assessment Summary
                   </span>
@@ -832,7 +840,9 @@ export default function FilingConsole() {
               <div style={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: "12px", marginBottom: "20px" }}>
                 <div style={{ background: "rgba(22, 163, 74, 0.1)", border: "1px solid rgba(34, 197, 94, 0.3)", padding: "12px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
                   <div style={{ fontWeight: 800, color: "#4ade80", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    <span style={{ fontSize: "1rem" }}>⚖️</span> {activeComp.mTitle}
+                    <span style={{ display: "flex" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="m16 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="m2 16 3-8 3 8c-.87.65-1.92 1-3 1s-2.13-.35-3-1Z"/><path d="M7 21h10"/><path d="M12 3v18"/><path d="M3 7h2c2 0 5-1 7-2 2 1 5 2 7 2h2"/></svg>
+                    </span> {activeComp.mTitle}
                   </div>
                   <ul style={{ margin: 0, paddingLeft: "18px", color: "rgba(255, 255, 255, 0.8)", fontSize: "0.75rem", lineHeight: 1.6 }}>
                     {activeComp.mPoints.map((pt, idx) => (
@@ -842,7 +852,9 @@ export default function FilingConsole() {
                 </div>
                 <div style={{ background: "rgba(220, 38, 38, 0.1)", border: "1px solid rgba(239, 68, 68, 0.3)", padding: "12px", borderRadius: "8px", boxShadow: "0 4px 12px rgba(0,0,0,0.3)" }}>
                   <div style={{ fontWeight: 800, color: "#f87171", marginBottom: "6px", display: "flex", alignItems: "center", gap: "6px", fontSize: "0.85rem", textTransform: "uppercase", letterSpacing: "0.5px" }}>
-                    <span style={{ fontSize: "1rem" }}>🏛️</span> {activeComp.lTitle}
+                    <span style={{ display: "flex" }}>
+                      <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><rect x="4" y="10" width="16" height="10" rx="1"/><rect x="6" y="10" width="2" height="10"/><rect x="11" y="10" width="2" height="10"/><rect x="16" y="10" width="2" height="10"/><path d="M2 20h20"/><path d="M12 2l10 8H2L12 2z"/></svg>
+                    </span> {activeComp.lTitle}
                   </div>
                   <ul style={{ margin: 0, paddingLeft: "18px", color: "rgba(255, 255, 255, 0.8)", fontSize: "0.75rem", lineHeight: 1.6 }}>
                     {activeComp.lPoints.map((pt, idx) => (
@@ -875,7 +887,10 @@ export default function FilingConsole() {
                   onMouseOver={(e) => { e.target.style.color = "#fff"; e.target.style.borderColor = "rgba(255,255,255,0.5)"; e.target.style.background = "rgba(255,255,255,0.05)"; }}
                   onMouseOut={(e) => { e.target.style.color = "rgba(255,255,255,0.65)"; e.target.style.borderColor = "rgba(255,255,255,0.25)"; e.target.style.background = "transparent"; }}
                 >
-                  ⚡ Skip & Proceed to Court Filing
+                  <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2"/></svg>
+                    Skip & Proceed to Court Filing
+                  </span>
                 </button>
                 
                 <div style={{ display: "flex", gap: "8px", alignItems: "center" }}>
@@ -886,7 +901,10 @@ export default function FilingConsole() {
                       onMouseOver={(e) => e.target.style.background = "rgba(239,68,68,0.3)"}
                       onMouseOut={(e) => e.target.style.background = "rgba(239,68,68,0.15)"}
                     >
-                      ⏹️ Stop Narration
+                      <span style={{ display: "flex", alignItems: "center", gap: "6px" }}>
+                        <svg width="12" height="12" viewBox="0 0 24 24" fill="currentColor"><rect x="6" y="6" width="12" height="12"/></svg>
+                        Stop Narration
+                      </span>
                     </button>
                   )}
                   <button
