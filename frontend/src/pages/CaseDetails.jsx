@@ -216,7 +216,7 @@ export default function CaseDetails() {
                   ))}
                 </div>
 
-                {caseData.assignedLawyer ? (
+                {caseData.assignedLawyer && !["Pending Expert Acceptance", "Pending Mediation Acceptance"].includes(caseData.status) ? (
                   <div className="ct-card ct-advocate-card">
                     <div className="ct-card-title">
                       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">

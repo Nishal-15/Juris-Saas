@@ -86,8 +86,8 @@ export default function LawyerDashboard() {
         }))
       ];
 
-      // Filter for UI display (Strictly Litigations)
-      const litigationPending = mergedPending.filter(p => !p.caseId?.isMediationTrack);
+      // Filter for UI display
+      const litigationPending = mergedPending; // Show all pending requests (including mediation) in the consultation queue
       const litigationActive = mergedActive.filter(a => !a.caseId?.isMediationTrack);
 
       setPending(litigationPending);
