@@ -941,7 +941,33 @@ Ensure you use the appropriate legal language, jurisdiction formatting, and stru
 Here are the key facts provided by the lawyer:
 {redact_pii(facts)}
 
-Generate the document using Markdown formatting. Use bold for headings and parties. Leave placeholders like '[Client Name]' or '[Date]' where information is missing. Do not include any introductory conversation, just output the legal document directly.
+Generate the document using Markdown formatting. Leave placeholders like '[Client Name]' or '[Date]' where information is missing. Do not include any introductory conversation, just output the legal document directly.
+
+CRITICAL INSTRUCTION: Your output MUST strictly follow the exact visual structure below. Use Markdown headings (**Heading**) for the centered titles, and standard text for the rest.
+
+**IN THE COURT OF THE _______, AT _______**
+**[CASE TYPE] NO. _______ OF 2026**
+
+**Cause Title: [Applicant/Petitioner Name] vs [Respondent Name]**
+
+1. That the Applicant / Petitioner is a resident of _______ and is a law-abiding citizen of India [or describe company/entity status].
+2. [Insert tailored legal paragraph based on facts]
+3. [Insert tailored legal paragraph based on facts]
+...
+
+**MOST RESPECTFULLY SHOWETH**
+
+**PRAYER**
+A. [Primary Relief Requested]
+B. [Secondary Relief Requested]
+C. [Any other relief as this Hon'ble Court deems fit]
+
+**FILED BY:**
+_____________________
+Advocate / Applicant
+
+Place: _______
+Date: _______
 """
         
         # Use Groq for ultra-fast generation

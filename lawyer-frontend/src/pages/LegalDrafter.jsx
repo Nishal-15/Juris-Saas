@@ -69,19 +69,20 @@ export default function LegalDrafter() {
     const element = document.createElement('div');
     element.innerHTML = draft.split('\n').map(line => {
       if (line.startsWith('**') && line.endsWith('**'))
-        return `<h3 style="color: #000; font-family: serif; font-size: 18px; margin-top: 20px; margin-bottom: 10px;">${line.replace(/\*\*/g, '')}</h3>`;
+        return `<h3 style="color: #000; font-family: 'Times New Roman', Georgia, serif; font-size: 14pt; font-weight: bold; text-align: center; margin-top: 20px; margin-bottom: 10px;">${line.replace(/\*\*/g, '')}</h3>`;
       if (line.startsWith('- '))
         return `<li style="margin-left: 20px; margin-bottom: 8px;">${line.slice(2)}</li>`;
       if (line.trim() === '') return `<div style="height: 15px;"></div>`;
-      return `<p style="margin-bottom: 10px; line-height: 1.6;">${line}</p>`;
+      return `<p style="margin-bottom: 10px; line-height: 1.5; font-size: 12pt; text-align: justify;">${line}</p>`;
     }).join('');
     
-    element.style.padding = '40px';
+    element.style.padding = '0';
     element.style.color = '#000';
-    element.style.fontFamily = 'Georgia, serif';
+    element.style.backgroundColor = '#FFFFFF';
+    element.style.fontFamily = '"Times New Roman", Georgia, serif';
 
     const opt = {
-      margin:       1,
+      margin:       [1, 1, 1, 1.5], // top, right, bottom, left in inches
       filename:     `${docType.replace(/\s+/g, '_')}_Draft.pdf`,
       image:        { type: 'jpeg', quality: 0.98 },
       html2canvas:  { scale: 2 },
