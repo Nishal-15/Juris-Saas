@@ -37,20 +37,30 @@ export default function RecentCases() {
   };
 
   useEffect(() => {
-    if (user?._id) {
-      socket.emit("join", user._id);
-      console.log("📡 Citizen joined real-time room:", user._id);
-    }
+    const handleSocketConnect = () => {
+      if (user?._id) {
+        socket.emit("join", user._id);
+        console.log("📡 Citizen joined real-time room:", user._id);
+      }
+    };
+
+    if (socket.connected) handleSocketConnect();
+    socket.on("connect", handleSocketConnect);
 
     fetchCases();
 
-    socket.on("notification", () => {
+    const handleRefresh = () => {
       console.log("🔔 Status update received, refreshing...");
       fetchCases();
-    });
+    };
+
+    socket.on("notification", handleRefresh);
+    socket.on("marketplace-needs-refresh", handleRefresh);
 
     return () => {
-      socket.off("notification");
+      socket.off("connect", handleSocketConnect);
+      socket.off("notification", handleRefresh);
+      socket.off("marketplace-needs-refresh", handleRefresh);
     };
   }, [user._id]);
 
