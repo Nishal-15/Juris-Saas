@@ -16,10 +16,11 @@ export default function LawyerDashboard() {
   const [toast, setToast] = useState(null);
   const [subInfo, setSubInfo] = useState({ tier: "Trial", count: 0, expiry: null, isBlocked: false });
   const [broadcast, setBroadcast] = useState(null);
+  const [hasDismissedQuota, setHasDismissedQuota] = useState(false);
   
   // Dynamic quota calculation (safe fallback to prevent crash)
   const safeSubInfo = subInfo || { tier: "Trial", count: 0, expiry: null, isBlocked: false };
-  const limit = safeSubInfo.tier === "Trial" ? 2 : (safeSubInfo.tier === "Unlimited" ? Infinity : 5);
+  const limit = safeSubInfo.tier === "Trial" ? 5 : (safeSubInfo.tier === "Unlimited" ? Infinity : 5);
   const isQuotaExceeded = safeSubInfo.tier !== "Unlimited" && safeSubInfo.count >= limit;
 
   // ✅ Fixed lag: Move Audio outside of render to prevent recreation on every state change
@@ -264,14 +265,35 @@ export default function LawyerDashboard() {
         </div>
       )}
 
-      {!stats.isBlockedByAdmin && isQuotaExceeded && (
-        <div style={{ background: '#451a03', color: '#fef3c7', padding: '16px 30px', borderBottom: '2px solid #f59e0b', textAlign: 'center', zIndex: 999, position: 'relative' }}>
-          <h3 style={{ margin: '0 0 5px 0', fontSize: '1.1rem', color: '#f59e0b' }}>⚠️ SUBSCRIPTION QUOTA EXCEEDED</h3>
-          <p style={{ margin: 0, fontSize: '0.95rem' }}>
-            You have reached the limit of your <strong>{subInfo.tier} Plan</strong>. 
-            You can still manage your active clients, but you are in <strong>View-Only Mode</strong> for accepting new cases. 
-            <button onClick={() => navigate("/lawyer/subscription")} style={{ background: 'transparent', border: 'none', color: '#fcd34d', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }}>Upgrade now</button>
+      {/* ⚠️ QUOTA EXCEEDED MODAL */}
+      {!stats.isBlockedByAdmin && isQuotaExceeded && !hasDismissedQuota && (
+        <div style={{
+          position: 'fixed', top: 0, left: 0, width: '100vw', height: '100vh',
+          background: 'rgba(15, 17, 26, 0.95)', zIndex: 999999,
+          display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center',
+          color: 'white', backdropFilter: 'blur(10px)'
+        }}>
+          <div style={{ fontSize: '4rem', marginBottom: '20px' }}>⚠️</div>
+          <h1 style={{ fontSize: '2.5rem', color: '#f59e0b', marginBottom: '10px', textAlign: 'center' }}>Subscription Quota Exceeded</h1>
+          <p style={{ fontSize: '1.2rem', color: '#94a3b8', maxWidth: '500px', textAlign: 'center', lineHeight: '1.6' }}>
+            You have reached the <strong>{limit} Case</strong> limit of your <strong>{subInfo.tier} Plan</strong>. 
+            <br/><br/>
+            You can still manage your active clients, but your account is now in <strong>View-Only Mode</strong> for accepting new cases from the marketplace.
           </p>
+          <div style={{ display: 'flex', gap: '15px', marginTop: '30px' }}>
+            <button 
+              onClick={() => setHasDismissedQuota(true)}
+              style={{ background: 'transparent', border: '1px solid #94a3b8', color: '#94a3b8', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              OK, Understood
+            </button>
+            <button 
+              onClick={() => navigate("/lawyer/subscription")}
+              style={{ background: '#f59e0b', border: 'none', color: '#0f111a', padding: '12px 24px', borderRadius: '8px', cursor: 'pointer', fontWeight: 'bold' }}
+            >
+              Upgrade Plan
+            </button>
+          </div>
         </div>
       )}
       
