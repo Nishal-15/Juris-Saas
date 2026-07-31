@@ -17,6 +17,10 @@ export default function LawyerDashboard() {
   const [subInfo, setSubInfo] = useState({ tier: "Trial", count: 0, expiry: null, isBlocked: false });
   const [broadcast, setBroadcast] = useState(null);
   
+  // Dynamic quota calculation
+  const limit = subInfo.tier === "Trial" ? 2 : (subInfo.tier === "Unlimited" ? Infinity : 5);
+  const isQuotaExceeded = subInfo.tier !== "Unlimited" && subInfo.count >= limit;
+
   // ✅ Fixed lag: Move Audio outside of render to prevent recreation on every state change
   const [notificationAudio] = useState(() => new Audio("https://assets.mixkit.co/active_storage/sfx/2354/2354-preview.mp3"));
 
@@ -149,6 +153,11 @@ export default function LawyerDashboard() {
   }, []);
 
   const handleTakeCase = async (id) => {
+    if (isQuotaExceeded) {
+      alert("⚠️ Quota Exceeded: Please upgrade your subscription plan to accept new cases.");
+      navigate("/lawyer/subscription");
+      return;
+    }
     try {
       await axios.post(`/cases/${id}/assign`);
       setToast("Case successfully assigned to your workspace");
@@ -162,6 +171,11 @@ export default function LawyerDashboard() {
   const handleStatusUpdate = async (id, newStatus, itemType) => {
     try {
       if (itemType === 'case_request') {
+        if (isQuotaExceeded && newStatus === 'Accepted') {
+          alert("⚠️ Quota Exceeded: Please upgrade your subscription plan to accept new client requests.");
+          navigate("/lawyer/subscription");
+          return;
+        }
         await axios.post(`/cases/accept/${id}`);
         setToast("Case Accepted! You can now start the consultation.");
       } else {
@@ -248,6 +262,17 @@ export default function LawyerDashboard() {
           </button>
         </div>
       )}
+
+      {!stats.isBlockedByAdmin && isQuotaExceeded && (
+        <div style={{ background: '#451a03', color: '#fef3c7', padding: '16px 30px', borderBottom: '2px solid #f59e0b', textAlign: 'center', zIndex: 999, position: 'relative' }}>
+          <h3 style={{ margin: '0 0 5px 0', fontSize: '1.1rem', color: '#f59e0b' }}>⚠️ SUBSCRIPTION QUOTA EXCEEDED</h3>
+          <p style={{ margin: 0, fontSize: '0.95rem' }}>
+            You have reached the limit of your <strong>{subInfo.tier} Plan</strong>. 
+            You can still manage your active clients, but you are in <strong>View-Only Mode</strong> for accepting new cases. 
+            <button onClick={() => navigate("/lawyer/subscription")} style={{ background: 'transparent', border: 'none', color: '#fcd34d', textDecoration: 'underline', cursor: 'pointer', fontWeight: 'bold', marginLeft: '5px' }}>Upgrade now</button>
+          </p>
+        </div>
+      )}
       
       <Sidebar />
 
@@ -260,12 +285,12 @@ export default function LawyerDashboard() {
               <span className="ld-sub-tier">{subInfo.tier.toUpperCase()} PLAN</span>
               <span className="ld-sub-divider">|</span>
               <span className="ld-sub-usage">
-                {subInfo.tier === "Unlimited" ? "Infinite Access" : `Usage: ${subInfo.count} / ${subInfo.tier === "Trial" ? 2 : 5} Cases`}
+                {subInfo.tier === "Unlimited" ? "Infinite Access" : `Usage: ${subInfo.count} / ${limit} Cases`}
               </span>
             </div>
             {subInfo.tier !== "Unlimited" && (
-              <button className="ld-upgrade-btn" onClick={() => navigate("/lawyer/subscription")}>
-                {subInfo.isBlocked ? "Quota Exceeded - Upgrade Plan" : "Upgrade Plan"}
+              <button className="ld-upgrade-btn" onClick={() => navigate("/lawyer/subscription")} style={isQuotaExceeded ? { backgroundColor: '#ef4444', color: 'white', borderColor: '#ef4444' } : {}}>
+                {isQuotaExceeded ? "Quota Exceeded - Upgrade Plan" : "Upgrade Plan"}
               </button>
             )}
           </div>
