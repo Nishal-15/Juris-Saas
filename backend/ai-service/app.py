@@ -427,6 +427,15 @@ def get_tavily_context(query):
             "api_key": TAVILY_API_KEY,
             "query": query + " (Latest Indian Law, BNS, BNSS, BSA)",
             "search_depth": "advanced",
+            "include_domains": [
+                "indiankanoon.org",
+                "scconline.com",
+                "livelaw.in",
+                "barandbench.com",
+                "indiacode.nic.in",
+                "main.sci.gov.in",
+                "prsindia.org"
+            ],
             "include_answer": True,
             "max_results": 3
         }
