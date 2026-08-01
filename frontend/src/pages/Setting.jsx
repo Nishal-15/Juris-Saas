@@ -21,7 +21,7 @@ export default function Settings() {
     } catch { alert("Update failed."); }
   };
 
-  const logout = () => { localStorage.clear(); navigate("/"); };
+  const logout = () => { localStorage.clear(); navigate("/login"); };
 
   return (
     <div className="st-page">

@@ -63,7 +63,7 @@ const Sidebar = memo(() => {
     };
   }, [pathname]);
 
-  const logout = () => { localStorage.clear(); navigate("/"); };
+  const logout = () => { localStorage.clear(); navigate("/login"); };
 
   const NavBtn = ({ iconKey, label, path, badge }) => {
     const isActive = pathname === path;

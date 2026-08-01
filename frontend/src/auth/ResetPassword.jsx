@@ -30,7 +30,7 @@ export default function ResetPassword() {
       const res = await axios.post("/auth/reset-password", { token, newPassword });
       setMessage(res.data.message || "Password reset successfully!");
       setTimeout(() => {
-        navigate("/");
+        navigate("/login");
       }, 2000);
     } catch (err) {
       setError(err.response?.data?.message || "Failed to reset password. Link may have expired.");
@@ -101,7 +101,7 @@ export default function ResetPassword() {
           </button>
         </form>
 
-        <p style={{ marginTop: '20px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => navigate("/")}>
+        <p style={{ marginTop: '20px', fontSize: '0.85rem', color: 'rgba(255,255,255,0.5)', cursor: 'pointer' }} onClick={() => navigate("/login")}>
           ← Return to Login
         </p>
       </div>

@@ -135,7 +135,7 @@ export default function Register() {
         </form>
 
         <p style={{ marginTop: '24px', fontSize: '0.9rem', color: 'rgba(255,255,255,0.5)' }}>
-          Already have an account? <span onClick={() => navigate("/")} style={{ color: '#c9a84c', cursor: 'pointer', textDecoration: 'underline' }}>Sign in</span>
+          Already have an account? <span onClick={() => navigate("/login")} style={{ color: '#c9a84c', cursor: 'pointer', textDecoration: 'underline' }}>Sign in</span>
         </p>
 
       </div>

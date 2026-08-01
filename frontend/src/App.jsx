@@ -22,6 +22,7 @@ import Terms from "./pages/Terms";
 import CaseDetails from "./pages/CaseDetails";
 import Alerts from "./pages/Alerts";
 import ResetPassword from "./auth/ResetPassword";
+import VideoLanding from "./pages/VideoLanding";
 
 import { primeAudio } from "./api/socket";
 
@@ -112,7 +113,8 @@ export default function App() {
       <PwaInstallPill />
       <GlobalCallNotification />
       <Routes>
-    <Route path="/" element={<Login />} />
+    <Route path="/" element={<VideoLanding />} />
+    <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
     <Route path="/reset-password/:token" element={<ResetPassword />} />
     <Route path="/terms" element={<Terms />} />
