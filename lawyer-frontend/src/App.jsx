@@ -1,5 +1,6 @@
 import { Routes, Route, Navigate } from "react-router-dom";
 import { useEffect, useState } from "react";
+import { Capacitor } from '@capacitor/core';
 import socket from "./socket";
 import ChatPage from "./pages/ChatPage";
 import Login from "./auth/Login";
@@ -20,9 +21,11 @@ import PendingVerification from "./pages/PendingVerification";
 import ResetPassword from "./auth/ResetPassword";
 import PwaInstallPill from "./components/PwaInstallPill";
 import MediationWorkspace from "./pages/MediationWorkspace";
+import VideoLanding from "./pages/VideoLanding";
 
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
+  const isNative = Capacitor.isNativePlatform();
   
   // ✅ GLOBAL JOIN & RECONNECT LAYER
   useEffect(() => {
@@ -102,7 +105,8 @@ export default function App() {
     <Routes>
 
       {/* Auth */}
-      <Route path="/" element={<Login />} />
+      <Route path="/" element={isNative ? <Login /> : <VideoLanding />} />
+      <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />
       <Route path="/lawyer/verification-pending" element={<PendingVerification />} />

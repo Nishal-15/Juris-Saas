@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
-import { Routes, Route } from "react-router-dom";
+import { Routes, Route, Navigate } from "react-router-dom";
+import { Capacitor } from '@capacitor/core';
 import Login from "./auth/Login";
 import Register from "./auth/Register";
 import UserDashboard from "./pages/UserDashboard";
@@ -33,6 +34,7 @@ if (localStorage.token) {
 
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
+  const isNative = Capacitor.isNativePlatform();
   // ✅ WAKE UP AUDIO ENGINE ON FIRST INTERACTION
   const handleInteraction = () => {
     primeAudio();
@@ -113,7 +115,7 @@ export default function App() {
       <PwaInstallPill />
       <GlobalCallNotification />
       <Routes>
-    <Route path="/" element={<VideoLanding />} />
+    <Route path="/" element={isNative ? <Navigate to="/login" replace /> : <VideoLanding />} />
     <Route path="/login" element={<Login />} />
     <Route path="/register" element={<Register />} />
     <Route path="/reset-password/:token" element={<ResetPassword />} />
