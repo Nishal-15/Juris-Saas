@@ -11,10 +11,11 @@ export default function VideoCall() {
   const apiRef = useRef(null);
 
   useEffect(() => {
-    socket.on("end-call", () => leaveCall());
     return () => {
-      leaveCall();
-      socket.off("end-call");
+      if (apiRef.current) {
+        apiRef.current.dispose();
+        apiRef.current = null;
+      }
     };
   }, [roomId]);
 
@@ -61,8 +62,7 @@ export default function VideoCall() {
       apiRef.current.dispose();
       apiRef.current = null;
     }
-    socket.emit("end-call", roomId);
-    window.location.href = "/dashboard";
+    navigate("/user");
   };
 
   return (
