@@ -45,7 +45,41 @@ async function sendAINotification(target, userName, caseTitle, context, lang = "
 
     // 2. Branch: Send via WhatsApp if target is phone number
     if (target && !String(target).includes("@")) {
-      console.log(`[WhatsApp Simulation] To: ${target} Message: ${text}`);
+      const accessToken = process.env.WHATSAPP_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+      const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
+
+      if (!accessToken || !phoneNumberId || accessToken.includes("your_whatsapp")) {
+        console.log(`[WhatsApp Simulation] To: ${target} Message: ${text}`);
+        return;
+      }
+
+      try {
+        const recipient = String(target).startsWith("+") ? String(target).substring(1) : (String(target).startsWith("91") ? String(target) : "91" + target);
+        await sendWithRetry(() => axios.post(
+          `https://graph.facebook.com/v18.0/${phoneNumberId}/messages`,
+          {
+            messaging_product: "whatsapp",
+            to: recipient,
+            type: "template",
+            template: {
+              name: "jurisbot_hearing_reminder",
+              language: { code: "en" },
+              components: [
+                {
+                  type: "body",
+                  parameters: [
+                    { type: "text", text: text }
+                  ]
+                }
+              ]
+            }
+          },
+          { headers: { Authorization: `Bearer ${accessToken}`, "Content-Type": "application/json" } }
+        ));
+        console.log(`[WhatsApp Success] Sent to ${recipient}`);
+      } catch (waErr) {
+        console.warn(`[WhatsApp Warning] Failed to send message to ${target}: ${waErr.response?.data?.error?.message || waErr.message}`);
+      }
       return;
     }
 
