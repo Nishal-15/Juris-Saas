@@ -9,7 +9,10 @@ const socket = io(SOCKET_URL, {
   transports: ["websocket"], // Forced websocket for stable Cloudflare/Render connection
   withCredentials: true,
   reconnection: true,
-  reconnectionAttempts: 10
+  reconnectionAttempts: 10,
+  auth: (cb) => {
+    cb({ token: localStorage.getItem("token") });
+  }
 });
 
 socket.on("connect", () => console.log("✅ JurisBot Communication Link Active"));

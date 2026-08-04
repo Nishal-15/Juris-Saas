@@ -19,7 +19,6 @@ const mongoSanitize = require("express-mongo-sanitize");
 const rateLimit = require("express-rate-limit");
 
 const connectDB = require("./config/db");
-require("./utils/scheduler"); // 🔔 Initialize hearing notification scheduler
 
 const app = express();
 app.set("trust proxy", 1); // ✅ Required for cloud proxies (Render/Cloudflare) to prevent false rate-limit network errors
@@ -66,7 +65,7 @@ const io = socketio(server, {
   }
 });
 
-app.set("io", io);
+
 
 /* =======================
    DATABASE
@@ -238,23 +237,40 @@ app.use((err, req, res, next) => {
 const Message = require("./models/Message"); // Moved to top-level
 const Notification = require("./models/Notification");
 
+const jwt = require("jsonwebtoken");
+
+io.use((socket, next) => {
+  const token = socket.handshake.auth?.token;
+  if (token) {
+    try {
+      const decoded = jwt.verify(token, process.env.JWT_SECRET);
+      socket.user = decoded;
+    } catch (err) {
+      console.log("Socket Auth Error:", err.message);
+    }
+  }
+  next();
+});
+
 io.on("connection", (socket) => {
   console.log("Workspace Link Established:", socket.id);
 
   // ✅ TARGETED USER ROOM (For Private Notifications)
   socket.on("join", (userId) => {
-    socket.join(userId);
+    if (socket.user && (socket.user.id === userId || socket.user.role === "admin")) {
+      socket.join(userId);
+    }
   });
 
   // ✅ SHARED CHAT/VIDEO ROOM (For consultations)
   socket.on("join-room", (room) => {
     socket.join(room);
-    // Notify others in room to start peer handshake
     socket.to(room).emit("user-joined");
   });
 
   // ✅ REAL-TIME CHAT MESSAGING
   socket.on("send-message", async ({ to, message }) => {
+    if (!socket.user || socket.user.id !== message.from) return; // Anti-spoofing
     try {
       await Message.create({
         from: message.from,
@@ -271,7 +287,6 @@ io.on("connection", (socket) => {
       } catch (notifErr) {
         console.error("Notification Creation Error:", notifErr);
       }
-      // Broadcast to specific recipient room
       io.to(to).emit("receive-message", message);
       io.to(to).emit("notification", { text: `New message: ${message.text || "💬"}` });
     } catch (err) {
@@ -281,6 +296,7 @@ io.on("connection", (socket) => {
 
   // ✅ VIDEO CALL SIGNALING REINFORCEMENT
   socket.on("video-call-request", ({ to, from, fromName, roomId }) => {
+    if (!socket.user || socket.user.id !== from) return;
     io.to(to).emit("incoming-video-call", { from, fromName, roomId });
   });
 
@@ -301,14 +317,22 @@ io.on("connection", (socket) => {
   });
 
   // ✅ SYSTEM-WIDE NOTIFICATIONS (FIXED)
-  socket.on("notify", ({ to, text }) => {
-    // Send as object to support {data.text} in frontend
-    io.to(to).emit("notification", { text });
+  socket.on("notify", async ({ to, text }) => {
+    if (socket.user && (socket.user.role === "admin" || socket.user.id === to)) {
+      try {
+        await Notification.create({ user: to, title: "System Alert", message: text, icon: "🔔" });
+      } catch (e) {
+        console.error("Failed to persist notification:", e);
+      }
+      io.to(to).emit("notification", { text });
+    }
   });
 
   // ✅ MARKETPLACE BROADCAST (New Infrastucture)
   socket.on("update-marketplace", () => {
-    io.emit("marketplace-needs-refresh");
+    if (socket.user && (socket.user.role === "lawyer" || socket.user.role === "admin")) {
+      io.emit("marketplace-needs-refresh");
+    }
   });
 
   socket.on("disconnect", () => {
@@ -324,8 +348,9 @@ app.set("io", io);
 ======================= */
 const PORT = process.env.PORT || 5000;
 
-/* Export app and io for use in scheduler and other modules */
 module.exports = { app, io, server };
+
+require("./utils/scheduler"); // 🔔 Initialize hearing notification scheduler
 
 server.listen(PORT, () => {
   console.log(`JurisBot Core: Unified Server Online on Port ${PORT}`);

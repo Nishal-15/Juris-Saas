@@ -679,6 +679,9 @@ router.get("/:id/ai-brief", auth(["lawyer", "admin"]), async (req, res) => {
     if (!targetCase) return res.status(404).json({ message: "Case not found" });
 
     // Send to Python AI Service
+    if (!process.env.PYTHON_AI_SERVICE_URL) {
+      return res.status(503).json({ message: "AI Service URL not configured" });
+    }
     const axios = require("axios");
     const aiUrl = process.env.PYTHON_AI_SERVICE_URL.replace('/chat', '/brief');
     const aiRes = await axios.post(aiUrl, {
@@ -998,37 +1001,42 @@ router.post("/analyze-story", auth(), async (req, res) => {
 
     try {
       // PRIMARY: Groq (llama-3.3-70b-versatile) — fastest + most accurate for Indian legal JSON
+      // FALLBACK: llama3-8b-8192 — higher rate limits
       if (GROQ_KEY) {
-        console.log("[AI TRIAGE] Attempting Groq (llama-3.3-70b-versatile) Analysis...");
-        try {
-          const groqRes = await axios.post(
-            "https://api.groq.com/openai/v1/chat/completions",
-            {
-              model: "llama-3.3-70b-versatile",
-              messages: [
-                { role: "system", content: "You are a Senior Indian Legal Expert. You ALWAYS respond with valid JSON only. No markdown, no explanations." },
-                { role: "user", content: analysisPrompt }
-              ],
-              response_format: { type: "json_object" },
-              temperature: 0.1,
-              max_tokens: 800
-            },
-            { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 12000 }
-          );
-          let rawContent = groqRes.data.choices[0].message.content;
-          rawContent = rawContent.replace(/```json|```/g, "").trim();
-          const data = JSON.parse(rawContent);
-          console.log("[AI TRIAGE] Groq Success:", data.title, "|", data.legalType);
-          return res.json({
-            title: data.title,
-            category: data.category,
-            legalType: data.legalType,
-            sections: data.sections || [],
-            court: data.court || "",
-            draft: data.draft || ""
-          });
-        } catch (err) {
-          console.error("[AI TRIAGE] Groq Failed:", err.response?.data || err.message);
+        const models = ["llama-3.3-70b-versatile", "llama3-8b-8192"];
+        for (const model of models) {
+          console.log(`[AI TRIAGE] Attempting Groq (${model}) Analysis...`);
+          try {
+            const groqRes = await axios.post(
+              "https://api.groq.com/openai/v1/chat/completions",
+              {
+                model: model,
+                messages: [
+                  { role: "system", content: "You are a Senior Indian Legal Expert. You ALWAYS respond with valid JSON only. No markdown, no explanations." },
+                  { role: "user", content: analysisPrompt }
+                ],
+                response_format: { type: "json_object" },
+                temperature: 0.1,
+                max_tokens: 800
+              },
+              { headers: { Authorization: `Bearer ${GROQ_KEY}` }, timeout: 12000 }
+            );
+            let rawContent = groqRes.data.choices[0].message.content;
+            rawContent = rawContent.replace(/```json|```/g, "").trim();
+            const data = JSON.parse(rawContent);
+            console.log("[AI TRIAGE] Groq Success:", data.title, "|", data.legalType);
+            return res.json({
+              title: data.title,
+              category: data.category,
+              legalType: data.legalType,
+              sections: data.sections || [],
+              court: data.court || "",
+              draft: data.draft || ""
+            });
+          } catch (err) {
+            console.error(`[AI TRIAGE] Groq (${model}) Failed:`, err.response?.data?.error?.message || err.message);
+            // Continue to next model on failure (e.g. rate limit)
+          }
         }
       }
 

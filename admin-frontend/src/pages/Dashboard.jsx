@@ -254,7 +254,7 @@ export default function Dashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginTop: '20px' }}>
           {/* BAR CHART */}
           <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
-            <h4 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '15px' }}>Weekly Query Volume & Latency</h4>
+            <h4 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '15px' }}>Weekly Query Volume</h4>
             <div style={{ width: '100%', height: 300 }}>
               {loading ? (
                 <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', height: '100%' }}>Loading chart...</div>
@@ -264,14 +264,12 @@ export default function Dashboard() {
                   <CartesianGrid strokeDasharray="3 3" vertical={false} stroke="#f1f5f9" />
                   <XAxis dataKey="name" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                   <YAxis yAxisId="left" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
-                  <YAxis yAxisId="right" orientation="right" stroke="#94a3b8" fontSize={12} tickLine={false} axisLine={false} />
                   <Tooltip 
                     cursor={{ fill: 'rgba(201,168,76,0.05)' }}
                     contentStyle={{ borderRadius: '8px', border: '1px solid #e2e8f0', boxShadow: '0 4px 12px rgba(0,0,0,0.05)' }}
                   />
                   <Legend iconType="circle" wrapperStyle={{ fontSize: '13px', paddingTop: '10px' }} />
                   <Bar yAxisId="left" dataKey="queries" fill="#c9a84c" radius={[4, 4, 0, 0]} name="Query Volume" />
-                  <Bar yAxisId="right" dataKey="latency" fill="#1e293b" radius={[4, 4, 0, 0]} name="Latency (ms)" />
                 </BarChart>
               </ResponsiveContainer>
               ) : (<p style={{ padding: '40px', textAlign: 'center' }}>No data available</p>)}

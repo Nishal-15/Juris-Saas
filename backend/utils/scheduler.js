@@ -14,17 +14,21 @@ cron.schedule("0 8 * * *", async () => {
     const after48h = new Date();
     after48h.setDate(today.getDate() + 2);
 
-    // Format dates for comparison (YYYY-MM-DD)
-    const todayStr = today.toISOString().split("T")[0];
-    const after48hStr = after48h.toISOString().split("T")[0];
+    const startOfToday = new Date(today.setHours(0,0,0,0));
+    const endOfToday = new Date(today.setHours(23,59,59,999));
+    const startOf48h = new Date(after48h.setHours(0,0,0,0));
+    const endOf48h = new Date(after48h.setHours(23,59,59,999));
 
     const cases = await Case.find({
-      hearingDate: { $in: [todayStr, after48hStr] },
+      $or: [
+        { hearingDate: { $gte: startOfToday, $lte: endOfToday } },
+        { hearingDate: { $gte: startOf48h, $lte: endOf48h } }
+      ],
       status: "In Progress"
     }).populate("user assignedLawyer");
 
     for (const c of cases) {
-       const isToday = c.hearingDate === todayStr;
+       const isToday = c.hearingDate >= startOfToday && c.hearingDate <= endOfToday;
        
        // 🤖 Generate AI Alert Message
        const aiMessage = await generateAILegalAlert(c, isToday);
@@ -65,7 +69,7 @@ async function generateAILegalAlert(caseData, isToday) {
 }
 
 async function sendWhatsApp(phone, text) {
-  const accessToken = process.env.WHATSAPP_ACCESS_TOKEN;
+  const accessToken = process.env.WHATSAPP_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!accessToken || !phoneNumberId || accessToken.includes("your_whatsapp")) {

@@ -65,8 +65,7 @@ router.get("/stats", auth(["admin"]), async (req, res) => {
       const q = barDataMap[name] || 0;
       return {
         name,
-        queries: q,
-        latency: q > 0 ? Math.floor(310 + (q * 45)) : 0
+        queries: q
       };
     });
 
@@ -261,21 +260,7 @@ router.put("/cases/:id/status", auth(["admin"]), async (req, res) => {
   }
 });
 
-// Block/Unblock Lawyer
-router.patch("/block-lawyer/:id", auth(["admin"]), async (req, res) => {
-  try {
-    const { isBlocked } = req.body;
-    const lawyer = await User.findOneAndUpdate(
-      { _id: req.params.id, role: "lawyer" },
-      { $set: { isBlocked } },
-      { new: true }
-    );
-    if (!lawyer) return res.status(404).json({ message: "Lawyer not found." });
-    res.json({ message: `Lawyer ${isBlocked ? 'blocked' : 'unblocked'} successfully`, lawyer });
-  } catch (error) {
-    res.status(500).json({ message: "Server error blocking lawyer." });
-  }
-});
+
 
 // 📢 BROADCAST SIGNAL (TO ALL OR TARGETED)
 router.post("/broadcast", auth(["admin"]), async (req, res) => {

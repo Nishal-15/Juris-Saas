@@ -7,7 +7,10 @@ const SOCKET_URL = import.meta.env.VITE_API_URL
 const socket = io(SOCKET_URL, {
   transports: ["websocket"], // Forced websocket for stable Cloudflare/Render connection
   withCredentials: true,
-  reconnection: true
+  reconnection: true,
+  auth: (cb) => {
+    cb({ token: localStorage.getItem("token") });
+  }
 });
 
 socket.on("connect", () => console.log("✅ Lawyer Console: Link Active"));

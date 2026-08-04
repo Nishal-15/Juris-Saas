@@ -344,7 +344,7 @@ router.post("/verify-otp", async (req, res) => {
       return res.status(400).json({ message: "Invalid request" });
     }
 
-    const isValidOtp = (user.twoFactorOtp && user.twoFactorOtp === otp && Date.now() <= user.twoFactorExpires) || otp === "000000";
+    const isValidOtp = (user.twoFactorOtp && user.twoFactorOtp === otp && Date.now() <= user.twoFactorExpires);
     if (!isValidOtp) {
       return res.status(400).json({ message: "Invalid or expired OTP" });
     }

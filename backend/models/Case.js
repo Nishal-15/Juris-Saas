@@ -14,6 +14,7 @@ const CaseSchema = new mongoose.Schema({
   },
   status: {
     type: String,
+    enum: ["Open", "In Progress", "Closed", "Pending Mediation", "Resolved"],
     default: "Open"
   },
   user: {

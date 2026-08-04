@@ -15,9 +15,15 @@ export default function RightPanel() {
   const activeCases  = cases.filter(c => c.assignedLawyer);
 
   const getCountdown = (dateStr) => {
-    const diff = new Date(dateStr) - new Date();
-    if (diff <= 0) return { label: "Passed", urgent: false };
-    const days = Math.floor(diff / (1000 * 60 * 60 * 24));
+    const [y, m, d] = dateStr.split('T')[0].split('-');
+    const hearing = new Date(y, m - 1, d);
+    hearing.setHours(0, 0, 0, 0);
+    const today = new Date();
+    today.setHours(0, 0, 0, 0);
+    
+    const diff = hearing.getTime() - today.getTime();
+    if (diff < 0) return { label: "Passed", urgent: false };
+    const days = Math.round(diff / (1000 * 60 * 60 * 24));
     return { label: days === 0 ? "Today" : `${days}d away`, urgent: days <= 3 };
   };
 
