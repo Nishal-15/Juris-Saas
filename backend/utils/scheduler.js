@@ -1,7 +1,7 @@
 const cron = require("node-cron");
 const Case = require("../models/Case");
 const axios = require("axios");
-const twilio = require("twilio");
+
 const { spawn } = require("child_process");
 const path      = require("path");
 const { getAIChatURL } = require("./aiUrl");

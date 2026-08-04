@@ -1,12 +1,8 @@
 const axios = require("axios");
 const { Resend } = require("resend");
 const { getAIChatURL } = require("./aiUrl");
-const twilio = require("twilio");
 const resend = process.env.RESEND_API_KEY
   ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-const twilioClient = process.env.TWILIO_ACCOUNT_SID && process.env.TWILIO_AUTH_TOKEN
-  ? twilio(process.env.TWILIO_ACCOUNT_SID, process.env.TWILIO_AUTH_TOKEN)
   : null;
 
 async function sendWithRetry(fn, retries = 3, delay = 1000) {
@@ -49,22 +45,7 @@ async function sendAINotification(target, userName, caseTitle, context, lang = "
 
     // 2. Branch: Send via WhatsApp if target is phone number
     if (target && !String(target).includes("@")) {
-      if (!twilioClient || !process.env.TWILIO_PHONE_NUMBER) {
-        console.log(`[WhatsApp Simulation] To: ${target} Message: ${text}`);
-        return;
-      }
-      try {
-        const formattedPhone = String(target).startsWith("whatsapp:") ? String(target) : `whatsapp:${target}`;
-        const formattedFrom = process.env.TWILIO_PHONE_NUMBER.startsWith("whatsapp:") ? process.env.TWILIO_PHONE_NUMBER : `whatsapp:${process.env.TWILIO_PHONE_NUMBER}`;
-        await sendWithRetry(() => twilioClient.messages.create({
-          body: text,
-          from: formattedFrom,
-          to: formattedPhone
-        }));
-        console.log(`[WhatsApp Success] Sent to ${formattedPhone}`);
-      } catch (twErr) {
-        console.warn(`[WhatsApp Warning] Failed to send message to ${target}: ${twErr.message}`);
-      }
+      console.log(`[WhatsApp Simulation] To: ${target} Message: ${text}`);
       return;
     }
 
