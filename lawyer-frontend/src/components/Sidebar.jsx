@@ -91,6 +91,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
   const [collapsed, setCollapsed] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPwaModal, setShowPwaModal] = useState(false);
@@ -104,6 +105,13 @@ export default function Sidebar() {
     window.addEventListener("beforeinstallprompt", pwaHandler);
     return () => window.removeEventListener("beforeinstallprompt", pwaHandler);
   }, []);
+
+  useEffect(() => {
+    document.documentElement.setAttribute("data-theme", theme);
+    localStorage.setItem("theme", theme);
+  }, [theme]);
+
+  const toggleTheme = () => setTheme(t => t === "dark" ? "light" : "dark");
 
   const logout = () => {
     localStorage.clear();
@@ -151,6 +159,27 @@ export default function Sidebar() {
         )}
       </div>
 
+      {/* Theme Toggle Switch */}
+      <div style={{ padding: '0 20px', marginTop: '12px', marginBottom: '4px', display: 'flex', alignItems: 'center', justifyContent: collapsed ? 'center' : 'space-between' }}>
+        {!collapsed && <span style={{ fontSize: '12px', color: 'var(--muted)', fontWeight: 600 }}>Theme</span>}
+        <div 
+          onClick={toggleTheme}
+          style={{ 
+            width: '40px', height: '22px', borderRadius: '20px', 
+            background: theme === 'dark' ? 'var(--bg-3)' : 'var(--gold)', 
+            position: 'relative', cursor: 'pointer', transition: 'background 0.3s',
+            flexShrink: 0
+          }}
+          title="Toggle Theme"
+        >
+          <div style={{
+            width: '16px', height: '16px', borderRadius: '50%', background: '#fff',
+            position: 'absolute', top: '3px', left: theme === 'dark' ? '4px' : '20px',
+            transition: 'left 0.3s'
+          }} />
+        </div>
+      </div>
+
       {/* Navigation */}
       <nav className="sidebar-nav">
         <div className="sidebar-section-title">{collapsed ? "—" : "Workspace"}</div>
@@ -179,15 +208,18 @@ export default function Sidebar() {
             }
           }}
           style={{ background: "rgba(201, 168, 76, 0.15)", border: "1px solid rgba(201, 168, 76, 0.4)", marginTop: "6px", width: "100%", cursor: "pointer", textAlign: "left" }}
-          title={collapsed ? "Install Lawyer PWA" : ""}
+          title={collapsed ? "Install Lawyer App" : ""}
         >
-          <span className="link-icon" style={{ fontSize: "1.2rem" }}>📲</span>
-          {!collapsed && <span className="link-label fade-in" style={{ color: "#c9a84c", fontWeight: 700 }}>Install PWA App</span>}
+          <span className="link-icon" style={{ fontSize: "1.2rem" }}>
+            <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+          </span>
+          {!collapsed && <span className="link-label fade-in" style={{ color: "#c9a84c", fontWeight: 700 }}>Install App</span>}
         </button>
       </nav>
 
       {/* User Footer */}
       <div className="sidebar-footer">
+
         <div className="sidebar-user-info">
           <div className="user-avatar-ring">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
@@ -223,7 +255,10 @@ export default function Sidebar() {
             style={{ background: "#131722", border: "1px solid #c9a84c", borderRadius: "18px", padding: "24px", maxWidth: "420px", width: "100%", color: "#fff", textAlign: "left", boxShadow: "0 20px 50px rgba(0,0,0,0.8)" }}
           >
             <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: "16px", borderBottom: "1px solid rgba(255,255,255,0.1)", paddingBottom: "12px" }}>
-              <h3 style={{ margin: 0, color: "#c9a84c", fontSize: "1.2rem", fontFamily: "'Playfair Display', serif" }}>📲 Install JurisBot Lawyer PWA</h3>
+              <h3 style={{ margin: 0, color: "#c9a84c", fontSize: "1.2rem", fontFamily: "'Playfair Display', serif" }}>
+                <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" style={{marginRight: "8px", verticalAlign: "middle"}}><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><polyline points="7 10 12 15 17 10"></polyline><line x1="12" y1="15" x2="12" y2="3"></line></svg>
+                Install JurisBot Lawyer
+              </h3>
               <button onClick={() => setShowPwaModal(false)} style={{ background: "none", border: "none", color: "#aaa", fontSize: "1.2rem", cursor: "pointer" }}>✕</button>
             </div>
             <p style={{ fontSize: "0.95rem", lineHeight: 1.5, color: "#ccc", marginBottom: "16px" }}>

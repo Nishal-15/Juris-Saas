@@ -192,9 +192,9 @@
   width: 100%;
   padding: 10px;
   background: transparent;
-  border: 1px solid var(--bg-3);
+  border: 1px solid var(--border);
   border-radius: 9px;
-  color: var(--muted);
+  color: var(--text-primary);
   font-size: 13px;
   font-weight: 600;
   cursor: pointer;

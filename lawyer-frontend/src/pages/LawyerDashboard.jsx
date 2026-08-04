@@ -337,7 +337,11 @@ export default function LawyerDashboard() {
               onClick={() => window.dispatchEvent(new Event("open-pwa-modal"))}
               style={{ background: "rgba(201, 168, 76, 0.2)", border: "1px solid #c9a84c", color: "#c9a84c", padding: "8px 14px", borderRadius: "8px", fontSize: "12px", fontWeight: "bold", cursor: "pointer", display: "flex", gap: "6px", alignItems: "center" }}
             >
-              <span>📲</span> Install App
+              <svg viewBox="0 0 24 24" width="16" height="16" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <rect x="5" y="2" width="14" height="20" rx="2" ry="2"></rect>
+                <line x1="12" y1="18" x2="12.01" y2="18"></line>
+              </svg>
+              Install App
             </button>
             <button 
               onClick={handleExportReport}

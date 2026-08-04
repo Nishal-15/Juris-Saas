@@ -236,8 +236,8 @@
 }
 .da-analyze-btn svg { width: 18px; height: 18px; }
 .da-analyze-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 8px 24px rgba(201,168,76,0.3); }
-.da-analyze-btn:disabled { background: #2a2f3e; color: #4b5563; cursor: not-allowed; }
-.da-analyze-btn.loading { background: #1c2333; color: var(--muted); cursor: not-allowed; }
+.da-analyze-btn:disabled { background: var(--bg-3); color: var(--muted-2); cursor: not-allowed; }
+.da-analyze-btn.loading { background: var(--bg-2); color: var(--muted); cursor: not-allowed; }
 
 .da-spinner {
   width: 18px; height: 18px;

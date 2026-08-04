@@ -5,8 +5,8 @@
   width: 268px;
   min-width: 268px;
   height: 100vh;
-  background: #0c1221;
-  border-right: 1px solid var(--bg-2);
+  background: var(--bg);
+  border-right: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   position: sticky;
@@ -53,7 +53,7 @@
   align-items: center;
   gap: 12px;
   padding: 32px 20px 28px;
-  border-bottom: 1px solid rgba(255,255,255,0.04);
+  border-bottom: 1px solid var(--border);
 }
 
 .sidebar.collapsed .sidebar-logo { justify-content: center; padding: 32px 0 28px; }
@@ -144,7 +144,7 @@
 /* ---- Footer ---- */
 .sidebar-footer {
   padding: 16px 12px;
-  border-top: 1px solid rgba(255,255,255,0.04);
+  border-top: 1px solid var(--border);
   display: flex;
   flex-direction: column;
   gap: 8px;
@@ -176,7 +176,7 @@
   display: block;
   font-size: 13px;
   font-weight: 600;
-  color: rgba(240,240,240,0.9);
+  color: var(--text-primary);
 }
 .user-role {
   display: block;
@@ -236,8 +236,8 @@
     flex-direction: row !important;
     z-index: 999999 !important;
     border-right: none !important;
-    border-top: 1px solid rgba(255,255,255,0.15) !important;
-    background: #0c1221 !important;
+    border-top: 1px solid var(--border) !important;
+    background: var(--bg) !important;
     box-shadow: 0 -4px 25px rgba(0,0,0,0.8) !important;
     padding: 0 !important;
     margin: 0 !important;

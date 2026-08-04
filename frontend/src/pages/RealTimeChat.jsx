@@ -100,7 +100,14 @@ export default function RealTimeChat() {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-       alert(`File "${file.name}" selected. Uploading...`);
+       const message = {
+         from: userId,
+         to: id,
+         text: `📁 Attached Document: ${file.name}`,
+         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+       };
+       socket.emit("send-message", { to: id, message });
+       setMessages(prev => [...prev, message]);
     }
   };
 

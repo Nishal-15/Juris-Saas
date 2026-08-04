@@ -72,12 +72,12 @@ export default function Notifications() {
                   <div className="np-card-body">
                     <div className="np-card-top">
                       <span className="np-type-badge" style={{ color: tc.color, background: tc.bg }}>{tc.label}</span>
-                      <h4 className="np-card-title" style={{ color: "#fff", margin: 0 }}>{n.title}</h4>
+                      <h4 className="np-card-title" style={{ color: "var(--text-primary)", margin: 0 }}>{n.title}</h4>
                     </div>
-                    <p className="np-card-msg" style={{ color: "rgba(255,255,255,0.6)", fontSize: "13px", marginTop: "5px" }}>{n.message}</p>
+                    <p className="np-card-msg" style={{ color: "var(--muted)", fontSize: "13px", marginTop: "5px" }}>{n.message}</p>
                   </div>
                   <div className="np-card-right">
-                    <span className="np-time" style={{ fontSize: "11px", color: "rgba(255,255,255,0.4)" }}>{new Date(n.createdAt).toLocaleDateString("en-IN")}</span>
+                    <span className="np-time" style={{ fontSize: "11px", color: "var(--muted-2)" }}>{new Date(n.createdAt).toLocaleDateString("en-IN")}</span>
                     {!n.isRead && <span className="np-unread-dot" />}
                   </div>
                 </div>

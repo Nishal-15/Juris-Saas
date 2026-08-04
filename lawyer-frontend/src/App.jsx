@@ -21,8 +21,6 @@ import PendingVerification from "./pages/PendingVerification";
 import ResetPassword from "./auth/ResetPassword";
 import PwaInstallPill from "./components/PwaInstallPill";
 import MediationWorkspace from "./pages/MediationWorkspace";
-import VideoLanding from "./pages/VideoLanding";
-
 export default function App() {
   const [broadcast, setBroadcast] = useState(null);
   const isNative = Capacitor.isNativePlatform();
@@ -105,7 +103,7 @@ export default function App() {
     <Routes>
 
       {/* Auth */}
-      <Route path="/" element={isNative ? <Login /> : <VideoLanding />} />
+      <Route path="/" element={<Login />} />
       <Route path="/login" element={<Login />} />
       <Route path="/register" element={<Register />} />
       <Route path="/reset-password/:token" element={<ResetPassword />} />

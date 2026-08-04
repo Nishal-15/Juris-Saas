@@ -3,6 +3,17 @@ import API from '../api/axios';
 import { useToast } from '../components/Toast';
 import { Scale, Star, Briefcase, Search, RefreshCw, XCircle, ShieldAlert } from 'lucide-react';
 
+const API_BASE = import.meta.env.VITE_API_URL || "http://localhost:5000";
+
+function buildFileUrl(rawPath) {
+  if (!rawPath) return null;
+  if (rawPath.startsWith("http")) return rawPath;
+  const normalized = rawPath.replace(/\\/g, "/");
+  const idx = normalized.indexOf("uploads/");
+  if (idx === -1) return null;
+  return `${API_BASE}/${normalized.slice(idx)}`;
+}
+
 export default function LegalExperts() {
   const [lawyers, setLawyers] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -137,8 +148,13 @@ export default function LegalExperts() {
                     <tr key={l._id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--gold-dim)', color: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
-                            {(l.name || "E")[0].toUpperCase()}
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--gold-dim)', color: 'var(--gold)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600, overflow: 'hidden' }}>
+                            {buildFileUrl(l.profilePicture || l.avatar || l.photo) ? (
+                              <img src={buildFileUrl(l.profilePicture || l.avatar || l.photo)} alt={l.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} onError={(e) => { e.target.style.display = 'none'; e.target.nextSibling.style.display = 'block'; }} />
+                            ) : null}
+                            <span style={{ display: buildFileUrl(l.profilePicture || l.avatar || l.photo) ? 'none' : 'block' }}>
+                              {(l.name || "E")[0].toUpperCase()}
+                            </span>
                           </div>
                           <div>
                             <div style={{ fontWeight: '600', display: 'flex', alignItems: 'center', gap: '6px' }}>

@@ -43,10 +43,10 @@
 
 /* Card */
 .cl-card {
-  background: rgba(22, 27, 37, 0.65);
+  background: var(--bg-2);
   backdrop-filter: blur(12px);
   -webkit-backdrop-filter: blur(12px);
-  border: 1px solid var(--bg-3);
+  border: 1px solid var(--border);
   border-radius: 16px;
   padding: 32px 20px 24px;
   display: flex; flex-direction: column; align-items: center;
@@ -185,12 +185,12 @@
 
 /* Search and Filter Controls */
 .cl-controls { display: flex; gap: 16px; margin-bottom: 24px; }
-.cl-search-box { flex: 1; display: flex; align-items: center; background: rgba(22, 27, 37, 0.65); border: 1px solid var(--bg-3); border-radius: 12px; padding: 0 16px; transition: border-color 0.2s; }
+.cl-search-box { flex: 1; display: flex; align-items: center; background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 0 16px; transition: border-color 0.2s; }
 .cl-search-box:focus-within { border-color: rgba(201,168,76,0.5); box-shadow: 0 0 10px rgba(201,168,76,0.1); }
 .cl-search-box svg { width: 18px; height: 18px; color: var(--muted); margin-right: 12px; }
 .cl-search-box input { flex: 1; background: transparent; border: none; color: var(--text-primary); padding: 14px 0; font-size: 14.5px; font-family: inherit; }
 .cl-search-box input:focus { outline: none; }
-.cl-filter-box { display: flex; align-items: center; background: rgba(22, 27, 37, 0.65); border: 1px solid var(--bg-3); border-radius: 12px; padding: 0 16px; position: relative; }
+.cl-filter-box { display: flex; align-items: center; background: var(--bg-2); border: 1px solid var(--border); border-radius: 12px; padding: 0 16px; position: relative; }
 .cl-filter-box svg { width: 18px; height: 18px; color: var(--gold); margin-right: 10px; position: absolute; pointer-events: none; }
 .cl-filter-box select { appearance: none; background: transparent; border: none; color: var(--text-primary); font-size: 14px; font-family: inherit; font-weight: 500; padding: 14px 20px 14px 34px; cursor: pointer; width: 200px; }
 .cl-filter-box select:focus { outline: none; }

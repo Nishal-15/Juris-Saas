@@ -29,6 +29,7 @@ export default function Documents() {
   const [docs, setDocs] = useState([]);
   const [loading, setLoading] = useState(true);
   const [isUploading, setIsUploading] = useState(false);
+  const [uploadProgress, setUploadProgress] = useState(0);
   const [dragOver, setDragOver] = useState(false);
 
   useEffect(() => { fetchDocs(); }, []);
@@ -43,12 +44,19 @@ export default function Documents() {
     const formData = new FormData();
     formData.append("file", file);
     setIsUploading(true);
+    setUploadProgress(0);
     try {
-      await axios.post("/documents/upload", formData, { headers: { "Content-Type": "multipart/form-data" } });
+      await axios.post("/documents/upload", formData, { 
+        headers: { "Content-Type": "multipart/form-data" },
+        onUploadProgress: (progressEvent) => {
+          const percentCompleted = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+          setUploadProgress(percentCompleted);
+        }
+      });
       fetchDocs();
     } catch (err) {
       alert("Upload failed: " + (err.response?.data?.message || err.message));
-    } finally { setIsUploading(false); }
+    } finally { setIsUploading(false); setUploadProgress(0); }
   };
 
   const getExt = (name) => name?.split(".").pop()?.toUpperCase() || "FILE";
@@ -75,7 +83,10 @@ export default function Documents() {
           <input type="file" style={{ display: "none" }} onChange={e => handleUpload(e.target.files[0])} disabled={isUploading} />
           <div className="dv-upload-icon">
             {isUploading ? (
-              <div className="dv-spinner" />
+              <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: '8px' }}>
+                <div className="dv-spinner" />
+                <span style={{ fontSize: '0.85rem', color: 'var(--gold)', fontWeight: '700' }}>{uploadProgress}%</span>
+              </div>
             ) : (
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round">
                 <polyline points="16 16 12 12 8 16"/><line x1="12" y1="12" x2="12" y2="21"/>

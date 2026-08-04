@@ -66,6 +66,7 @@
     "@mui/icons-material": "^9.2.0",
     "@mui/material": "^9.2.0",
     "axios": "^1.6.7",
+    "framer-motion": "^12.43.0",
     "html2pdf.js": "^0.14.0",
     "react": "^18.2.0",
     "react-dom": "^18.2.0",

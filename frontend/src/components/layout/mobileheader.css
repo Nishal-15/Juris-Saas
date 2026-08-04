@@ -20,6 +20,12 @@
   cursor: pointer;
 }
 
+.mobile-actions-top {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
 .mobile-logo-icon-top {
   font-size: 20px;
   filter: drop-shadow(0 0 5px rgba(201, 168, 76, 0.4));

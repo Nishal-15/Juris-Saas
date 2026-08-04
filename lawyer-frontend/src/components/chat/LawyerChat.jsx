@@ -104,7 +104,16 @@ export default function LawyerChat({ currentUser, targetUser }) {
   const handleFileUpload = (e) => {
     const file = e.target.files[0];
     if (file) {
-       alert(`Sending file "${file.name}" to client...`);
+       const user = JSON.parse(localStorage.getItem("user") || "{}");
+       const uid = user._id || user.id;
+       const message = {
+         from: uid,
+         to: targetUser,
+         text: `📁 Attached Document: ${file.name}`,
+         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+       };
+       socket.emit("send-message", { to: targetUser, message });
+       setMessages(prev => [...prev, message]);
     }
   };
 

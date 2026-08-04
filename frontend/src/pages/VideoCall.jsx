@@ -62,7 +62,7 @@ export default function VideoCall() {
       apiRef.current = null;
     }
     socket.emit("end-call", roomId);
-    navigate("/dashboard");
+    window.location.href = "/dashboard";
   };
 
   return (
@@ -104,7 +104,7 @@ export default function VideoCall() {
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                 Initialize Video Feed
               </button>
-              <button className="btn-secure-cancel" onClick={() => navigate("/user/dashboard")}>
+              <button className="btn-secure-cancel" onClick={() => navigate("/dashboard")}>
                 Cancel Consultation
               </button>
             </div>

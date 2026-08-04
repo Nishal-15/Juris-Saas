@@ -23,6 +23,20 @@
   --radius:     12px;
 }
 
+[data-theme='light'] {
+  --bg:         #ffffff;
+  --bg-2:       #f8fafc;
+  --bg-3:       #f1f5f9;
+  --border:     #e2e8f0;
+  --gold:       #c9a84c;
+  --gold-lite:  #d4b86a;
+  --gold-dim:   rgba(201,168,76,0.15);
+  --text-primary: #0a192f;
+  --muted:      #64748b;
+  --muted-2:    #94a3b8;
+  --shadow:     0 10px 30px -5px rgba(0,0,0,0.1);
+}
+
 
 *, *::before, *::after { 
   box-sizing: border-box; 
