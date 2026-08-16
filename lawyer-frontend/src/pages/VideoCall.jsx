@@ -1,69 +1,31 @@
-import { useState, useEffect, useRef } from "react";
-import { useParams, useNavigate } from "react-router-dom";
-import socket from "../socket";
+import { useState, useEffect } from "react";
+import { useLocation, useNavigate } from "react-router-dom";
 import "./videocall.css";
 
 export default function VideoCall() {
-  const { id: roomId } = useParams();
+  const location = useLocation();
   const navigate = useNavigate();
   const [isJoined, setIsJoined] = useState(false);
-  const jitsiContainerRef = useRef(null);
-  const apiRef = useRef(null);
+  
+  const callLink = location.state?.callLink;
 
   useEffect(() => {
-    return () => {
-      if (apiRef.current) {
-        apiRef.current.dispose();
-        apiRef.current = null;
-      }
-    };
-  }, [roomId]);
-
-  useEffect(() => {
-    if (isJoined && jitsiContainerRef.current && !apiRef.current) {
-      if (!window.JitsiMeetExternalAPI) {
-        alert("Jitsi API not loaded. Please check your internet connection.");
-        return;
-      }
-
-      const user = JSON.parse(localStorage.getItem("user") || "{}");
-      const domain = "meet.jit.si";
-      const options = {
-        roomName: `jurisbot-consultation-${roomId}`,
-        width: "100%",
-        height: "100%",
-        parentNode: jitsiContainerRef.current,
-        userInfo: {
-          displayName: user.name || "Expert Lawyer",
-        },
-        configOverwrite: {
-          startWithAudioMuted: false,
-          startWithVideoMuted: false,
-          prejoinPageEnabled: false,
-        },
-        interfaceConfigOverwrite: {
-          SHOW_CHROME_EXTENSION_BANNER: false,
-        },
-      };
-
-      apiRef.current = new window.JitsiMeetExternalAPI(domain, options);
-      apiRef.current.addListener("videoConferenceLeft", () => {
-        leaveCall();
-      });
+    if (!callLink) {
+      alert("Invalid Call Link. Redirecting to dashboard.");
+      navigate("/dashboard");
     }
-  }, [isJoined, roomId]);
+  }, [callLink, navigate]);
 
-  const initJitsi = () => {
+  const initCall = () => {
     setIsJoined(true);
   };
 
   const leaveCall = () => {
-    if (apiRef.current) {
-      apiRef.current.dispose();
-      apiRef.current = null;
-    }
-    navigate("/lawyer/dashboard");
+    setIsJoined(false);
+    navigate("/dashboard");
   };
+
+  if (!callLink) return null;
 
   return (
     <div className="v2-call-page">
@@ -97,21 +59,28 @@ export default function VideoCall() {
           <div className="waiting-card">
             <div className="waiting-avatar">LAW</div>
             <h3>Expert Console: Ready?</h3>
-            <p>Your connection is secured with military-grade encryption. Ensure your camera and microphone are connected before joining the consultation.</p>
+            <p>Your connection is secured with military-grade encryption. No login is required. Ensure your camera and microphone are connected before joining.</p>
             
             <div className="waiting-actions">
-              <button className="btn-secure-join" onClick={initJitsi}>
+              <button className="btn-secure-join" onClick={initCall}>
                 <svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect></svg>
                 Initialize Video Feed
               </button>
-              <button className="btn-secure-cancel" onClick={() => navigate("/lawyer/dashboard")}>
+              <button className="btn-secure-cancel" onClick={() => navigate("/dashboard")}>
                 Cancel Consultation
               </button>
             </div>
           </div>
         </div>
       ) : (
-        <div className="secure-feed-container" ref={jitsiContainerRef} />
+        <div className="secure-feed-container" style={{ width: '100%', height: 'calc(100vh - 80px)', backgroundColor: '#000' }}>
+          <iframe 
+            src={callLink}
+            allow="camera; microphone; fullscreen; display-capture"
+            style={{ width: '100%', height: '100%', border: 'none' }}
+            title="JurisBot Virtual Courtroom"
+          />
+        </div>
       )}
     </div>
   );

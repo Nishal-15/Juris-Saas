@@ -1,4 +1,5 @@
 const router = require("express").Router();
+const axios = require("axios");
 const Appointment = require("../models/Appointment");
 const Case = require("../models/Case");
 const Notification = require("../models/Notification");
@@ -107,68 +108,62 @@ router.post(
         })
       }
 
-      const citizen = appointment.userId
-      const lawyer  = appointment.lawyerId
+      const citizen = appointment.userId;
+      const lawyer  = appointment.lawyerId;
 
-      if (!lawyer?.phone) {
-        return res.status(400).json({
-          message:
-            "Lawyer phone number not set. " +
-            "Cannot initiate WhatsApp call."
-        })
+      // Ensure Daily API Key exists
+      if (!process.env.DAILY_API_KEY) {
+        return res.status(500).json({ message: "Daily API Key not configured." });
       }
 
-      const callLink =
-        `https://wa.me/${
-          lawyer.phone.replace(
-            /[^0-9]/g, ""
-          )
-        }`
+      // Create a secure Daily.co room
+      const dailyRes = await axios.post(
+        "https://api.daily.co/v1/rooms",
+        {
+          properties: {
+            exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
+            enable_chat: true,
+            start_audio_off: true,
+            start_video_off: false,
+          }
+        },
+        {
+          headers: {
+            Authorization: `Bearer ${process.env.DAILY_API_KEY}`,
+            "Content-Type": "application/json"
+          }
+        }
+      );
 
-      const {
-        sendCallInvite
-      } = require("../utils/whatsapp")
+      const callLink = dailyRes.data.url;
 
-      await sendCallInvite({
-        to:         citizen.phone,
-        lawyerName: lawyer.name,
-        callLink
-      })
-
-      const io = req.app.get("io")
+      // Broadcast room URL to both parties via Socket.io
+      const io = req.app.get("io");
       if (io) {
         if (citizen?._id) {
-          io.to(
-            citizen._id.toString()
-          ).emit("call-ready", {
-            type:       "whatsapp",
+          io.to(citizen._id.toString()).emit("call-ready", {
+            type: "daily",
             lawyerName: lawyer.name,
             callLink,
-            message:
-              `${lawyer.name} is ready. ` +
-              `Tap to connect on WhatsApp.`
-          })
+            message: `${lawyer.name} is ready. The Virtual Courtroom is open.`
+          });
         }
         if (lawyer?._id) {
-          io.to(
-            lawyer._id.toString()
-          ).emit("call-ready", {
-            type:        "whatsapp",
+          io.to(lawyer._id.toString()).emit("call-ready", {
+            type: "daily",
             citizenName: citizen?.name,
-            message:
-              "WhatsApp call invite " +
-              "sent to citizen."
-          })
+            callLink,
+            message: "Virtual Courtroom created and sent to citizen."
+          });
         }
       }
 
       res.json({
-        success:    true,
-        callMethod: "whatsapp",
+        success: true,
+        callMethod: "daily",
         callLink,
-        message:
-          "WhatsApp call invite sent."
-      })
+        message: "Virtual Courtroom created successfully."
+      });
     } catch (err) {
       res.status(500).json({
         message: err.message

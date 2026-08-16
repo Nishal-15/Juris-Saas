@@ -12,12 +12,12 @@ export default function GlobalCallNotification() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on("incoming-video-call", ({ from, fromName, roomId }) => {
-       const user = JSON.parse(localStorage.getItem("user") || "{}");
-       const myId = user._id || user.id;
-
-       if (from !== myId) {
-         setIncomingCall({ from, fromName, roomId });
+    socket.on("call-ready", (data) => {
+       if (data.type === "daily") {
+         setIncomingCall({ 
+           fromName: data.lawyerName || "Lawyer", 
+           callLink: data.callLink 
+         });
          
          if (activeAudio.current) {
             activeAudio.current.pause();
@@ -36,9 +36,8 @@ export default function GlobalCallNotification() {
          });
        }
     });
-
     return () => {
-       socket.off("incoming-video-call");
+       socket.off("call-ready");
        if (activeAudio.current) activeAudio.current.pause();
     };
   }, []);
@@ -67,14 +66,13 @@ export default function GlobalCallNotification() {
         <button 
           className="btn-join" 
           onClick={() => {
-            navigate(`/video/${incomingCall.roomId}`);
+            navigate(`/video-call`, { state: { callLink: incomingCall.callLink } });
             stopRingtone();
           }}
         >
           Join Call
         </button>
         <button className="btn-ignore" onClick={() => {
-          socket.emit("end-call", incomingCall.roomId);
           stopRingtone();
         }}>
           Decline
