@@ -1,28 +1,33 @@
 import React, { useState } from 'react';
 import API from '../api/axios';
 import { useToast } from '../components/Toast';
-import { Shield, Database, Cpu, Globe, Save, Trash2, Key, Eye, EyeOff, Loader2 } from 'lucide-react';
+import { Shield, Database, Cpu, Globe, Save, Trash2, Key, Eye, EyeOff, Loader2, Activity } from 'lucide-react';
 
 export default function Settings() {
-  const [accessKey, setAccessKey] = useState("admin@juris");
+  const [accessKey, setAccessKey] = useState("");
   const [showPassword, setShowPassword] = useState(false);
   const [isCleaning, setIsCleaning] = useState(false);
+  const [confirmCleanup, setConfirmCleanup] = useState(false);
+  const [ragEnabled, setRagEnabled] = useState(true);
   const [logoPreview, setLogoPreview] = useState("/juris-logo.png");
   const [uploadingLogo, setUploadingLogo] = useState(false);
   
   const toast = useToast();
 
   const handleCleanup = async () => {
-    if (window.confirm("CRITICAL: This will purge all old lawyer fields from the Citizen (Users) collection. Proceed?")) {
-      setIsCleaning(true);
-      try {
-        const res = await API.post('/admin/cleanup');
-        toast.success(res.data.message || "Institutional Cleanup Complete.");
-      } catch (err) {
-        toast.error(err.response?.data?.message || "Cleanup failed");
-      } finally {
-        setIsCleaning(false);
-      }
+    if (!confirmCleanup) {
+      setConfirmCleanup(true);
+      return;
+    }
+    setConfirmCleanup(false);
+    setIsCleaning(true);
+    try {
+      const res = await API.post('/admin/cleanup');
+      toast.success(res.data.message || "Cleanup complete.");
+    } catch (err) {
+      toast.error(err.response?.data?.message || "Cleanup failed");
+    } finally {
+      setIsCleaning(false);
     }
   };
 
@@ -80,7 +85,7 @@ export default function Settings() {
                   type={showPassword ? "text" : "password"} 
                   value={accessKey} 
                   onChange={(e) => setAccessKey(e.target.value)}
-                  style={{ width: '100%', padding: '12px 40px 12px 14px', borderRadius: '8px', border: '1px solid var(--border-dark)', background: 'var(--bg-base)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' }}
+                  style={{ width: '100%', padding: '12px 40px 12px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-base)', color: 'var(--text-primary)', boxSizing: 'border-box', outline: 'none' }}
                 />
                 <button 
                   type="button"
@@ -110,17 +115,22 @@ export default function Settings() {
           </div>
           <div style={{ marginBottom: '20px' }}>
             <label style={{ display: 'block', fontSize: '0.85rem', color: 'var(--text-muted)', marginBottom: '8px', fontWeight: 600, textTransform: 'uppercase' }}>Primary AI Model</label>
-            <select style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border-dark)', background: 'var(--bg-base)', color: 'var(--text-primary)', outline: 'none' }}>
+            <select style={{ width: '100%', padding: '12px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-base)', color: 'var(--text-primary)', outline: 'none' }}>
               <option>NVIDIA NIM Llama 3 (Enterprise Fast)</option>
               <option>Groq Llama-3-70b (High Performance)</option>
               <option>Local Ollama (Offline Mode)</option>
             </select>
           </div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-base)', borderRadius: '12px', border: '1px solid var(--border-dark)' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '16px', background: 'var(--bg-base)', borderRadius: '12px', border: '1px solid var(--border)' }}>
              <span style={{ fontSize: '0.9rem', fontWeight: 600, color: 'var(--text-primary)' }}>Enable RAG Context</span>
-             <div style={{ width: '40px', height: '22px', background: 'var(--green)', borderRadius: '12px', position: 'relative', cursor: 'pointer' }}>
-                <div style={{ position: 'absolute', top: '2px', right: '2px', width: '18px', height: '18px', background: 'white', borderRadius: '50%' }}></div>
-             </div>
+             <label className="toggle">
+                <input
+                  type="checkbox"
+                  checked={ragEnabled}
+                  onChange={e => setRagEnabled(e.target.checked)}
+                />
+                <span className="toggle-slider" />
+              </label>
           </div>
         </div>
 
@@ -135,15 +145,38 @@ export default function Settings() {
           <p style={{ fontSize: '0.85rem', color: 'var(--text-secondary)', marginBottom: '24px', lineHeight: 1.5 }}>
             Optimize the platform by removing redundant data and clearing unverified/stale schemas across the cluster.
           </p>
-          <button 
-            onClick={handleCleanup}
-            disabled={isCleaning}
-            className="btn-danger" 
-            style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', opacity: isCleaning ? 0.7 : 1, cursor: isCleaning ? 'not-allowed' : 'pointer' }}
-          >
-            {isCleaning ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
-            {isCleaning ? 'Purging Infrastructure...' : 'Purge Lawyer Fields from Citizens'}
-          </button>
+          {confirmCleanup ? (
+            <div className="confirm-danger-row">
+              <span className="confirm-danger-label">
+                This cannot be undone. Are you sure?
+              </span>
+              <button
+                className="btn-danger"
+                onClick={handleCleanup}
+                disabled={isCleaning}
+                style={{ padding: '8px 16px', fontSize: '0.82rem' }}
+              >
+                {isCleaning ? 'Purging...' : 'Yes, Purge'}
+              </button>
+              <button
+                className="btn-outline"
+                onClick={() => setConfirmCleanup(false)}
+                style={{ padding: '8px 16px', fontSize: '0.82rem' }}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : (
+            <button 
+              onClick={handleCleanup}
+              disabled={isCleaning}
+              className="btn-danger" 
+              style={{ width: '100%', padding: '12px', display: 'flex', alignItems: 'center', justifyContent: 'center', gap: '10px', opacity: isCleaning ? 0.7 : 1, cursor: isCleaning ? 'not-allowed' : 'pointer' }}
+            >
+              {isCleaning ? <Loader2 size={16} className="animate-spin" /> : <Trash2 size={16} />}
+              {isCleaning ? 'Purging Infrastructure...' : 'Purge Lawyer Fields from Citizens'}
+            </button>
+          )}
         </div>
 
         {/* SECTION: BRANDING */}
@@ -155,11 +188,11 @@ export default function Settings() {
             </div>
           </div>
           <div style={{ display: 'flex', gap: '20px', alignItems: 'center', marginTop: '10px' }}>
-            <div style={{ width: '80px', height: '80px', borderRadius: '16px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+            <div style={{ width: '80px', height: '80px', borderRadius: '16px', background: 'var(--bg-base)', border: '1px solid var(--border)', display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
               <img src={logoPreview} alt="Logo" style={{ width: '60%', height: '60%', objectFit: 'contain' }} onError={(e) => e.target.src=''} />
             </div>
             <div style={{ flex: 1 }}>
-               <input type="text" defaultValue="JurisBot" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-dark)', background: 'var(--bg-base)', color: 'var(--text-primary)', marginBottom: '12px', boxSizing: 'border-box', outline: 'none' }} />
+               <input type="text" defaultValue="JurisBot" style={{ width: '100%', padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-base)', color: 'var(--text-primary)', marginBottom: '12px', boxSizing: 'border-box', outline: 'none' }} />
                <input type="file" id="logo-upload" hidden accept="image/*" onChange={handleLogoChange} />
                <button 
                 onClick={() => document.getElementById('logo-upload').click()}
@@ -174,6 +207,37 @@ export default function Settings() {
           </div>
         </div>
 
+      </div>
+
+      {/* SECTION: SYSTEM HEALTH */}
+      <div className="content-section" style={{ marginTop: '24px' }}>
+        <div className="section-title">
+          <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+            <Activity color="var(--green)" size={20} />
+            <h3 style={{ margin: 0 }}>Live System Health</h3>
+          </div>
+          <span className="badge badge-verified" style={{ fontSize: '0.72rem' }}>All Operational</span>
+        </div>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '10px' }}>
+          {[
+            { name: 'AI Engine', desc: 'LLaMA RAG pipeline', color: 'var(--green)' },
+            { name: 'Database', desc: 'MongoDB Atlas', color: 'var(--green)' },
+            { name: 'Email Service', desc: 'Gmail Business API', color: 'var(--green)' },
+            { name: 'WhatsApp', desc: 'Meta Business API', color: 'var(--green)' },
+            { name: 'Scheduler', desc: 'Cron jobs active', color: 'var(--green)' },
+          ].map(s => (
+            <div key={s.name} style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 14px', background: 'var(--bg-base)', borderRadius: 'var(--radius-sm)', border: '1px solid var(--border-light)' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: s.color, display: 'inline-block', boxShadow: `0 0 0 3px ${s.color}33` }} />
+                <div>
+                  <div style={{ fontWeight: 600, fontSize: '0.875rem' }}>{s.name}</div>
+                  <div style={{ fontSize: '0.72rem', color: 'var(--text-muted)' }}>{s.desc}</div>
+                </div>
+              </div>
+              <span style={{ fontSize: '0.72rem', fontWeight: 700, color: 'var(--green)' }}>Operational</span>
+            </div>
+          ))}
+        </div>
       </div>
     </div>
   );

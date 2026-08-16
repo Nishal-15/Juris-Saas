@@ -88,6 +88,14 @@ export default function MediationPlayer({
     };
   }, [mediationInfo.videoUrl]);
 
+  useEffect(() => {
+    const handleKeyDown = (e) => {
+      if (e.key === "Escape") onClose();
+    };
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [onClose]);
+
   const scriptText = mediationInfo.script || mediationInfo.mediationAct?.keyBenefit || "Faster private resolution under The Mediation Act, 2023.";
 
   return (
@@ -103,40 +111,11 @@ export default function MediationPlayer({
         padding: "20px"
       }}
     >
-      <style>{`
-        @keyframes medPulse {
-          0% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(201,168,76,0.7); }
-          70% { transform: scale(1); box-shadow: 0 0 0 15px rgba(201,168,76,0); }
-          100% { transform: scale(0.95); box-shadow: 0 0 0 0 rgba(201,168,76,0); }
-        }
-        .med-player-glass {
-          background: rgba(10, 12, 18, 0.65);
-          backdrop-filter: blur(24px);
-          -webkit-backdrop-filter: blur(24px);
-          border: 1px solid rgba(255, 255, 255, 0.08);
-          box-shadow: 0 40px 80px -20px rgba(0, 0, 0, 0.9), inset 0 1px 0 rgba(255,255,255,0.06);
-        }
-        .med-btn-hover:hover {
-          transform: translateY(-1px);
-          box-shadow: 0 8px 20px -6px rgba(201, 168, 76, 0.4);
-        }
-        .custom-scrollbar::-webkit-scrollbar {
-          width: 6px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-track {
-          background: transparent;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb {
-          background: rgba(255,255,255,0.1);
-          border-radius: 10px;
-        }
-        .custom-scrollbar::-webkit-scrollbar-thumb:hover {
-          background: rgba(255,255,255,0.2);
-        }
-      `}</style>
-
       <div
         className="med-player-glass"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="mediation-title"
         style={{
           maxWidth: "520px",
           width: "95%",
@@ -149,6 +128,7 @@ export default function MediationPlayer({
         {/* Close Button */}
         <button
           onClick={onClose}
+          aria-label="Close modal"
           style={{
             position: "absolute",
             top: "14px",
@@ -194,7 +174,7 @@ export default function MediationPlayer({
           >
             Mediation Act 2023
           </div>
-          <div style={{ fontFamily: "'Playfair Display', serif", color: "#ffffff", fontSize: "1.4rem", fontWeight: 600, letterSpacing: "-0.3px", lineHeight: "1.2" }}>
+          <div id="mediation-title" style={{ fontFamily: "'Playfair Display', serif", color: "#ffffff", fontSize: "1.4rem", fontWeight: 600, letterSpacing: "-0.3px", lineHeight: "1.2" }}>
             {mediationInfo.mediationAct?.actName || "The Mediation Act, 2023"}
           </div>
           <div style={{ color: "rgba(255,255,255,0.4)", fontSize: "0.75rem", marginTop: "6px", fontWeight: 400 }}>

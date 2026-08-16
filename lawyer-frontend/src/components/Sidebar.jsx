@@ -91,7 +91,7 @@ const NAV_ITEMS = [
 
 export default function Sidebar() {
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [collapsed, setCollapsed] = useState(false);
   const [deferredPrompt, setDeferredPrompt] = useState(null);
   const [showPwaModal, setShowPwaModal] = useState(false);

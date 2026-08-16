@@ -4,7 +4,7 @@ import "./mobileheader.css";
 
 export default function MobileHeader() {
   const navigate = useNavigate();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   
   const toggleTheme = () => setTheme(t => t === "dark" ? "light" : "dark");
   

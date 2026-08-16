@@ -111,48 +111,6 @@ const Login = ({ setAuth }) => {
       justifyContent: 'center',
       overflow: 'hidden'
     }}>
-      <style>{`
-        .login-input {
-          width: 100%;
-          background: rgba(255,255,255,0.06);
-          border: 1.5px solid rgba(255,255,255,0.12);
-          color: white;
-          border-radius: 10px;
-          padding: 13px 16px;
-          box-sizing: border-box;
-          font-family: 'Inter', sans-serif;
-          transition: var(--transition);
-        }
-        .login-input:focus {
-          border-color: rgba(201,168,76,0.6);
-          outline: none;
-        }
-        .login-input::placeholder {
-          color: rgba(255,255,255,0.3);
-        }
-        .otp-input {
-          text-align: center;
-          font-size: 1.6rem;
-          letter-spacing: 12px;
-          border: 1.5px solid var(--green);
-        }
-        .otp-input:focus {
-          border-color: var(--green);
-          box-shadow: 0 0 15px rgba(16,185,129,0.2);
-        }
-        .spinner {
-          width: 16px; height: 16px;
-          border: 2px solid rgba(0,0,0,0.2);
-          border-top-color: currentColor;
-          border-radius: 50%;
-          animation: spin 0.8s linear infinite;
-          display: inline-block;
-          vertical-align: middle;
-          margin-right: 8px;
-        }
-        @keyframes spin { to { transform: rotate(360deg); } }
-      `}</style>
-
       {/* Orbs */}
       <div style={{ position: 'absolute', top: '-10%', left: '-5%', width: '600px', height: '600px', background: 'var(--gold)', opacity: 0.18, filter: 'blur(80px)', borderRadius: '50%', zIndex: 1, pointerEvents: 'none' }}></div>
       <div style={{ position: 'absolute', bottom: '-10%', right: '-5%', width: '500px', height: '500px', background: 'var(--blue)', opacity: 0.18, filter: 'blur(80px)', borderRadius: '50%', zIndex: 1, pointerEvents: 'none' }}></div>
@@ -315,10 +273,10 @@ export default function App() {
 
   useEffect(() => {
     if (!auth) return
-    const fetch = async () => {
+    const fetchPendingCount = async () => {
       try {
         const token = localStorage.getItem("token")
-        const res = await window.fetch(
+        const res = await fetch(
           `${API_BASE}/admin/pending-lawyers`,
           { headers:{ Authorization:`Bearer ${token}` } }
         )
@@ -326,8 +284,8 @@ export default function App() {
         setPendingCount(Array.isArray(data) ? data.length : 0)
       } catch { setPendingCount(0) }
     }
-    fetch()
-    const iv = setInterval(fetch, 60000)
+    fetchPendingCount()
+    const iv = setInterval(fetchPendingCount, 60000)
     return () => clearInterval(iv)
   }, [auth])
 

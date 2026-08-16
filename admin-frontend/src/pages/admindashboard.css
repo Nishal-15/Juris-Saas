@@ -1,8 +1,8 @@
 .admin-page {
   display: flex;
   height: 100vh;
-  background-color: var(--bg);
-  color: var(--text-main);
+  background-color: var(--bg-base);
+  color: var(--text-primary);
   overflow: hidden;
 }
 
@@ -36,7 +36,7 @@
 }
 
 .metric-card {
-  background: var(--bg-2);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 25px;
@@ -83,7 +83,7 @@
 }
 
 .admin-panel {
-  background: var(--bg-2);
+  background: var(--bg-card);
   border: 1px solid var(--border);
   border-radius: 12px;
   padding: 25px;
@@ -110,29 +110,7 @@
   overflow-x: auto;
 }
 
-.admin-table {
-  width: 100%;
-  border-collapse: collapse;
-  margin-top: 10px;
-}
 
-.admin-table th {
-  text-align: left;
-  padding: 12px 15px;
-  color: var(--text-muted);
-  font-weight: 500;
-  border-bottom: 1px solid var(--border);
-}
-
-.admin-table td {
-  padding: 15px;
-  border-bottom: 1px solid var(--border-dark);
-  vertical-align: middle;
-}
-
-.admin-table tr:last-child td {
-  border-bottom: none;
-}
 
 .empty-state {
   text-align: center;
@@ -172,16 +150,16 @@
 }
 
 .upload-box input[type="file"] {
-  background: var(--bg);
+  background: var(--bg-base);
   padding: 10px;
   border: 1px dashed var(--border);
   border-radius: 6px;
-  color: var(--text-main);
+  color: var(--text-primary);
 }
 
 .btn-upload, .btn-broadcast {
   background: var(--gold);
-  color: var(--bg);
+  color: var(--bg-base);
   border: none;
   padding: 12px;
   border-radius: 6px;
@@ -202,9 +180,9 @@
 }
 
 .broadcast-form input, .broadcast-form textarea, .broadcast-form select {
-  background: var(--bg);
+  background: var(--bg-base);
   border: 1px solid var(--border);
-  color: var(--text-main);
+  color: var(--text-primary);
   padding: 12px;
   border-radius: 6px;
   font-family: 'Inter', sans-serif;

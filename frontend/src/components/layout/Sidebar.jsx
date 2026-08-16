@@ -41,7 +41,7 @@ const SYSTEM_NAV = [
 const Sidebar = memo(() => {
   const navigate = useNavigate();
   const { pathname } = useLocation();
-  const [theme, setTheme] = useState(localStorage.getItem("theme") || "dark");
+  const [theme, setTheme] = useState(localStorage.getItem("theme") || "light");
   const [collapsed, setCollapsed] = useState(false);
   const [mobileOpen, setMobileOpen] = useState(false);
   const [hasNewMsg, setHasNewMsg] = useState(false);

@@ -1,9 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import { NavLink } from 'react-router-dom';
-import { LayoutDashboard, Users, UserCheck, Scale, Database, Settings, LogOut, FileText, Megaphone, ChevronLeft } from 'lucide-react';
+import { LayoutDashboard, Users, UserCheck, Scale, Database, Settings, LogOut, FileText, Megaphone, ChevronLeft, Gavel } from 'lucide-react';
 
 export default function Sidebar({ pendingCount = 0 }) {
-  const [collapsed, setCollapsed] = useState(false);
+  const [collapsed, setCollapsed] = useState(() => {
+    return localStorage.getItem('sidebar_collapsed') === 'true';
+  });
   const [timeStr, setTimeStr] = useState("");
 
   useEffect(() => {
@@ -18,6 +20,7 @@ export default function Sidebar({ pendingCount = 0 }) {
 
   useEffect(() => {
     document.documentElement.style.setProperty('--sidebar-w', collapsed ? '72px' : '270px');
+    localStorage.setItem('sidebar_collapsed', collapsed);
   }, [collapsed]);
 
   const navItems = [
@@ -25,7 +28,7 @@ export default function Sidebar({ pendingCount = 0 }) {
     { name: 'Verification Queue', path: '/verification', icon: <UserCheck size={20} /> },
     { name: 'Legal Experts', path: '/lawyers', icon: <Scale size={20} /> },
     { name: 'Global Matters', path: '/cases', icon: <FileText size={20} /> },
-    { name: 'Mediation Cases', path: '/mediation', icon: <Scale size={20} /> },
+    { name: 'Mediation Cases', path: '/mediation', icon: <Gavel size={20} /> },
     { name: 'Signal Tower', path: '/broadcast', icon: <Megaphone size={20} /> },
     { name: 'Citizens', path: '/citizens', icon: <Users size={20} /> },
     { name: 'Knowledge Hub', path: '/knowledge', icon: <Database size={20} /> },
@@ -38,7 +41,7 @@ export default function Sidebar({ pendingCount = 0 }) {
   };
 
   return (
-    <div className="sidebar" style={{ transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), padding 0.28s', padding: collapsed ? '30px 10px' : '30px 20px', overflowX: 'hidden' }}>
+    <div className="sidebar" style={{ transition: 'width 0.28s cubic-bezier(0.4,0,0.2,1), padding 0.28s', willChange: 'width', padding: collapsed ? '30px 10px' : '30px 20px', overflowX: 'hidden' }}>
       
       <div style={{ position: 'relative', display: 'flex', alignItems: 'center', marginBottom: '50px', justifyContent: collapsed ? 'center' : 'flex-start', paddingLeft: collapsed ? '0' : '10px' }}>
         <NavLink to="/dashboard" style={{ textDecoration: 'none', display: 'flex', gap: '15px', alignItems: 'center' }}>
@@ -59,38 +62,7 @@ export default function Sidebar({ pendingCount = 0 }) {
       </div>
 
       <nav className="nav-menu" style={{ flex: 1, display: 'flex', flexDirection: 'column', gap: '8px' }}>
-        <style>{`
-          .sidebar-nav-item {
-            display: flex;
-            align-items: center;
-            gap: 12px;
-            color: var(--text-muted);
-            text-decoration: none;
-            border-radius: 12px;
-            transition: var(--transition);
-            font-size: 0.95rem;
-            position: relative;
-          }
-          .sidebar-nav-item:hover {
-            background: rgba(201,168,76,0.08);
-            color: var(--gold-light);
-          }
-          .sidebar-nav-item.active {
-            background: var(--gold-dim);
-            color: var(--gold);
-            font-weight: 700;
-          }
-          .sidebar-nav-item.active::before {
-            content: '';
-            position: absolute;
-            left: 0;
-            top: 20%;
-            height: 60%;
-            width: 3px;
-            background: var(--gold);
-            border-radius: 0 3px 3px 0;
-          }
-        `}</style>
+
         {navItems.map((item) => (
           <NavLink 
             key={item.path} 

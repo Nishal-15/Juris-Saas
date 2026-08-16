@@ -47,20 +47,20 @@ export function ToastProvider({
 
   const COLORS = {
     success: {
-      bg:"#dcfce7", border:"#16a34a",
-      color:"#166534", icon:"✓"
+      bg:"var(--bg-card)", border:"var(--green)",
+      color:"var(--text-primary)", icon:"✓"
     },
     error: {
-      bg:"#fee2e2", border:"#dc2626",
-      color:"#7f1d1d", icon:"✕"
+      bg:"var(--bg-card)", border:"var(--red)",
+      color:"var(--text-primary)", icon:"✕"
     },
     warning: {
-      bg:"#fef9c3", border:"#d97706",
-      color:"#78350f", icon:"⚠"
+      bg:"var(--bg-card)", border:"var(--amber)",
+      color:"var(--text-primary)", icon:"⚠"
     },
     info: {
-      bg:"#dbeafe", border:"#2563eb",
-      color:"#1e3a8a", icon:"ℹ"
+      bg:"var(--bg-card)", border:"var(--blue)",
+      color:"var(--text-primary)", icon:"ℹ"
     },
   }
 

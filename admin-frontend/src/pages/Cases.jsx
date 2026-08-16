@@ -114,39 +114,33 @@ export default function Cases() {
 
   return (
     <div>
-      <style>{`
-        .cases-pill { padding: 6px 14px; border-radius: 20px; font-size: 0.8rem; font-weight: 600; display: inline-flex; align-items: center; gap: 6px; }
-        .filter-select { background: var(--bg-card); border: 1px solid var(--border-dark); color: var(--text-primary); padding: 10px 16px; border-radius: var(--radius-sm); outline: none; font-family: 'Inter', sans-serif; cursor: pointer; }
-        .filter-select:focus { border-color: var(--gold); }
-        .search-wrap { position: relative; flex: 1; }
-        .search-wrap input { width: 100%; padding: 10px 16px 10px 42px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); box-sizing: border-box; color: var(--text-primary); font-family: 'Inter', sans-serif; outline: none; }
-        .search-wrap input:focus { border-color: var(--gold); }
-        .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-      `}</style>
+
       
       <header className="page-header" style={{ marginBottom: '20px' }}>
         <h2>Global Case Intelligence</h2>
       </header>
 
       <div style={{ display: 'flex', gap: '12px', marginBottom: '20px', flexWrap: 'wrap' }}>
-        <div className="cases-pill" style={{ background: 'var(--blue-dim)', color: 'var(--blue)', border: '1px solid var(--blue)' }}>
+        <div className="summary-pill" style={{ background: 'var(--blue-dim)', color: 'var(--blue)', borderColor: 'var(--blue)' }}>
           <span>Total Cases</span> <span style={{ fontWeight: 800 }}>{cases.length}</span>
         </div>
-        <div className="cases-pill" style={{ background: 'var(--amber-dim)', color: 'var(--amber)', border: '1px solid var(--amber)' }}>
+        <div className="summary-pill" style={{ background: 'var(--amber-dim)', color: 'var(--amber)', borderColor: 'var(--amber)' }}>
           <span>Unassigned</span> <span style={{ fontWeight: 800 }}>{cases.filter(c => !c.assignedLawyer).length}</span>
         </div>
-        <div className="cases-pill" style={{ background: 'var(--red-dim)', color: 'var(--red)', border: '1px solid var(--red)' }}>
+        <div className="summary-pill" style={{ background: 'var(--red-dim)', color: 'var(--red)', borderColor: 'var(--red)' }}>
           <span>Emergency</span> <span style={{ fontWeight: 800 }}>{cases.filter(c => (c.urgency||'').toLowerCase() === 'emergency').length}</span>
         </div>
-        <div className="cases-pill" style={{ background: 'var(--green-dim)', color: 'var(--green)', border: '1px solid var(--green)' }}>
+        <div className="summary-pill" style={{ background: 'var(--green-dim)', color: 'var(--green)', borderColor: 'var(--green)' }}>
           <span>Showing</span> <span style={{ fontWeight: 800 }}>{filteredCases.length}</span>
         </div>
       </div>
 
       <div className="content-section" style={{ padding: '24px' }}>
         <div style={{ display: 'flex', gap: '16px', marginBottom: '24px', flexWrap: 'wrap' }}>
-          <div className="search-wrap">
-            <Search size={18} />
+          <div className="search-wrap" style={{ flex: 1 }}>
+            <span className="search-icon">
+              <Search size={16} />
+            </span>
             <input 
               type="text" 
               placeholder="Search by title, citizen, lawyer, or ID..." 
@@ -169,15 +163,17 @@ export default function Cases() {
           </select>
         </div>
 
-        <div className="table-wrap">
+        <div className="table-wrap" style={{ overflow: 'visible' }}>
           {loading ? (
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+            <div className="loading-container">
               <RefreshCw size={32} className="animate-spin" style={{ marginBottom: '16px', color: 'var(--gold)' }} />
               <p>Loading cases...</p>
             </div>
           ) : filteredCases.length === 0 ? (
-            <div className="empty-state" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-              <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚖️</div>
+            <div className="empty-state-container">
+              <div className="empty-state-icon">
+                <FileText size={32} />
+              </div>
               <p>No cases match your filters.</p>
             </div>
           ) : (
@@ -233,7 +229,7 @@ export default function Cases() {
                                     left: 0,
                                     zIndex: 10,
                                     background: 'white',
-                                    border: '1px solid var(--border-dark)',
+                                    border: '1px solid var(--border)',
                                     boxShadow: '0 4px 16px rgba(0,0,0,0.15)',
                                     borderRadius: '8px',
                                     padding: '12px',

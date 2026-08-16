@@ -5,6 +5,15 @@ import { getLangName, getLangFlag, getLangNative, SUPPORTED_LANGUAGES } from '..
 import LanguageSelector from '../components/LanguageSelector';
 import { Users, Mail, MapPin, Search, RefreshCw } from 'lucide-react';
 
+const AVATAR_COLORS = [
+  { bg:'rgba(59,130,246,0.12)', color:'#3b82f6' },
+  { bg:'rgba(16,185,129,0.12)', color:'#10b981' },
+  { bg:'rgba(201,168,76,0.12)', color:'#c9a84c' },
+  { bg:'rgba(139,92,246,0.12)', color:'#8b5cf6' },
+  { bg:'rgba(245,158,11,0.12)', color:'#f59e0b' },
+  { bg:'rgba(239,68,68,0.12)',  color:'#ef4444' },
+];
+
 export default function Citizens() {
   const [citizens, setCitizens] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -48,12 +57,7 @@ export default function Citizens() {
 
   return (
     <div>
-      <style>{`
-        .search-wrap { position: relative; max-width: 400px; margin-bottom: 24px; }
-        .search-wrap input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); outline: none; transition: var(--transition); }
-        .search-wrap input:focus { border-color: var(--gold); }
-        .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-      `}</style>
+
 
       <header className="page-header" style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -65,8 +69,10 @@ export default function Citizens() {
       </header>
 
       <div style={{ display: "flex", gap: "12px", marginBottom: "24px", flexWrap: "wrap", alignItems: "center" }}>
-        <div className="search-wrap" style={{ margin: 0, flex: 1, minWidth: "260px" }}>
-          <Search size={18} />
+        <div className="search-wrap" style={{ flex: 1, minWidth: '220px', margin: 0 }}>
+          <span className="search-icon">
+            <Search size={16} />
+          </span>
           <input 
             type="text" 
             placeholder="Search by name, email, or city..." 
@@ -80,7 +86,7 @@ export default function Citizens() {
           style={{
             padding: "10px 14px",
             borderRadius: "var(--radius-sm)",
-            border: "1px solid var(--border-dark)",
+            border: "1px solid var(--border)",
             background: "var(--bg-card)",
             color: "var(--text-primary)",
             fontSize: "0.875rem",
@@ -99,13 +105,15 @@ export default function Citizens() {
 
       <div className="content-section" style={{ padding: '24px' }}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+          <div className="loading-container">
             <RefreshCw size={32} className="animate-spin" style={{ marginBottom: '16px', color: 'var(--gold)' }} />
             <p>Loading records...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="empty-state" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>👥</div>
+          <div className="empty-state-container">
+            <div className="empty-state-icon">
+              <Users size={32} />
+            </div>
             <p>{search ? "No citizens match your search." : "No records found."}</p>
           </div>
         ) : (
@@ -124,11 +132,12 @@ export default function Citizens() {
               <tbody>
                 {filtered.map((c) => {
                   const incomeBadge = getIncomeBadge(c.incomeTier);
+                  const ac = AVATAR_COLORS[(c.name || "U").charCodeAt(0) % 6];
                   return (
                     <tr key={c._id}>
                       <td>
                         <div style={{ display: 'flex', alignItems: 'center', gap: '12px' }}>
-                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: 'var(--bg-base)', color: 'var(--text-primary)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
+                          <div style={{ width: '36px', height: '36px', borderRadius: '50%', background: ac.bg, color: ac.color, display: 'flex', alignItems: 'center', justifyContent: 'center', fontWeight: 600 }}>
                             {(c.name || "U")[0].toUpperCase()}
                           </div>
                           <div>

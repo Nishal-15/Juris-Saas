@@ -3,7 +3,7 @@ import API from '../api/axios';
 import { io } from 'socket.io-client';
 import { useToast } from '../components/Toast';
 import { SUPPORTED_LANGUAGES, getLangFlag } from '../config/languages';
-import { Users, Scale, FileText, Activity, Clock, BookOpen, RefreshCw, Download } from 'lucide-react';
+import { Users, Scale, FileText, Activity, Clock, BookOpen, RefreshCw, Download, Gavel } from 'lucide-react';
 import { BarChart, Bar, PieChart, Pie, Cell, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer, Legend } from 'recharts';
 
 // 8 distinct, readable colors that work on white background
@@ -140,16 +140,7 @@ export default function Dashboard() {
 
       {/* System Status Strip */}
       <div style={{ display: 'flex', alignItems: 'center', padding: '12px 20px', background: 'rgba(16,185,129,0.06)', border: '1px solid rgba(16,185,129,0.15)', borderRadius: '14px', marginBottom: '15px', gap: '20px', overflowX: 'auto' }}>
-        <style>{`
-          .sys-item { display: flex; align-items: center; gap: 8px; font-size: 0.8rem; white-space: nowrap; }
-          .pulse-dot { width: 8px; height: 8px; background: var(--green); border-radius: 50%; box-shadow: 0 0 0 rgba(16,185,129,0.4); animation: pulse 2s infinite; }
-          @keyframes pulse { 0% { box-shadow: 0 0 0 0 rgba(16,185,129,0.4); } 70% { box-shadow: 0 0 0 6px rgba(16,185,129,0); } 100% { box-shadow: 0 0 0 0 rgba(16,185,129,0); } }
-          .sys-div { width: 1px; height: 16px; background: rgba(16,185,129,0.2); }
-          .sys-lbl { color: var(--text-muted); font-weight: 500; }
-          .sys-stat { color: var(--green); font-weight: 700; }
-          .animate-spin { animation: spin 1s linear infinite; }
-          @keyframes spin { 100% { transform: rotate(360deg); } }
-        `}</style>
+
         <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">AI Engine</span><span className="sys-stat">Nominal</span></div><div className="sys-div"></div>
         <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">Database</span><span className="sys-stat">Connected</span></div><div className="sys-div"></div>
         <div className="sys-item"><div className="pulse-dot"></div><span className="sys-lbl">WhatsApp</span><span className="sys-stat">Active</span></div><div className="sys-div"></div>
@@ -229,9 +220,8 @@ export default function Dashboard() {
             display: "flex",
             alignItems: "center",
             justifyContent: "center",
-            fontSize: "1.4rem"
           }}>
-            ⚖️
+            <Gavel size={22} />
           </div>
           <div className="stat-label">
             Mediation Eligible
@@ -253,7 +243,7 @@ export default function Dashboard() {
         
         <div style={{ display: 'grid', gridTemplateColumns: '2fr 1fr', gap: '24px', marginTop: '20px' }}>
           {/* BAR CHART */}
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)' }}>
             <h4 style={{ marginBottom: '20px', color: 'var(--text-primary)', fontSize: '15px' }}>Weekly Query Volume</h4>
             <div style={{ width: '100%', height: 300 }}>
               {loading ? (
@@ -277,7 +267,7 @@ export default function Dashboard() {
           </div>
 
           {/* PIE CHART */}
-          <div style={{ background: '#fff', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: '0 4px 6px rgba(0,0,0,0.02)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <div style={{ background: 'var(--bg-card)', borderRadius: '12px', padding: '24px', border: '1px solid var(--border)', boxShadow: 'var(--shadow-sm)', display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
             <h4 style={{ marginBottom: '10px', color: 'var(--text-primary)', fontSize: '15px', width: '100%' }}>AI Consultation Topics</h4>
             <div style={{ width: '100%', height: 260 }}>
               {loading ? (
@@ -318,7 +308,7 @@ export default function Dashboard() {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))', gap: '20px' }}>
           
           {/* Lawyers */}
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Lawyer Tiers</h4>
             {[
               { label: 'Tier 1 Senior', key: 'tier1', color: '#c9a84c' },
@@ -343,7 +333,7 @@ export default function Dashboard() {
           </div>
 
           {/* Courts */}
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Cases by Court</h4>
             {[
               { label: 'Supreme', key: 'supreme', color: '#c9a84c' },
@@ -369,7 +359,7 @@ export default function Dashboard() {
           </div>
 
           {/* Top Languages */}
-          <div style={{ background: '#fff', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
+          <div style={{ background: 'var(--bg-card)', padding: '20px', borderRadius: '12px', border: '1px solid var(--border)' }}>
             <h4 style={{ color: 'var(--text-muted)', fontSize: '0.85rem', marginBottom: '15px' }}>Top Languages</h4>
 
             {langStats.length === 0 ? (

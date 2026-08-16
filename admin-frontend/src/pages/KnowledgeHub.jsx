@@ -103,7 +103,7 @@ export default function KnowledgeHub() {
               <select 
                 value={syncSource} 
                 onChange={(e) => setSyncSource(e.target.value)}
-                style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border-dark)', background: 'var(--bg-base)', color: 'var(--text-primary)', outline: 'none' }}
+                style={{ flex: 1, padding: '10px 14px', borderRadius: '8px', border: '1px solid var(--border)', background: 'var(--bg-base)', color: 'var(--text-primary)', outline: 'none' }}
                 disabled={syncing}
               >
                 <option value="all">All Sources</option>
@@ -195,7 +195,7 @@ export default function KnowledgeHub() {
             </p>
             
             <label className="upload-zone" style={{ 
-              border: '2px dashed var(--border-dark)', 
+              border: '2px dashed var(--border)', 
               borderRadius: '16px', 
               padding: '40px 20px', 
               display: 'block', 
@@ -227,7 +227,9 @@ export default function KnowledgeHub() {
                 laws.map((file, idx) => (
                   <div key={idx} style={{ display: 'flex', alignItems: 'center', gap: '12px', padding: '12px 10px', borderBottom: '1px solid var(--border)' }}>
                     <FileText size={16} color="var(--gold)" />
-                    <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-primary)', wordBreak: 'break-word' }}>{file}</span>
+                    <span style={{ fontSize: '0.85rem', fontWeight: '500', color: 'var(--text-primary)', wordBreak: 'break-word' }}>
+                      {file.replace(/\.(txt|pdf)$/i, '').replace(/_/g, ' ').replace(/\b\w/g, l => l.toUpperCase())}
+                    </span>
                     <CheckCircle size={14} color="var(--green)" style={{ marginLeft: 'auto', flexShrink: 0 }} />
                   </div>
                 ))
@@ -264,7 +266,8 @@ export default function KnowledgeHub() {
                   alignItems: "center",
                   gap: 5,
                   padding: "4px 6px",
-                  background: "rgba(255,255,255,0.03)",
+                  background: "var(--bg-card)",
+                  border: "1px solid var(--border)",
                   borderRadius: "6px",
                   fontSize: "0.7rem",
                   color: "var(--text-secondary)"

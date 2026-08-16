@@ -14,12 +14,13 @@ export default function ProtectedRoute({ children, allowedRoles = [] }) {
   }
 
   // ✅ RBAC: Check if user has required role
-  if (allowedRoles.length > 0 && !allowedRoles.includes(user.role)) {
-    console.error(`Access Denied: User role ${user.role} is not in ${allowedRoles}`);
+  const userRole = user.role ? user.role.toLowerCase() : "";
+  if (allowedRoles.length > 0 && !allowedRoles.includes(userRole)) {
+    console.error(`Access Denied: User role ${userRole} is not in ${allowedRoles}`);
     
     // Redirect to their respective "home" based on role
-    if (user.role === "admin") return <Navigate to="/admin" />;
-    if (user.role === "lawyer") return <Navigate to="/lawyer" />;
+    if (userRole === "admin") return <Navigate to="/admin" />;
+    if (userRole === "lawyer") return <Navigate to="/lawyer" />;
     return <Navigate to="/user" />;
   }
 

@@ -39,26 +39,6 @@ export default function MediationCases() {
 
   return (
     <div className="animate-fade-in">
-      <style>{`
-        .med-card {
-          background: #fff;
-          border: 1px solid var(--border);
-          border-top: 3px solid #8b5cf6;
-          border-radius: 12px;
-          padding: 20px;
-          transition: transform 0.2s ease, box-shadow 0.2s ease;
-          box-shadow: 0 4px 6px rgba(0,0,0,0.02);
-          display: flex;
-          flex-direction: column;
-        }
-        .med-card:hover {
-          transform: translateY(-3px);
-          box-shadow: 0 10px 20px rgba(0,0,0,0.06);
-        }
-        .animate-spin { animation: spin 1s linear infinite; }
-        @keyframes spin { 100% { transform: rotate(360deg); } }
-      `}</style>
-
       {/* Page Header */}
       <header className="page-header" style={{ marginBottom: "24px", display: "flex", justifyContent: "space-between", alignItems: "center" }}>
         <div>
@@ -95,13 +75,15 @@ export default function MediationCases() {
 
       {/* Content Area */}
       {loading ? (
-        <div style={{ display: "flex", flexDirection: "column", alignItems: "center", justifyContent: "center", padding: "60px", color: "var(--text-muted)" }}>
+        <div className="loading-container">
           <RefreshCw size={32} className="animate-spin" style={{ marginBottom: "16px", color: "#8b5cf6" }} />
           <p>Loading mediation cases...</p>
         </div>
       ) : cases.length === 0 ? (
-        <div className="empty-state" style={{ padding: "60px", textAlign: "center", color: "var(--text-muted)", background: "#fff", borderRadius: "12px", border: "1px solid var(--border)" }}>
-          <div style={{ fontSize: "3.5rem", marginBottom: "16px" }}>⚖️</div>
+        <div className="empty-state-container">
+          <div className="empty-state-icon">
+            <Scale size={32} />
+          </div>
           <p style={{ fontWeight: 600, fontSize: "1.1rem", color: "var(--text-primary)", marginBottom: "6px" }}>
             No mediation eligible cases found yet.
           </p>

@@ -20,6 +20,7 @@ export default function LegalExperts() {
   const [search, setSearch] = useState("");
   const [acting, setActing] = useState({});
   const [confirmId, setConfirmId] = useState(null);
+  const [tierFilter, setTierFilter] = useState("all");
   
   const toast = useToast();
 
@@ -70,34 +71,21 @@ export default function LegalExperts() {
 
   const filtered = lawyers.filter(l => {
     const s = search.toLowerCase();
-    return !search ||
+    const matchSearch = !search ||
       (l.name || "").toLowerCase().includes(s) ||
       (l.email || "").toLowerCase().includes(s) ||
       (l.specialization || "").toLowerCase().includes(s) ||
       (l.barId || "").toLowerCase().includes(s);
+
+    const matchTier = tierFilter === "all" ||
+      (l.subscriptionTier || "Trial").toLowerCase() === tierFilter;
+
+    return matchSearch && matchTier;
   });
 
   return (
     <div>
-      <style>{`
-        .search-wrap { position: relative; max-width: 400px; margin-bottom: 24px; }
-        .search-wrap input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); outline: none; transition: var(--transition); }
-        .search-wrap input:focus { border-color: var(--gold); }
-        .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
-        
-        .tier-badge {
-          display: inline-flex;
-          align-items: center;
-          padding: 2px 8px;
-          border-radius: 4px;
-          font-size: 0.7rem;
-          font-weight: 600;
-          margin: 2px;
-          border: 1px solid var(--border-dark);
-          background: var(--bg-base);
-          color: var(--text-secondary);
-        }
-      `}</style>
+
 
       <header className="page-header" style={{ marginBottom: '20px' }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
@@ -106,25 +94,43 @@ export default function LegalExperts() {
         </div>
       </header>
 
-      <div className="search-wrap">
-        <Search size={18} />
-        <input 
-          type="text" 
-          placeholder="Search by name, email, or Bar ID..." 
-          value={search}
-          onChange={(e) => setSearch(e.target.value)}
-        />
+      <div style={{ display: 'flex', gap: '12px', marginBottom: '24px', flexWrap: 'wrap', alignItems: 'center' }}>
+        <div className="search-wrap" style={{ flex: 1, minWidth: '220px', margin: 0 }}>
+          <span className="search-icon">
+            <Search size={16} />
+          </span>
+          <input 
+            type="text" 
+            placeholder="Search by name, email, or Bar ID..." 
+            value={search}
+            onChange={(e) => setSearch(e.target.value)}
+          />
+        </div>
+        <select 
+          className="filter-select"
+          value={tierFilter}
+          onChange={e => setTierFilter(e.target.value)}
+          style={{ minWidth: '130px' }}
+        >
+          <option value="all">All Tiers</option>
+          <option value="trial">Trial</option>
+          <option value="starter">Starter</option>
+          <option value="pro">Pro</option>
+          <option value="expired">Expired</option>
+        </select>
       </div>
 
       <div className="content-section" style={{ padding: '24px' }}>
         {loading ? (
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '60px', color: 'var(--text-muted)' }}>
+          <div className="loading-container">
             <RefreshCw size={32} className="animate-spin" style={{ marginBottom: '16px', color: 'var(--gold)' }} />
             <p>Loading directory...</p>
           </div>
         ) : filtered.length === 0 ? (
-          <div className="empty-state" style={{ padding: '60px', textAlign: 'center', color: 'var(--text-muted)' }}>
-            <div style={{ fontSize: '3rem', marginBottom: '16px' }}>⚖️</div>
+          <div className="empty-state-container">
+            <div className="empty-state-icon">
+              <Scale size={32} />
+            </div>
             <p>{search ? "No matching experts found." : "No verified legal experts found."}</p>
           </div>
         ) : (

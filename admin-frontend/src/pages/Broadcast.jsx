@@ -4,11 +4,7 @@ import { useToast } from '../components/Toast';
 import { SUPPORTED_LANGUAGES, getLangFlag } from '../config/languages';
 import { Megaphone, ShieldAlert, Send, CheckCircle, Terminal, AlertTriangle, Info, Zap, Loader2 } from 'lucide-react';
 
-const initialBroadcasts = [
-  { id: 1, title: 'System Maintenance Window', message: 'The primary database will undergo maintenance between 02:00 AM and 04:00 AM IST. Please expect minor latency.', target: 'all', priority: 'update', date: new Date(Date.now() - 86400000).toISOString() },
-  { id: 2, title: 'New Penal Code Enacted', message: 'BNS 2026 has been successfully indexed into the AI core. All lawyers must refer to the updated guidelines.', target: 'lawyer', priority: 'emergency', date: new Date(Date.now() - 172800000).toISOString() },
-  { id: 3, title: 'Welcome to JurisBot 2.0', message: 'The new institutional portal is now live across the nation.', target: 'all', priority: 'success', date: new Date(Date.now() - 500000000).toISOString() }
-];
+
 
 export default function Broadcast() {
   const [formData, setFormData] = useState({
@@ -19,7 +15,7 @@ export default function Broadcast() {
     lang: 'all'
   });
   const [sending, setSending] = useState(false);
-  const [history, setHistory] = useState(initialBroadcasts);
+  const [history, setHistory] = useState([]);
   const toast = useToast();
 
   const handleTransmit = async () => {
@@ -91,7 +87,7 @@ export default function Broadcast() {
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Target Sector</label>
                 <select 
-                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)' }}
+                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)' }}
                   value={formData.target}
                   onChange={e => setFormData({...formData, target: e.target.value})}
                 >
@@ -117,7 +113,7 @@ export default function Broadcast() {
                     width: "100%",
                     padding: "12px 14px",
                     background: "var(--bg-base)",
-                    border: "1px solid var(--border-dark)",
+                    border: "1px solid var(--border)",
                     color: "var(--text-primary)",
                     borderRadius: "8px",
                     outline: "none",
@@ -151,7 +147,7 @@ export default function Broadcast() {
               <div>
                 <label style={{ display: 'block', fontSize: '0.75rem', fontWeight: 600, color: 'var(--text-muted)', textTransform: 'uppercase', marginBottom: '8px' }}>Signal Priority</label>
                 <select 
-                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)' }}
+                  style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)' }}
                   value={formData.priority}
                   onChange={e => setFormData({...formData, priority: e.target.value})}
                 >
@@ -168,7 +164,7 @@ export default function Broadcast() {
               <input 
                 type="text" 
                 placeholder="e.g., Scheduled Core Maintenance"
-                style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)', boxSizing: 'border-box' }}
                 value={formData.title}
                 onChange={e => setFormData({...formData, title: e.target.value})}
               />
@@ -179,7 +175,7 @@ export default function Broadcast() {
               <textarea 
                 rows="4"
                 placeholder="Enter detailed broadcast message..."
-                style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border-dark)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)', resize: 'vertical', fontFamily: 'Inter', boxSizing: 'border-box' }}
+                style={{ width: '100%', padding: '12px 14px', background: 'var(--bg-base)', border: '1px solid var(--border)', color: 'var(--text-primary)', borderRadius: '8px', outline: 'none', transition: 'var(--transition)', resize: 'vertical', fontFamily: 'Inter', boxSizing: 'border-box' }}
                 value={formData.message}
                 onChange={e => setFormData({...formData, message: e.target.value})}
               ></textarea>
@@ -225,49 +221,57 @@ export default function Broadcast() {
         </div>
 
         {/* TRANSMISSION LOG */}
-        <div className="content-section" style={{ background: '#0a0d16', padding: '24px', border: '1px solid #1e293b' }}>
-          <div className="section-title" style={{ borderBottom: '1px solid #1e293b', paddingBottom: '15px', marginBottom: '20px' }}>
-            <h3 style={{ color: '#f8fafc', display: 'flex', alignItems: 'center', gap: '10px' }}><Terminal size={18} color="#94a3b8" /> Network Log</h3>
+        <div className="content-section" style={{ background: 'var(--bg-dark)', padding: '24px', border: '1px solid rgba(255,255,255,0.06)' }}>
+          <div className="section-title" style={{ borderBottom: '1px solid rgba(255,255,255,0.06)', paddingBottom: '15px', marginBottom: '20px' }}>
+            <h3 style={{ color: 'var(--text-white)', display: 'flex', alignItems: 'center', gap: '10px' }}><Terminal size={18} color="var(--text-muted)" /> Network Log</h3>
           </div>
           
           <div style={{ display: 'flex', flexDirection: 'column', gap: '15px', maxHeight: '500px', overflowY: 'auto', paddingRight: '5px' }}>
-            {history.map((log) => {
-              const pStyle = getPriorityStyle(log.priority);
-              return (
-                <div key={log.id} style={{ background: '#0f172a', borderLeft: `3px solid ${pStyle.color}`, borderRadius: '6px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <div style={{ color: '#f8fafc', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
-                      <span style={{ color: pStyle.color, display: 'flex' }}>{pStyle.icon}</span>
-                      {log.title}
+            {history.length === 0 ? (
+              <div className="empty-state-container" style={{ padding: '40px 0' }}>
+                <div className="empty-state-icon">📡</div>
+                <p className="empty-state-title" style={{ color: 'rgba(255,255,255,0.4)' }}>No signals transmitted yet.</p>
+                <p className="empty-state-desc" style={{ color: 'rgba(255,255,255,0.25)' }}>Signals will appear here after they are transmitted.</p>
+              </div>
+            ) : (
+              history.map((log) => {
+                const pStyle = getPriorityStyle(log.priority);
+                return (
+                  <div key={log.id} style={{ background: 'rgba(255,255,255,0.03)', borderLeft: `3px solid ${pStyle.color}`, borderRadius: '6px', padding: '16px', display: 'flex', flexDirection: 'column', gap: '8px' }}>
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                      <div style={{ color: 'var(--text-white)', fontWeight: 600, fontSize: '0.9rem', display: 'flex', alignItems: 'center', gap: '8px' }}>
+                        <span style={{ color: pStyle.color, display: 'flex' }}>{pStyle.icon}</span>
+                        {log.title}
+                      </div>
+                      <span style={{ fontSize: '0.7rem', color: 'var(--text-muted)' }}>{new Date(log.date).toLocaleDateString()}</span>
                     </div>
-                    <span style={{ fontSize: '0.7rem', color: '#64748b' }}>{new Date(log.date).toLocaleDateString()}</span>
-                  </div>
-                  
-                  <p style={{ color: '#94a3b8', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>{log.message}</p>
-                  
-                  <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
-                    <span style={{ fontSize: '0.65rem', background: '#1e293b', color: '#94a3b8', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      Target: {log.target}
-                    </span>
-                    <span style={{ fontSize: '0.65rem', background: pStyle.bg, color: pStyle.color, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
-                      {pStyle.label}
-                    </span>
-                    {log.lang && log.lang !== "all" && (
-                      <span style={{
-                        fontSize: "0.65rem",
-                        background: "var(--bg-base)",
-                        color: "var(--text-muted)",
-                        padding: "2px 8px",
-                        borderRadius: "4px",
-                        textTransform: "uppercase"
-                      }}>
-                        {getLangFlag(log.lang)} {log.lang}
+                    
+                    <p style={{ color: 'var(--text-muted)', fontSize: '0.8rem', margin: 0, lineHeight: 1.5 }}>{log.message}</p>
+                    
+                    <div style={{ display: 'flex', gap: '10px', marginTop: '6px', flexWrap: 'wrap' }}>
+                      <span style={{ fontSize: '0.65rem', background: 'rgba(255,255,255,0.06)', color: 'var(--text-muted)', padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        Target: {log.target}
                       </span>
-                    )}
+                      <span style={{ fontSize: '0.65rem', background: pStyle.bg, color: pStyle.color, padding: '2px 8px', borderRadius: '4px', textTransform: 'uppercase', letterSpacing: '0.5px' }}>
+                        {pStyle.label}
+                      </span>
+                      {log.lang && log.lang !== "all" && (
+                        <span style={{
+                          fontSize: "0.65rem",
+                          background: "rgba(255,255,255,0.06)",
+                          color: "var(--text-muted)",
+                          padding: "2px 8px",
+                          borderRadius: "4px",
+                          textTransform: "uppercase"
+                        }}>
+                          {getLangFlag(log.lang)} {log.lang}
+                        </span>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })}
+                );
+              })
+            )}
           </div>
         </div>
 

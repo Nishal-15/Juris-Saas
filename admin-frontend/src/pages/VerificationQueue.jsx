@@ -83,32 +83,7 @@ export default function VerificationQueue() {
   return (
     <div>
       <style>{`
-        .search-wrap { position: relative; max-width: 440px; margin-bottom: 24px; }
-        .search-wrap input { width: 100%; padding: 12px 16px 12px 42px; border: 1px solid var(--border-dark); border-radius: var(--radius-sm); background: var(--bg-card); color: var(--text-primary); outline: none; transition: var(--transition); box-sizing: border-box; }
-        .search-wrap input:focus { border-color: var(--gold); }
-        .search-wrap svg { position: absolute; left: 14px; top: 50%; transform: translateY(-50%); color: var(--text-muted); }
 
-        .lawyer-card {
-          background: var(--bg-card);
-          border: 1px solid var(--border);
-          border-radius: 14px;
-          padding: 22px;
-          transition: transform 0.2s, box-shadow 0.2s;
-        }
-        .lawyer-card:hover { transform: translateY(-3px); box-shadow: 0 12px 28px rgba(0,0,0,0.07); }
-
-        .lawyer-details-grid {
-          display: grid;
-          grid-template-columns: 1fr 1fr;
-          gap: 12px;
-          margin: 16px 0;
-          padding: 14px;
-          background: var(--bg-base);
-          border-radius: 10px;
-        }
-        .detail-item { display: flex; flex-direction: column; gap: 3px; }
-        .detail-label { font-size: 0.7rem; color: var(--text-muted); text-transform: uppercase; font-weight: 700; letter-spacing: 0.6px; }
-        .detail-val { font-size: 0.85rem; color: var(--text-primary); font-weight: 500; }
         .bar-id-badge {
           display: inline-flex; align-items: center; gap: 6px;
           background: rgba(201,168,76,0.12); border: 1px solid rgba(201,168,76,0.4);
@@ -164,8 +139,10 @@ export default function VerificationQueue() {
       </header>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: '12px', marginBottom: '24px' }}>
-        <div className="search-wrap" style={{ marginBottom: 0, flex: 1 }}>
-          <Search size={18} />
+        <div className="search-wrap" style={{ marginBottom: 0, flex: 1, maxWidth: '440px' }}>
+          <span className="search-icon">
+            <Search size={16} />
+          </span>
           <input
             type="text"
             placeholder="Search by name, email, Bar ID, or specialization..."
@@ -182,13 +159,15 @@ export default function VerificationQueue() {
       </div>
 
       {loading ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '80px', color: 'var(--text-muted)' }}>
+        <div className="loading-container">
           <RefreshCw size={36} className="animate-spin" style={{ marginBottom: '16px', color: 'var(--gold)' }} />
           <p style={{ fontWeight: 600 }}>Loading verification queue...</p>
         </div>
       ) : filtered.length === 0 ? (
-        <div className="empty-state" style={{ padding: '80px', textAlign: 'center', color: 'var(--text-muted)' }}>
-          <div style={{ fontSize: '3.5rem', marginBottom: '16px' }}>✅</div>
+        <div className="empty-state-container">
+          <div className="empty-state-icon">
+            <UserCheck size={32} />
+          </div>
           <p style={{ fontWeight: 600 }}>{search ? "No matching lawyers found." : "No pending verification requests."}</p>
         </div>
       ) : (
