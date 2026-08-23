@@ -14,9 +14,31 @@ const storage = multer.diskStorage({
     if (!fs.existsSync(uploadPath)) fs.mkdirSync(uploadPath, { recursive: true });
     cb(null, uploadPath);
   },
-  filename: (req, file, cb) => cb(null, Date.now() + "-" + file.originalname)
+  filename: (req, file, cb) => {
+    const safe = file.originalname.replace(/\s+/g, '_').replace(/[^\w.-]/g, '');
+    cb(null, Date.now() + "-" + safe);
+  }
 });
-const upload = multer({ storage });
+const fileFilter = (req, file, cb) => {
+  const allowed = [
+    "application/pdf",
+    "image/jpeg",
+    "image/png",
+    "image/webp",
+    "application/msword",
+    "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+  ];
+  if (allowed.includes(file.mimetype)) {
+    cb(null, true);
+  } else {
+    cb(new Error("Invalid file type. Only PDF, JPG, PNG, WebP, DOC, DOCX allowed."), false);
+  }
+};
+const upload = multer({
+  storage,
+  fileFilter,
+  limits: { fileSize: 10 * 1024 * 1024 } // 10MB max
+});
 
 /* GET: Fetch user's vault */
 router.get("/", auth(), async (req, res) => {

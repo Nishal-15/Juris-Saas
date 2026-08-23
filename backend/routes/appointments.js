@@ -80,7 +80,8 @@ router.patch("/:id/status", auth(["lawyer"]), async (req, res) => {
       const citizen = await User.findById(app.userId);
       const activeCase = app.caseId ? await Case.findById(app.caseId) : null;
       if (citizen && citizen.phone) {
-        sendAIWhatsApp(citizen.phone, citizen.name, activeCase?.title || "Legal Consultation", "booking_accepted");
+        const lang = citizen.preferredLanguage || "en";
+        sendAIWhatsApp(citizen.phone, citizen.name, activeCase?.title || "Legal Consultation", "booking_accepted", lang);
       }
     }
 
@@ -113,29 +114,59 @@ router.post(
 
       // Ensure Daily API Key exists
       if (!process.env.DAILY_API_KEY) {
-        return res.status(500).json({ message: "Daily API Key not configured." });
+        return res.status(503).json({
+          message:
+            "Video call service not configured. " +
+            "Please add DAILY_API_KEY to backend/.env. " +
+            "Get a free key at daily.co"
+        });
       }
 
-      // Create a secure Daily.co room
-      const dailyRes = await axios.post(
-        "https://api.daily.co/v1/rooms",
-        {
-          properties: {
-            exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
-            enable_chat: true,
-            start_audio_off: true,
-            start_video_off: false,
-          }
-        },
-        {
-          headers: {
-            Authorization: `Bearer ${process.env.DAILY_API_KEY}`,
-            "Content-Type": "application/json"
-          }
-        }
-      );
+      let roomUrl = null;
+      let roomName = null;
 
-      const callLink = dailyRes.data.url;
+      try {
+        const dailyRes = await axios.post(
+          "https://api.daily.co/v1/rooms",
+          {
+            properties: {
+              exp: Math.floor(Date.now() / 1000) + 3600, // Expires in 1 hour
+              enable_chat: true,
+              start_audio_off: true,
+              start_video_off: false,
+              max_participants: 2,
+              enable_screenshare: false,
+              enable_recording: "none",
+            }
+          },
+          {
+            headers: {
+              Authorization: `Bearer ${process.env.DAILY_API_KEY}`,
+              "Content-Type": "application/json"
+            }
+          }
+        );
+        roomUrl  = dailyRes.data.url;
+        roomName = dailyRes.data.name;
+      } catch (dailyErr) {
+        console.error(
+          "[Daily.co] Room creation failed:",
+          dailyErr.message
+        );
+        return res.status(502).json({
+          message:
+            "Could not create video call room. " +
+            "Please try again in a moment."
+        });
+      }
+
+      if (!roomUrl) {
+        return res.status(502).json({
+          message: "Video call room URL not received."
+        });
+      }
+
+      const callLink = roomUrl;
 
       // Broadcast room URL to both parties via Socket.io
       const io = req.app.get("io");

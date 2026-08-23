@@ -6,6 +6,16 @@ const { spawn } = require("child_process");
 const path      = require("path");
 const { getAIChatURL } = require("./aiUrl");
 
+let _io = null;
+
+/**
+ * Call this once from server.js after io is created.
+ * Avoids the circular require("../server") anti-pattern.
+ */
+function initScheduler(io) {
+  _io = io;
+}
+
 // 🕒 Check every morning at 8:00 AM
 cron.schedule("0 8 * * *", async () => {
   console.log("🔔 Running daily hearing notification scan...");
@@ -30,17 +40,18 @@ cron.schedule("0 8 * * *", async () => {
     for (const c of cases) {
        const isToday = c.hearingDate >= startOfToday && c.hearingDate <= endOfToday;
        
-       // 🤖 Generate AI Alert Message
-       const aiMessage = await generateAILegalAlert(c, isToday);
+       // 🤖 Generate separate AI messages for lawyer and citizen
+       const citizenMessage = await generateAILegalAlert(c, isToday, "citizen");
+       const lawyerMessage  = await generateAILegalAlert(c, isToday, "lawyer");
 
        // 📱 Send to Lawyer
        if (c.assignedLawyer?.phone) {
-         sendWhatsApp(c.assignedLawyer.phone, aiMessage);
+         sendWhatsApp(c.assignedLawyer.phone, lawyerMessage);
        }
        
        // 📱 Send to Citizen
        if (c.user?.phone) {
-         sendWhatsApp(c.user.phone, aiMessage);
+         sendWhatsApp(c.user.phone, citizenMessage);
        }
     }
   } catch (err) {
@@ -48,28 +59,45 @@ cron.schedule("0 8 * * *", async () => {
   }
 });
 
-async function generateAILegalAlert(caseData, isToday) {
+async function generateAILegalAlert(caseData, isToday, audience = "citizen") {
   try {
-    const prompt = isToday 
-      ? `Write a 1-sentence professional legal reminder for a client whose court hearing is TODAY for case: "${caseData.title}". Be professional and encouraging.`
-      : `Write a 1-sentence legal reminder for a client who has a hearing in 48 hours for case: "${caseData.title}". Remind them to be prepared.`;
+    let prompt;
+    if (audience === "lawyer") {
+      prompt = isToday
+        ? `Write a 1-sentence professional reminder for a lawyer whose client's court hearing is TODAY for case: "${caseData.title}". Address the lawyer directly. Be concise and professional.`
+        : `Write a 1-sentence reminder for a lawyer whose client has a hearing in 48 hours for case: "${caseData.title}". Remind them to review the case file.`;
+    } else {
+      prompt = isToday
+        ? `Write a 1-sentence professional legal reminder for a client whose court hearing is TODAY for case: "${caseData.title}". Be professional and encouraging.`
+        : `Write a 1-sentence legal reminder for a client who has a hearing in 48 hours for case: "${caseData.title}". Remind them to be prepared.`;
+    }
 
     const aiRes = await axios.post(getAIChatURL(), {
       message: prompt,
-      userName: caseData.user?.name || "Citizen"
+      userName: audience === "lawyer"
+        ? (caseData.assignedLawyer?.name || "Advocate")
+        : (caseData.user?.name || "Citizen")
     });
 
-    return aiRes.data.answer || "This is a reminder for your upcoming legal hearing.";
+    return aiRes.data.answer || "This is a reminder for an upcoming legal hearing.";
   } catch (err) {
     console.error("AI Alert Gen Error:", err.message);
-    return isToday 
+    if (audience === "lawyer") {
+      return isToday
+        ? `COURT DAY: Your client's hearing for case "${caseData.title}" is scheduled for TODAY. Please be prepared.`
+        : `REMINDER: Your client has a legal hearing in 48 hours for case "${caseData.title}". Please review the case file.`;
+    }
+    return isToday
       ? `COURT DAY: Your hearing for case "${caseData.title}" is scheduled for TODAY.`
       : `REMINDER: You have a legal hearing scheduled in 48 hours for case "${caseData.title}".`;
   }
 }
 
 async function sendWhatsApp(phone, text) {
-  const accessToken = process.env.WHATSAPP_TOKEN || process.env.WHATSAPP_ACCESS_TOKEN;
+  const accessToken =
+    process.env.WHATSAPP_BUSINESS_TOKEN ||
+    process.env.WHATSAPP_TOKEN ||
+    process.env.WHATSAPP_ACCESS_TOKEN;
   const phoneNumberId = process.env.WHATSAPP_PHONE_NUMBER_ID;
 
   if (!accessToken || !phoneNumberId || accessToken.includes("your_whatsapp")) {
@@ -256,17 +284,8 @@ cron.schedule("*/30 * * * *", async () => {
     }).populate("user", "name");
 
     for (const c of urgent) {
-      let io = null;
-      try {
-        const serverModule = require("../server");
-        io = serverModule?.io ||
-          serverModule?.app?.get?.("io") ||
-          null;
-      } catch {
-        /* server not yet loaded */
-      }
-      if (io) {
-        io.emit("emergency-unassigned", {
+      if (_io) {
+        _io.emit("emergency-unassigned", {
           caseId:    c._id,
           caseTitle: c.title,
           message:
@@ -290,3 +309,5 @@ cron.schedule("*/30 * * * *", async () => {
     )
   }
 })
+
+module.exports = { initScheduler };

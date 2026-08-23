@@ -6,7 +6,7 @@ const Case=require("../models/Case");
 const auth = require("../middleware/auth");
 const Appointment = require("../models/Appointment");
 
-router.get("/", async (req, res) => {
+router.get("/", auth(), async (req, res) => {
   res.json({
     users: await User.countDocuments(),
     cases: await Case.countDocuments()
@@ -65,21 +65,16 @@ router.get("/admin", auth(["admin"]), async (req, res) => {
     const totalUsers = await User.countDocuments({ role: "user" });
     const lawyerUsersCount = await User.countDocuments({ role: "lawyer" });
     const standaloneLawyersCount = await Lawyer.countDocuments({ isVerified: true });
-    
+
     const totalLawyers = lawyerUsersCount + standaloneLawyersCount;
     const totalCases = await Case.countDocuments();
     const emergencyCases = await Case.countDocuments({ urgency: "Emergency" });
 
-    // 🔬 PENDING CASES: Awaiting Expert assignment
+    // 🔬 PENDING CASES: Awaiting Expert assignment (max 50 for performance)
     const pendingCases = await Case.find({ assignedLawyer: null })
       .sort({ createdAt: -1 })
+      .limit(50)
       .populate("user", "name");
-
-    // 📁 ALL CASES: For the Admin "Marketplace" view
-    const allCases = await Case.find()
-      .sort({ createdAt: -1 })
-      .populate("user", "name")
-      .populate("assignedLawyer", "name");
 
     res.json({
       stats: {
@@ -88,8 +83,7 @@ router.get("/admin", auth(["admin"]), async (req, res) => {
         totalCases,
         emergencyCases
       },
-      pendingCases,
-      allCases
+      pendingCases
     });
   } catch (err) {
     res.status(500).json({ message: err.message });

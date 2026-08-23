@@ -26,8 +26,12 @@ export default function Cases() {
 
   const fetchCases = async () => {
     try {
-      const res = await API.get('/admin/all-cases');
-      setCases(res.data);
+      const res = await API.get('/admin/all-cases?limit=200');
+      /* Backend returns { cases, pagination } — unwrap */
+      const data = Array.isArray(res.data)
+        ? res.data
+        : (res.data.cases || []);
+      setCases(data);
       setLoading(false);
     } catch (err) {
       console.error("Fetch Cases Error:", err);

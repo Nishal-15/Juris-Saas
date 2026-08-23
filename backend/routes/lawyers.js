@@ -5,8 +5,29 @@ const auth = require("../middleware/auth");
 // Get All Lawyers from the 'lawyers' collection
 router.get("/", async (req, res) => {
   try {
-    const lawyers = await Lawyer.find({ isVerified: true }).select("-password");
-    res.json(lawyers);
+    const page  = parseInt(req.query.page  || "1");
+    const limit = parseInt(req.query.limit || "50");
+    const skip  = (page - 1) * limit;
+
+    const [lawyers, total] = await Promise.all([
+      Lawyer.find({ isVerified: true })
+        .select("-password")
+        .skip(skip)
+        .limit(limit),
+      Lawyer.countDocuments({ isVerified: true })
+    ]);
+
+    res.json({
+      lawyers,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -57,9 +78,8 @@ router.patch("/upgrade", auth(["lawyer"]), async (req, res) => {
     }
 
     const plans = {
-      "Starter":   { limit: 9999 }, // Now Unlimited cases for 1 user
-      "Pro":       { limit: 9999 }, // Unlimited cases for up to 10 users
-      "Unlimited": { limit: 9999 }  // True Enterprise Uncapped
+      "Starter": { limit: 10    },
+      "Pro":     { limit: 99999 }
     };
 
     if (!plans[planType]) {

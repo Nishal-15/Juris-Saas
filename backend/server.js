@@ -173,7 +173,95 @@ app.use(express.json({
     req.rawBody = buf.toString();
   }
 })); // Limit payload size against DDoS
-app.use("/uploads", express.static(path.join(__dirname, "uploads")));
+  const authMiddleware = require("./middleware/auth");
+
+  /* Public uploads — profile pictures only */
+  app.use(
+    "/uploads/avatars",
+    express.static(
+      path.join(__dirname, "uploads/avatars")
+    )
+  );
+
+  /* Protected uploads — require auth token */
+  app.use(
+    "/uploads/certificates",
+    (req, res, next) => {
+      const token =
+        req.headers.authorization?.split(" ")[1] ||
+        req.query.token;
+      if (!token) {
+        return res.status(401).json({
+          message: "Authentication required"
+        });
+      }
+      try {
+        const jwt = require("jsonwebtoken");
+        jwt.verify(token, process.env.JWT_SECRET);
+        next();
+      } catch {
+        return res.status(401).json({
+          message: "Invalid token"
+        });
+      }
+    },
+    express.static(
+      path.join(__dirname, "uploads/certificates")
+    )
+  );
+
+  app.use(
+    "/uploads/evidence",
+    (req, res, next) => {
+      const token =
+        req.headers.authorization?.split(" ")[1] ||
+        req.query.token;
+      if (!token) {
+        return res.status(401).json({
+          message: "Authentication required"
+        });
+      }
+      try {
+        const jwt = require("jsonwebtoken");
+        jwt.verify(token, process.env.JWT_SECRET);
+        next();
+      } catch {
+        return res.status(401).json({
+          message: "Invalid token"
+        });
+      }
+    },
+    express.static(
+      path.join(__dirname, "uploads/evidence")
+    )
+  );
+
+  /* Documents — protected */
+  app.use(
+    "/uploads/documents",
+    (req, res, next) => {
+      const token =
+        req.headers.authorization?.split(" ")[1] ||
+        req.query.token;
+      if (!token) {
+        return res.status(401).json({
+          message: "Authentication required"
+        });
+      }
+      try {
+        const jwt = require("jsonwebtoken");
+        jwt.verify(token, process.env.JWT_SECRET);
+        next();
+      } catch {
+        return res.status(401).json({
+          message: "Invalid token"
+        });
+      }
+    },
+    express.static(
+      path.join(__dirname, "uploads/documents")
+    )
+  );
 
 /* =======================
    SYSTEM INITIALIZATION
@@ -192,6 +280,7 @@ app.use("/api/cases/analyze-story", aiLimiter)
 app.use("/api/auth/login",  authLimiter)
 app.use("/api/auth/request-otp", authLimiter)
 app.use("/api/auth/verify-otp",  authLimiter)
+app.use("/api/auth/refresh-token", authLimiter)
 
 const authRoutes = require("./routes/auth");
 const chatRoutes = require("./routes/chat");
@@ -213,6 +302,13 @@ app.use("/api/admin", adminRoutes);
 app.use("/api/notifications", notificationRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/branding", require("./routes/branding"));
+app.use("/api/n8n",      require("./routes/n8nWebhook")); // ⚡ n8n Automation Bridge
+
+/* Webhook route needs larger payload limit (Razorpay events can be 15-30kb) */
+app.use("/api/webhooks", express.json({
+  limit: "50kb",
+  verify: (req, res, buf) => { req.rawBody = buf.toString(); }
+}));
 
 const paymentRoutes = require("./routes/payments");
 app.use("/api/payments", paymentRoutes);
@@ -264,8 +360,33 @@ io.on("connection", (socket) => {
 
   // ✅ SHARED CHAT/VIDEO ROOM (For consultations)
   socket.on("join-room", (room) => {
-    socket.join(room);
-    socket.to(room).emit("user-joined");
+    /* Only allow authenticated sockets */
+    if (!socket.user) {
+      console.warn(
+        "[Socket] Unauthenticated join-room blocked"
+      );
+      return;
+    }
+    /* Room must be a non-empty string */
+    if (
+      !room ||
+      typeof room !== "string" ||
+      room.trim().length === 0
+    ) {
+      return;
+    }
+    /* Room string must look like a valid
+       Daily.co room name or appointment ID
+       Allow alphanumeric, hyphens, underscores */
+    const ROOM_PATTERN = /^[a-zA-Z0-9_\-]{3,100}$/;
+    if (!ROOM_PATTERN.test(room.trim())) {
+      console.warn(
+        `[Socket] Invalid room name blocked: ${room}`
+      );
+      return;
+    }
+    socket.join(room.trim());
+    socket.to(room.trim()).emit("user-joined");
   });
 
   // ✅ REAL-TIME CHAT MESSAGING
@@ -273,7 +394,7 @@ io.on("connection", (socket) => {
     if (!socket.user || socket.user.id !== message.from) return; // Anti-spoofing
     try {
       await Message.create({
-        from: message.from,
+        from: socket.user.id,
         to: to,
         text: message.text
       });
@@ -301,18 +422,26 @@ io.on("connection", (socket) => {
   });
 
   socket.on("offer", (data) => {
+    if (!socket.user) return;
+    if (!data || !data.room) return;
     socket.to(data.room).emit("offer", data);
   });
 
   socket.on("answer", (data) => {
+    if (!socket.user) return;
+    if (!data || !data.room) return;
     socket.to(data.room).emit("answer", data);
   });
 
   socket.on("ice-candidate", (data) => {
-    socket.to(data.room).emit("ice-candidate", data);
+    if (!socket.user) return;
+    if (!data || !data.room) return;
+    socket.to(data.room)
+      .emit("ice-candidate", data);
   });
 
   socket.on("end-call", (room) => {
+    if (!socket.user) return;
     socket.to(room).emit("end-call");
   });
 
@@ -350,7 +479,8 @@ const PORT = process.env.PORT || 5000;
 
 module.exports = { app, io, server };
 
-require("./utils/scheduler"); // 🔔 Initialize hearing notification scheduler
+const { initScheduler } = require("./utils/scheduler");
+initScheduler(io); // ✅ Pass io directly — eliminates circular require in scheduler
 
 server.listen(PORT, () => {
   console.log(`JurisBot Core: Unified Server Online on Port ${PORT}`);

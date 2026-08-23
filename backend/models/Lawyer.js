@@ -28,9 +28,10 @@ const LawyerSchema = new mongoose.Schema({
   caseComplexity: [{ type: String }],
   state: { type: String, default: null },
   city:  { type: String, default: null },
-  subscriptionTier: { 
-    type: String, 
-    default: "Trial" 
+  subscriptionTier: {
+    type:    String,
+    enum:    ["Trial", "Starter", "Pro", "Expired"],
+    default: "Trial"
   },
   caseLimit: { type: Number, default: 2 }, // Trial limit
   casesClaimedCount: { type: Number, default: 0 },

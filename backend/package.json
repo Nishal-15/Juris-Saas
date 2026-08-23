@@ -5,7 +5,8 @@
   "main": "server.js",
   "scripts": {
     "start": "node server.js",
-    "test": "node -e \"console.log('Backend tests passed cleanly.');\""
+    "dev": "concurrently --names \"JURIS,N8N\" --prefix-colors \"cyan,magenta\" \"node server.js\" \"n8n start\"",
+    "test": "node -e \"console.log('Backend tests passed cleanly.')\""
   },
   "dependencies": {
     "agora-access-token": "^2.0.4",
@@ -22,8 +23,13 @@
     "morgan": "^1.10.1",
     "multer": "^2.1.1",
     "node-cron": "^4.2.1",
+    "razorpay": "^2.9.8",
     "resend": "^6.17.1",
     "socket.io": "^4.8.3",
     "socket.io-client": "^4.8.3"
+  },
+  "devDependencies": {
+    "concurrently": "^10.0.5",
+    "n8n": "^2.35.7"
   }
 }

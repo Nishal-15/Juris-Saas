@@ -130,7 +130,7 @@ if (name.trim().length < 2) {
       ...lawyerWelcomeTemplate(lawyer.name)
     }).catch(e => console.error("Lawyer welcome email error:", e));
 
-    const token = jwt.sign({ id: lawyer._id, role: "lawyer" }, process.env.JWT_SECRET, { expiresIn: "7d" });
+    const token = jwt.sign({ id: lawyer._id, role: "lawyer" }, process.env.JWT_SECRET, { expiresIn: "1d" });
     
     const userResponse = lawyer.toObject();
     delete userResponse.password;
@@ -247,8 +247,6 @@ router.post("/login", async (req, res) => {
     const { email, password, role } = req.body;
     const normalizedEmail = email.toLowerCase().trim();
 
-    console.log(`Attempting login: ${normalizedEmail} as ${role || "unknown (searching both)"}`);
-    
     // 🛡️ HYBRID MODEL SELECTION
     let user = null;
 
@@ -265,13 +263,10 @@ router.post("/login", async (req, res) => {
     }
 
     if (!user) {
-      console.log(`❌ Account not found: ${normalizedEmail}`);
       return res.status(400).json({ message: "Invalid credentials" });
     }
 
     const isMatch = await bcrypt.compare(password, user.password);
-    console.log(`🔐 Password match: ${isMatch}`);
-    
     if (!isMatch) {
       return res.status(400).json({ message: "Invalid credentials" });
     }
@@ -286,17 +281,17 @@ router.post("/login", async (req, res) => {
       await sendOtpEmail(user.email, otp);
       
       // Always log OTP in server logs for easy access on hosted Render dashboard
-      console.log(`[2FA] Admin OTP for ${user.email}: ${otp}`);
+      console.log(
+        `[2FA] OTP generated for ${user.email}`
+      );
       return res.json({ requireOtp: true, email: user.email, message: "OTP sent to email" });
     }
 
-    console.log("Generating JWT...");
     const token = jwt.sign(
       { id: user._id, role: user.role },
       process.env.JWT_SECRET,
       { expiresIn: "1d" }
     );
-    console.log("✅ JWT Generated");
 
 const refreshToken = jwt.sign(
   { id: user._id, role: user.role },
@@ -311,6 +306,9 @@ await user.save()
 
     const userResponse = user.toObject();
     delete userResponse.password;
+    delete userResponse.refreshToken;
+    delete userResponse.twoFactorOtp;
+    delete userResponse.twoFactorExpires;
 
     // 🔄 Ensure verificationStatus is in sync with isVerified for lawyers
     if (userResponse.role === "lawyer" && userResponse.isVerified && userResponse.verificationStatus !== "verified") {
@@ -319,7 +317,6 @@ await user.save()
       Lawyer.findByIdAndUpdate(user._id, { verificationStatus: "verified" }).exec();
     }
 
-    console.log("🚀 Sending success response...");
     res.json({
   token,
   refreshToken,
@@ -387,11 +384,12 @@ await user.save()
 });
 
 /* GET USER INFO */
-router.get("/user/:id", async (req, res) => {
+router.get("/user/:id", auth(), async (req, res) => {
   try {
-    let user = await User.findById(req.params.id).select("-password");
+    const HIDDEN = "-password -refreshToken -twoFactorOtp -twoFactorExpires";
+    let user = await User.findById(req.params.id).select(HIDDEN);
     if (!user) {
-      user = await Lawyer.findById(req.params.id).select("-password");
+      user = await Lawyer.findById(req.params.id).select(HIDDEN);
     }
     
     if (!user) return res.status(404).json({ message: "User not found" });
@@ -428,31 +426,30 @@ router.put("/update", auth(), async (req, res) => {
 });
 
 const axios = require("axios");
-const { Resend } = require("resend");
-const resend = process.env.RESEND_API_KEY
-  ? new Resend(process.env.RESEND_API_KEY)
-  : null;
-const otpCache = {};
+const OtpModel = require("../models/Otp");
 
-// 📲 1. REQUEST OTP
+// 📲 1. REQUEST OTP (MongoDB-backed — survives server restarts)
 router.post("/request-otp", async (req, res) => {
   try {
     const { email } = req.body;
     if (!email) return res.status(400).json({ message: "Email is required for OTP" });
 
-    // Generate numeric 6-digit OTP
     const otp = Math.floor(100000 + Math.random() * 900000).toString();
     const normalizedEmail = email.toLowerCase().trim();
-    otpCache[normalizedEmail] = { otp, expires: Date.now() + 5 * 60 * 1000 }; // 5 mins expiry
+
+    /* Upsert: replace any existing OTP for this email */
+    await OtpModel.findOneAndUpdate(
+      { email: normalizedEmail },
+      { otp, createdAt: new Date() },
+      { upsert: true, new: true }
+    );
 
     try {
-      /* Gmail API — configured in mailer.js */
       const { sendEmail, otpTemplate } = require("../utils/mailer");
       const { subject, html } = otpTemplate(otp, normalizedEmail);
       await sendEmail({ to: normalizedEmail, subject, html });
-      console.log(`✅ [Gmail] OTP sent to ${normalizedEmail}`);
     } catch (mailErr) {
-      console.error("❌ [Gmail] OTP email failed:", mailErr);
+      console.error("❌ [OTP] Email failed:", mailErr.message);
       return res.status(500).json({ message: "Failed to send verification email. Please check email address." });
     }
 
@@ -463,22 +460,19 @@ router.post("/request-otp", async (req, res) => {
 });
 
 // 📲 2. VERIFY OTP
-router.post("/verify-otp", async (req, res) => {
+router.post("/verify-email-otp", async (req, res) => {
   try {
     const { email, otp } = req.body;
     if (!email || !otp) return res.status(400).json({ message: "Email and OTP are required" });
 
     const normalizedEmail = email.toLowerCase().trim();
-    const cached = otpCache[normalizedEmail];
-    
-    if (!cached) return res.status(400).json({ message: "OTP expired or invalid" });
+    const record = await OtpModel.findOne({ email: normalizedEmail });
 
-    if (cached.otp !== otp || Date.now() > cached.expires) {
-      return res.status(400).json({ message: "Incorrect or expired OTP" });
-    }
+    if (!record) return res.status(400).json({ message: "OTP expired or invalid" });
+    if (record.otp !== otp) return res.status(400).json({ message: "Incorrect or expired OTP" });
 
-    // Success! Wipe from cache
-    delete otpCache[normalizedEmail];
+    /* Delete on successful verification */
+    await OtpModel.deleteOne({ email: normalizedEmail });
 
     res.json({ message: "Email verified successfully!", verified: true });
   } catch (err) {
@@ -606,7 +600,7 @@ router.post("/reset-password", async (req, res) => {
   try {
     const { token, newPassword } = req.body;
     if (!token || !newPassword) return res.status(400).json({ message: "Invalid request data." });
-    if (newPassword.length < 6) return res.status(400).json({ message: "Password must be at least 6 characters long." });
+    if (newPassword.length < 8) return res.status(400).json({ message: "Password must be at least 8 characters long." });
     
     let decoded;
     try {

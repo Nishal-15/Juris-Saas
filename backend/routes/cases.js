@@ -35,7 +35,7 @@ const uploadEvidence = multer({
     const allowed = /jpeg|jpg|png|gif|webp|pdf|mp4|mov|doc|docx/;
     const ext = path.extname(file.originalname).toLowerCase().replace('.', '');
     if (allowed.test(ext)) cb(null, true);
-    else cb(null, false); // Skip unsupported silently
+    else cb(new Error(`Unsupported file type: .${ext}. Allowed: jpg, png, gif, webp, pdf, mp4, mov, doc, docx`), false);
   }
 }).array('evidence', 10); // Max 10 files
 
@@ -444,6 +444,7 @@ const sanitized = {
         incomeTier:   newCase.clientIncomeTier,
         feeRange:     newCase.estimatedFeeRange
       },
+      evidenceBaseUrl: process.env.BACKEND_URL || "http://localhost:5000",
       mediationEligible:
         newCase.isMediationEligible,
       mediationInfo: mediationResult || null
@@ -1174,6 +1175,14 @@ router.post("/connect/:caseId/:lawyerId", auth(), async (req, res) => {
   try {
     const { caseId, lawyerId } = req.params;
     const caseToConnect = await Case.findById(caseId);
+
+  /* ADD THIS NULL CHECK */
+  if (!caseToConnect) {
+    return res.status(404).json({
+      message: "Case not found."
+    });
+  }
+
     const isMediation = caseToConnect.status.includes("Mediation");
     const newStatus = isMediation ? "Pending Mediation Acceptance" : "Pending Expert Acceptance";
 
@@ -1259,6 +1268,14 @@ router.post("/accept/:caseId", auth(["lawyer"]), async (req, res) => {
     const { caseId } = req.params;
     
     const caseToAccept = await Case.findById(caseId);
+
+  /* ADD THIS NULL CHECK */
+  if (!caseToAccept) {
+    return res.status(404).json({
+      message: "Case not found."
+    });
+  }
+
     const isMediation = caseToAccept.status.includes("Mediation");
     const newStatus = isMediation ? "Mediation in Progress" : "In Progress";
     

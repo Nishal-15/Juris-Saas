@@ -14,7 +14,21 @@ const CaseSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["Open", "In Progress", "Closed", "Pending Mediation", "Resolved"],
+    enum: [
+      "Open",
+      "Pending Expert Acceptance",
+      "Requested",
+      "In Progress",
+      "Hearing Scheduled",
+      "Verdict Pending",
+      "Closed",
+      "Pending Mediation",
+      "Pending Mediation Acceptance",
+      "Mediation in Progress",
+      "Mediation Session Scheduled",
+      "Mutual Settlement Reached",
+      "Resolved"
+    ],
     default: "Open"
   },
   user: {
@@ -72,6 +86,10 @@ const CaseSchema = new mongoose.Schema({
     timeline: String,
     estimatedCost: String,
     nextStep: String
+  },
+  evidence: {
+    type:    [String],
+    default: []
   }
 }, { timestamps: true });
 

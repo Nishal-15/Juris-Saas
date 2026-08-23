@@ -19,10 +19,13 @@ export default function MediationCases() {
   const fetchMediationCases = async () => {
     setLoading(true);
     try {
-      const res = await API.get("/admin/all-cases?limit=100");
-      const data = Array.isArray(res.data) ? res.data : (res.data.cases || []);
-      const medCases = data.filter(c => c.isMediationEligible);
-      setCases(medCases);
+      /* Use the dedicated mediationOnly filter so we
+         only fetch what we need — not 100 random cases */
+      const res = await API.get("/admin/all-cases?mediationOnly=true&limit=100");
+      const data = Array.isArray(res.data)
+        ? res.data
+        : (res.data.cases || []);
+      setCases(data);
     } catch {
       toast.error("Failed to load cases");
     } finally {

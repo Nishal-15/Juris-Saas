@@ -20,10 +20,30 @@ router.get("/stats", auth(["admin"]), async (req, res) => {
     const mediationCasesCount = await Case.countDocuments({ isMediationEligible: true });
     
     let lawsCount = 0;
-    const aiServicePath = path.join(__dirname, "../ai-service/laws");
-    if (fs.existsSync(aiServicePath)) {
-      lawsCount = fs.readdirSync(aiServicePath).filter(f => f.endsWith(".pdf")).length;
+  try {
+    /* Count from MongoDB law_sections
+       collection — reliable on cloud hosting */
+    const mongoose = require("mongoose");
+    const db = mongoose.connection.db;
+    if (db) {
+      lawsCount = await db
+        .collection("law_sections")
+        .countDocuments();
     }
+  } catch (lawCountErr) {
+    /* Fallback to filesystem count */
+    try {
+      const aiServicePath = path.join(
+        __dirname, "../ai-service/laws"
+      );
+      if (fs.existsSync(aiServicePath)) {
+        lawsCount = fs
+          .readdirSync(aiServicePath)
+          .filter(f => f.endsWith(".pdf"))
+          .length;
+      }
+    } catch {}
+  }
 
     // 1. Generate Pie Chart Data (Cases grouped by legalType)
     const casesByCategory = await Case.aggregate([
@@ -109,21 +129,13 @@ router.get("/citizens", auth(["admin"]), async (req, res) => {
 // 👨‍⚖️ GET ALL VERIFIED LAWYERS (WITH CASE COUNTS)
 router.get("/lawyers", auth(["admin"]), async (req, res) => {
   try {
-    const lawyers = await Lawyer.find({ isVerified: true }).sort({ createdAt: -1 });
-    
-    // Manually count cases for each lawyer to ensure absolute accuracy
+    const lawyers = await Lawyer.find({ isVerified: true })
+      .select("-password")
+      .sort({ createdAt: -1 });
+
     const lawyersWithStats = await Promise.all(lawyers.map(async (l) => {
       const caseCount = await Case.countDocuments({ assignedLawyer: l._id });
-      return {
-        _id: l._id,
-        name: l.name,
-        email: l.email,
-        specialization: l.specialization,
-        experience: l.experience,
-        rating: l.rating,
-        preferredLanguage: l.preferredLanguage,
-        caseCount
-      };
+      return { ...l.toObject(), caseCount };
     }));
 
     res.json(lawyersWithStats);
@@ -225,21 +237,37 @@ router.get("/laws", auth(["admin"]), async (req, res) => {
 // 📂 GET ALL CASES (GLOBAL OVERSIGHT)
 router.get("/all-cases", auth(["admin"]), async (req, res) => {
   try {
-    const limit = parseInt(req.query.limit) || 0;
-    const skip = parseInt(req.query.skip) || 0;
-    const mediationOnly = req.query.mediationOnly === "true";
-    const query = mediationOnly ? { isMediationEligible: true } : {};
+    const page  = parseInt(req.query.page  || "1");
+    const limit = parseInt(req.query.limit || "50");
+    const skip  = (page - 1) * limit;
 
-    let queryBuilder = Case.find(query)
-      .populate("user", "name email preferredLanguage")
-      .populate("assignedLawyer", "name email")
-      .sort({ createdAt: -1 });
+    /* Build optional filter */
+    const filter = {};
+    if (req.query.mediationOnly === "true") {
+      filter.isMediationEligible = true;
+    }
 
-    if (skip > 0) queryBuilder = queryBuilder.skip(skip);
-    if (limit > 0) queryBuilder = queryBuilder.limit(limit);
+    const [cases, total] = await Promise.all([
+      Case.find(filter)
+        .populate("user",  "name email preferredLanguage")
+        .populate("assignedLawyer", "name email")
+        .sort({ createdAt: -1 })
+        .skip(skip)
+        .limit(limit),
+      Case.countDocuments(filter)
+    ]);
 
-    const cases = await queryBuilder;
-    res.json(cases);
+    res.json({
+      cases,
+      pagination: {
+        page,
+        limit,
+        total,
+        pages: Math.ceil(total / limit),
+        hasNext: page * limit < total,
+        hasPrev: page > 1
+      }
+    });
   } catch (err) {
     res.status(500).json({ message: err.message });
   }
@@ -470,7 +498,14 @@ router.post(
   async (req, res) => {
     try {
       const result = await User.updateMany(
-        {},
+        {
+          $or: [
+            { barCouncilId:      { $exists: true } },
+            { subscriptionTier:  { $exists: true } },
+            { caseLimit:         { $exists: true } },
+            { casesClaimedCount: { $exists: true } }
+          ]
+        },
         {
           $unset: {
             barCouncilId:      "",

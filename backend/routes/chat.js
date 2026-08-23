@@ -23,16 +23,19 @@ router.get("/contacts", auth(), async (req, res) => {
     const User = require("../models/User");
     const Lawyer = require("../models/Lawyer");
 
-    const contacts = [];
-    for (let cid of contactIds) {
-      let u = await User.findById(cid).select("name email phone");
-      if (!u) {
-        u = await Lawyer.findById(cid).select("name email phone specialization");
-      }
-      if (u) {
-        contacts.push({ userId: u, date: "Direct Message", time: "Active" });
-      }
-    }
+    /* Bulk-fetch all contacts in 2 queries instead of N queries */
+    const idArray = Array.from(contactIds);
+    const [users, lawyers] = await Promise.all([
+      User.find({ _id: { $in: idArray } }).select("name email phone"),
+      Lawyer.find({ _id: { $in: idArray } }).select("name email phone specialization")
+    ]);
+
+    const allContacts = [...users, ...lawyers];
+    const contacts = allContacts.map(u => ({
+      userId: u,
+      date: "Direct Message",
+      time: "Active"
+    }));
 
     res.json(contacts);
   } catch (err) {
@@ -88,6 +91,25 @@ RULES:
 router.post("/", auth(), async (req, res) => {
   const { message, lang = "en" } = req.body;
   const userId = req.user.id;
+
+  /* Validate message length */
+  if (!message || typeof message !== "string") {
+    return res.status(400).json({
+      message: "Message is required."
+    });
+  }
+  if (message.trim().length === 0) {
+    return res.status(400).json({
+      message: "Message cannot be empty."
+    });
+  }
+  if (message.length > 2000) {
+    return res.status(400).json({
+      message:
+        "Message too long. " +
+        "Maximum 2000 characters."
+    });
+  }
 
   try {
     console.log(`🤖 AI Query [Proxied]: ${message} (${lang})`);

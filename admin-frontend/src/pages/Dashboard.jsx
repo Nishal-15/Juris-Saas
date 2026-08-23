@@ -42,7 +42,18 @@ export default function Dashboard() {
     fetchTierData();
     fetchLangStats();
 
-    const socket = io(import.meta.env.VITE_SOCKET_URL);
+    const socket = io(
+      import.meta.env.VITE_SOCKET_URL ||
+      import.meta.env.VITE_API_BASE
+        ?.replace("/api", "") ||
+      "http://localhost:5000",
+      {
+        reconnection:        true,
+        reconnectionAttempts:10,
+        reconnectionDelay:   2000,
+        transports:          ["websocket", "polling"]
+      }
+    );
     
     socket.on("marketplace-needs-refresh", () => {
       fetchStats();
