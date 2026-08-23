@@ -79,21 +79,18 @@ export default function LawyerChat({ currentUser, targetUser }) {
     setMsg("");
   };
 
-  const startVideo = () => {
-    const user = JSON.parse(localStorage.getItem("user") || "{}");
-    const uid = user._id || user.id;
-    // 🔥 NOTIFY THE USER FIRST
-    const roomId = [uid, targetUser].sort().join("-");
-    // 🔥 NOTIFY THE USER FIRST
-    socket.emit("video-call-request", { 
-       to: targetUser, 
-       from: uid,
-       fromName: lawyerName,
-       roomId 
-    });
-    
-    // NAVIGATORS TO VIDEO ROOM
-    navigate(`/video/${targetUser}`);
+  const startVideo = async () => {
+    try {
+      // Call backend to generate a Daily.co room and notify the citizen via socket
+      const { data } = await axios.post("/video/start", {
+        targetUserId: targetUser
+      });
+      
+      // Navigate to the video session passing the valid callLink
+      navigate(`/video/session`, { state: { callLink: data.callLink } });
+    } catch (err) {
+      alert("Failed to start video call: " + (err.response?.data?.message || err.message));
+    }
   };
 
   const user = JSON.parse(localStorage.getItem("user") || "{}");

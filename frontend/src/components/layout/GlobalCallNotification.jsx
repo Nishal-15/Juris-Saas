@@ -66,7 +66,7 @@ export default function GlobalCallNotification() {
         <button 
           className="btn-join" 
           onClick={() => {
-            navigate(`/video-call`, { state: { callLink: incomingCall.callLink } });
+            navigate(`/video/session`, { state: { callLink: incomingCall.callLink } });
             stopRingtone();
           }}
         >

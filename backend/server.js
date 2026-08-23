@@ -303,6 +303,7 @@ app.use("/api/notifications", notificationRoutes);
 app.use("/api/documents", documentRoutes);
 app.use("/api/branding", require("./routes/branding"));
 app.use("/api/n8n",      require("./routes/n8nWebhook")); // ⚡ n8n Automation Bridge
+app.use("/api/video",    require("./routes/video"));
 
 /* Webhook route needs larger payload limit (Razorpay events can be 15-30kb) */
 app.use("/api/webhooks", express.json({
@@ -415,35 +416,7 @@ io.on("connection", (socket) => {
     }
   });
 
-  // ✅ VIDEO CALL SIGNALING REINFORCEMENT
-  socket.on("video-call-request", ({ to, from, fromName, roomId }) => {
-    if (!socket.user || socket.user.id !== from) return;
-    io.to(to).emit("incoming-video-call", { from, fromName, roomId });
-  });
-
-  socket.on("offer", (data) => {
-    if (!socket.user) return;
-    if (!data || !data.room) return;
-    socket.to(data.room).emit("offer", data);
-  });
-
-  socket.on("answer", (data) => {
-    if (!socket.user) return;
-    if (!data || !data.room) return;
-    socket.to(data.room).emit("answer", data);
-  });
-
-  socket.on("ice-candidate", (data) => {
-    if (!socket.user) return;
-    if (!data || !data.room) return;
-    socket.to(data.room)
-      .emit("ice-candidate", data);
-  });
-
-  socket.on("end-call", (room) => {
-    if (!socket.user) return;
-    socket.to(room).emit("end-call");
-  });
+  // ✅ (DEPRECATED: Old WebRTC P2P signaling removed in favor of Daily.co infrastructure)
 
   // ✅ SYSTEM-WIDE NOTIFICATIONS (FIXED)
   socket.on("notify", async ({ to, text }) => {
