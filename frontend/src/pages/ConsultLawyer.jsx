@@ -55,7 +55,12 @@ export default function ConsultLawyer() {
 
   // Extract unique specializations for the dropdown
   const uniqueSpecializations = [...new Set(
-    lawyers.map(l => l.specialization?.split(",")[0]?.trim()).filter(Boolean)
+    lawyers.map(l => {
+      if (!l.specialization) return null;
+      if (typeof l.specialization === 'string') return l.specialization.split(",")[0]?.trim();
+      if (Array.isArray(l.specialization)) return l.specialization[0]?.trim();
+      return String(l.specialization);
+    }).filter(Boolean)
   )].sort();
 
   // Filter Logic
@@ -64,7 +69,15 @@ export default function ConsultLawyer() {
       (l.name && l.name.toLowerCase().includes(searchTerm.toLowerCase())) ||
       (l.firm && l.firm.toLowerCase().includes(searchTerm.toLowerCase()));
     
-    const spec = l.specialization?.split(",")[0]?.trim();
+    let spec = "";
+    if (typeof l.specialization === 'string') {
+      spec = l.specialization.split(",")[0]?.trim();
+    } else if (Array.isArray(l.specialization)) {
+      spec = l.specialization[0]?.trim();
+    } else if (l.specialization) {
+      spec = String(l.specialization);
+    }
+
     const matchesSpec = selectedSpec === "" || spec === selectedSpec;
 
     return matchesSearch && matchesSpec;
