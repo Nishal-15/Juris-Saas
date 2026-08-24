@@ -27,7 +27,7 @@ export default function ConsultLawyer() {
           axios.get("/lawyers"),
           axios.get("/appointments/my")
         ]);
-        let list = lawRes.data;
+        let list = lawRes.data.lawyers || lawRes.data;
         if (filterType) list = list.filter(l => l.specialization?.toLowerCase().includes(filterType.toLowerCase()));
         setLawyers(list);
         setAppointments(appRes.data);
