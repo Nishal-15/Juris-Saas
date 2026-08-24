@@ -17,13 +17,6 @@ export default function ConsultLawyer() {
   const [booking, setBooking] = useState(null);
   const [selectedImage, setSelectedImage] = useState(null);
   
-  const getImageUrl = (path) => {
-    if (!path) return null;
-    if (path.startsWith("http")) return path;
-    const baseUrl = import.meta.env.VITE_API_URL ? import.meta.env.VITE_API_URL.replace("/api", "") : "http://localhost:5000";
-    return `${baseUrl}/${path.replace(/\\/g, "/")}`;
-  };
-  
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedSpec, setSelectedSpec] = useState("");
@@ -173,11 +166,11 @@ export default function ConsultLawyer() {
                   {/* Halo Avatar */}
                   <div 
                     className="cl-avatar-wrap-premium" 
-                    onClick={() => { if (lawyer.photo || lawyer.avatar) setSelectedImage(getImageUrl(lawyer.photo || lawyer.avatar)); }}
+                    onClick={() => { if (lawyer.photo || lawyer.avatar) setSelectedImage(lawyer.photo || lawyer.avatar); }}
                     style={{ cursor: (lawyer.photo || lawyer.avatar) ? 'pointer' : 'default' }}
                   >
                     {(lawyer.photo || lawyer.avatar) ? (
-                      <img src={getImageUrl(lawyer.photo || lawyer.avatar)} alt="Profile" className="cl-avatar-img" />
+                      <img src={lawyer.photo || lawyer.avatar} alt="Profile" className="cl-avatar-img" />
                     ) : (
                       <div className="cl-avatar-premium">{initials}</div>
                     )}
