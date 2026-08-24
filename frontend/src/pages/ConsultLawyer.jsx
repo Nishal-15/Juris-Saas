@@ -15,7 +15,6 @@ export default function ConsultLawyer() {
   const [loading, setLoading] = useState(true);
   const [appointments, setAppointments] = useState([]);
   const [booking, setBooking] = useState(null);
-  const [selectedImage, setSelectedImage] = useState(null);
   
   // Search & Filter State
   const [searchTerm, setSearchTerm] = useState("");
@@ -164,16 +163,8 @@ export default function ConsultLawyer() {
                   </div>
 
                   {/* Halo Avatar */}
-                  <div 
-                    className="cl-avatar-wrap-premium" 
-                    onClick={() => { if (lawyer.photo || lawyer.avatar) setSelectedImage(lawyer.photo || lawyer.avatar); }}
-                    style={{ cursor: (lawyer.photo || lawyer.avatar) ? 'pointer' : 'default' }}
-                  >
-                    {(lawyer.photo || lawyer.avatar) ? (
-                      <img src={lawyer.photo || lawyer.avatar} alt="Profile" className="cl-avatar-img" />
-                    ) : (
-                      <div className="cl-avatar-premium">{initials}</div>
-                    )}
+                  <div className="cl-avatar-wrap-premium">
+                    <div className="cl-avatar-premium">{initials}</div>
                   </div>
 
                   {/* Name & Title */}
@@ -243,15 +234,6 @@ export default function ConsultLawyer() {
           </div>
         )}
       </div>
-      
-      {/* Lightbox Modal */}
-      {selectedImage && (
-        <div className="image-lightbox" onClick={() => setSelectedImage(null)}>
-          <span className="lightbox-close">&times;</span>
-          <img src={selectedImage} alt="Full Profile" className="lightbox-content" onClick={(e) => e.stopPropagation()} />
-        </div>
-      )}
-
       <BottomNav />
     </div>
   );
