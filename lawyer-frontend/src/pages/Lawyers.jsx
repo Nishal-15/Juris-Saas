@@ -7,7 +7,7 @@ function Lawyers() {
 
   useEffect(() => {
     API.get("/lawyers")
-      .then((res) => setLawyers(res.data))
+      .then((res) => setLawyers(res.data.lawyers || res.data || []))
       .catch((err) => console.error(err));
   }, []);
 
