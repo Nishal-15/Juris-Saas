@@ -194,7 +194,13 @@ export default function ConsultLawyer() {
                   <div className="cl-details-list">
                     <div className="cl-detail-item"><strong>Bar Council Reg:</strong> {lawyer.barId || "BAR2023IND987"}</div>
                     <div className="cl-detail-item"><strong>Firm:</strong> {lawyer.firm || "Capital Legal Chambers"}</div>
-                    <div className="cl-detail-item"><strong>Specialization:</strong> {lawyer.specialization?.split(",")[0]?.trim() || "General Practice"}</div>
+                    <div className="cl-detail-item">
+                      <strong>Specialization:</strong> {
+                        typeof lawyer.specialization === 'string' ? lawyer.specialization.split(",")[0]?.trim() :
+                        Array.isArray(lawyer.specialization) ? lawyer.specialization[0]?.trim() :
+                        lawyer.specialization ? String(lawyer.specialization) : "General Practice"
+                      }
+                    </div>
                   </div>
 
                   {/* Certificate Expiry Block */}
