@@ -98,19 +98,34 @@ export default function LawyerChat({ currentUser, targetUser }) {
 
   const fileInputRef = useRef(null);
 
-  const handleFileUpload = (e) => {
+  const handleFileUpload = async (e) => {
     const file = e.target.files[0];
     if (file) {
-       const user = JSON.parse(localStorage.getItem("user") || "{}");
-       const uid = user._id || user.id;
-       const message = {
-         from: uid,
-         to: targetUser,
-         text: `📁 Attached Document: ${file.name}`,
-         timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
-       };
-       socket.emit("send-message", { to: targetUser, message });
-       setMessages(prev => [...prev, message]);
+      try {
+        const formData = new FormData();
+        formData.append("file", file);
+        
+        const { data } = await axios.post("/chat/upload", formData, {
+          headers: { "Content-Type": "multipart/form-data" }
+        });
+
+        const user = JSON.parse(localStorage.getItem("user") || "{}");
+        const uid = user._id || user.id;
+
+        const message = {
+          from: uid,
+          to: targetUser,
+          text: `📁 Attached Document: ${file.name}`,
+          fileUrl: data.fileUrl,
+          fileName: data.fileName,
+          timestamp: new Date().toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+        };
+        socket.emit("send-message", { to: targetUser, message });
+        setMessages(prev => [...prev, message]);
+      } catch (err) {
+        console.error("Upload failed", err);
+        alert("Failed to upload file.");
+      }
     }
   };
 
@@ -156,17 +171,34 @@ export default function LawyerChat({ currentUser, targetUser }) {
              </div>
              <p>This communication is privileged under Section 126 of the Indian Evidence Act and secured with zero-knowledge encryption.</p>
           </div>
-          {messages.map((m, i) => (
-            <div key={i} className={`wa-bubble-row ${m.from === userId ? "wa-sent" : "wa-received"}`}>
-              <div className="wa-bubble">
-                {m.text}
-                <span className="wa-time">
-                  {formatTime(m)}
-                  {m.from === userId && <span className="wa-check">✓✓</span>}
-                </span>
+          {messages.map((m, i) => {
+            const isImage = m.fileName?.match(/\.(jpeg|jpg|gif|png)$/i);
+            const fileLink = m.fileUrl ? (import.meta.env.VITE_API_URL?.replace('/api', '') || "https://juris-saas.onrender.com") + '/' + m.fileUrl : null;
+            
+            return (
+              <div key={i} className={`wa-bubble-row ${m.from === userId ? "wa-sent" : "wa-received"}`}>
+                <div className="wa-bubble">
+                  {m.fileUrl ? (
+                    <div className="wa-attachment">
+                      {isImage ? (
+                        <img src={fileLink} alt={m.fileName} className="wa-img-attachment" style={{ maxWidth: '100%', borderRadius: '8px', marginBottom: '5px' }} />
+                      ) : (
+                        <a href={fileLink} download={m.fileName} target="_blank" rel="noreferrer" className="wa-file-attachment" style={{ display: 'block', padding: '10px', backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: '8px', color: 'inherit', textDecoration: 'none', marginBottom: '5px', wordBreak: 'break-all' }}>
+                          📄 {m.fileName}
+                        </a>
+                      )}
+                    </div>
+                  ) : (
+                    m.text
+                  )}
+                  <span className="wa-time">
+                    {formatTime(m)}
+                    {m.from === userId && <span className="wa-check">✓✓</span>}
+                  </span>
+                </div>
               </div>
-            </div>
-          ))}
+            );
+          })}
           <div ref={endRef} />
         </div>
 

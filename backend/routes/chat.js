@@ -5,7 +5,36 @@ const { getAIChatURL } = require("../utils/aiUrl");
 
 
 const Message = require("../models/Message");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
 
+// 📁 UPLOAD CONFIG FOR CHAT ATTACHMENTS
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    const dir = path.join(__dirname, "../uploads/chat");
+    if (!fs.existsSync(dir)) fs.mkdirSync(dir, { recursive: true });
+    cb(null, dir);
+  },
+  filename: (req, file, cb) => {
+    cb(null, `CHAT_${Date.now()}_${file.originalname}`);
+  }
+});
+const upload = multer({ storage, limits: { fileSize: 10 * 1024 * 1024 } }); // 10MB Limit
+
+// 📁 UPLOAD CHAT ATTACHMENT
+router.post("/upload", auth(), upload.single("file"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ message: "No file uploaded" });
+    }
+    const fileUrl = `uploads/chat/${req.file.filename}`;
+    res.json({ fileUrl, fileName: req.file.originalname });
+  } catch (err) {
+    console.error("Chat Upload Error:", err);
+    res.status(500).json({ message: "Failed to upload file." });
+  }
+});
 // 📁 FETCH ACTIVE CHAT CONTACTS
 router.get("/contacts", auth(), async (req, res) => {
   try {

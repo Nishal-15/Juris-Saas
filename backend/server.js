@@ -183,6 +183,14 @@ app.use(express.json({
     )
   );
 
+  /* Chat uploads — served for chat attachments */
+  app.use(
+    "/uploads/chat",
+    express.static(
+      path.join(__dirname, "uploads/chat")
+    )
+  );
+
   /* Protected uploads — require auth token */
   app.use(
     "/uploads/certificates",
@@ -397,7 +405,9 @@ io.on("connection", (socket) => {
       await Message.create({
         from: socket.user.id,
         to: to,
-        text: message.text
+        text: message.text,
+        fileUrl: message.fileUrl || null,
+        fileName: message.fileName || null
       });
       try {
         await Notification.create({
