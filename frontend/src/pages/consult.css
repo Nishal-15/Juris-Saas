@@ -89,7 +89,7 @@
 }
 .cl-avatar-premium {
   font-size: 24px; font-weight: 800;
-  color: var(--text-primary);
+  color: #ffffff;
 }
 
 .cl-name { font-size: 19px; font-weight: 800; color: var(--text-primary); text-align: center; margin-top: 2px; }

@@ -42,8 +42,7 @@ router.post("/start", auth(["lawyer"]), async (req, res) => {
             start_audio_off: true,
             start_video_off: false,
             max_participants: 2,
-            enable_screenshare: false,
-            enable_recording: "none",
+            enable_screenshare: false
           }
         },
         {

@@ -12,11 +12,10 @@ export default function GlobalCallNotification() {
   const navigate = useNavigate();
 
   useEffect(() => {
-    socket.on("call-ready", (data) => {
-       if (data.type === "daily") {
+    socket.on("incoming-call", (data) => {
          setIncomingCall({ 
-           fromName: data.lawyerName || "Lawyer", 
-           callLink: data.callLink 
+           fromName: data.callerName || "Lawyer", 
+           callerId: data.from
          });
          
          if (activeAudio.current) {
@@ -34,10 +33,9 @@ export default function GlobalCallNotification() {
             activeAudio.current = fallback;
             fallback.play().catch(e => console.error("Sound blocked", e));
          });
-       }
     });
     return () => {
-       socket.off("call-ready");
+       socket.off("incoming-call");
        if (activeAudio.current) activeAudio.current.pause();
     };
   }, []);
@@ -66,13 +64,15 @@ export default function GlobalCallNotification() {
         <button 
           className="btn-join" 
           onClick={() => {
-            navigate(`/video/session`, { state: { callLink: incomingCall.callLink } });
+            socket.emit("call-accepted", { to: incomingCall.callerId });
+            navigate(`/video/${incomingCall.callerId}`, { state: { targetUser: incomingCall.callerId, isCaller: false } });
             stopRingtone();
           }}
         >
           Join Call
         </button>
         <button className="btn-ignore" onClick={() => {
+          socket.emit("call-rejected", { to: incomingCall.callerId });
           stopRingtone();
         }}>
           Decline

@@ -35,7 +35,7 @@ export default function Subscription() {
     // Modal Configuration Form Inputs
     const [billingType, setBillingType] = useState('Monthly'); // 'Monthly' or 'Annual'
     const [seats, setSeats] = useState(1);
-    const [formInputs, setFormInputs] = useState({ cardName: '', cardNumber: '', expiry: '', cvv: '', upi: '', email: '' });
+    const [formInputs, setFormInputs] = useState({ name: '', email: '' });
 
     useEffect(() => {
         fetchProfile();
@@ -56,7 +56,7 @@ export default function Subscription() {
         setSelectedPlan({ planName, price });
         setBillingType('Monthly');
         setSeats(1);
-        setFormInputs({ cardName: '', cardNumber: '', expiry: '', cvv: '', upi: '', email: lawyer?.email || '' });
+        setFormInputs({ name: lawyer?.name || '', email: lawyer?.email || '' });
         setModalOpen(true);
     };
 
@@ -64,13 +64,8 @@ export default function Subscription() {
         e.preventDefault();
         setPaying(true);
         try {
-            if (!formInputs.cardName.trim()) {
+            if (!formInputs.name.trim()) {
                 showToast("Please enter your name.");
-                setPaying(false);
-                return;
-            }
-            if (!formInputs.upi.trim() && !formInputs.cardNumber.trim()) {
-                showToast("Please enter either a UPI ID or a Credit/Debit Card.");
                 setPaying(false);
                 return;
             }
@@ -82,29 +77,27 @@ export default function Subscription() {
                 return;
             }
 
-            // TODO: Replace with actual Order ID from backend
-            // const orderResponse = await axios.post('/payments/create-order', { amount: totalDue });
-            // const orderId = orderResponse.data.id;
+            const orderResponse = await axios.post('/payments/create-order', { planType: selectedPlan.planName });
+            const { orderId, keyId } = orderResponse.data;
 
             const options = {
-                key: "rzp_test_XXXXXXXXXXXXXX", // Enter your Razorpay API Key here
+                key: keyId, // Fetched from backend
                 amount: totalDue * 100, // Amount in paise
                 currency: "INR",
                 name: "JurisBot SaaS",
                 description: `${selectedPlan.planName} Plan Upgrade`,
                 image: "/logo.png",
-                // order_id: orderId, // Uncomment when backend is ready
+                order_id: orderId,
                 handler: async function (response) {
                     try {
                         // Verify payment signature on backend
-                        // await axios.post('/payments/verify', {
-                        //     razorpay_payment_id: response.razorpay_payment_id,
-                        //     razorpay_order_id: response.razorpay_order_id,
-                        //     razorpay_signature: response.razorpay_signature
-                        // });
+                        await axios.post('/payments/verify', {
+                            razorpay_payment_id: response.razorpay_payment_id,
+                            razorpay_order_id: response.razorpay_order_id,
+                            razorpay_signature: response.razorpay_signature,
+                            planType: selectedPlan.planName
+                        });
 
-                        // Execute actual plan upgrade
-                        await axios.patch("/lawyers/upgrade", { planType: selectedPlan.planName });
                         showToast(`🎉 Payment Successful! Welcome to the ${selectedPlan.planName} Plan.`);
                         setModalOpen(false);
                         fetchProfile();
@@ -113,9 +106,9 @@ export default function Subscription() {
                     }
                 },
                 prefill: {
-                    name: formInputs.cardName,
-                    email: lawyer.email || "lawyer@jurisbot.com",
-                    contact: "9999999999" // Fetch from profile if available
+                    name: formInputs.name,
+                    email: formInputs.email || lawyer.email || "lawyer@jurisbot.com",
+                    contact: lawyer?.phone || "9999999999" // Fetch from profile if available
                 },
                 theme: {
                     color: "#c9a84c"
@@ -344,30 +337,14 @@ export default function Subscription() {
                                 {/* Contact Information */}
                                 <div style={{ marginBottom: '40px' }}>
                                     <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#fff' }}>Contact information</h4>
-                                    <div style={{ background: '#1a1d22', border: '1px solid #30363d', borderRadius: '12px', padding: '20px' }}>
-                                        <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#8b949e', marginBottom: '6px' }}>EMAIL</label>
-                                        <input type="email" value={formInputs.email} onChange={e => setFormInputs({ ...formInputs, email: e.target.value })} style={{ width: '100%', background: 'transparent', border: 'none', color: '#fff', fontSize: '15px', outline: 'none' }} />
-                                    </div>
-                                </div>
-
-                                {/* Payment Method */}
-                                <div>
-                                    <h4 style={{ fontSize: '16px', fontWeight: '600', marginBottom: '15px', color: '#fff' }}>Payment method</h4>
-                                    <div style={{ background: '#1a1d22', border: '1px solid #30363d', borderRadius: '12px', padding: '24px', marginBottom: '15px' }}>
-                                        <div style={{ marginBottom: '20px' }}>
-                                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#8b949e', marginBottom: '6px' }}>CARDHOLDER / ADVOCATE NAME</label>
-                                            <input type="text" placeholder="Advocate Nishal" required value={formInputs.cardName} onChange={e => setFormInputs({ ...formInputs, cardName: e.target.value })} style={{ width: '100%', background: '#0d1117', border: '1px solid #30363d', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
+                                    <div style={{ background: '#1a1d22', border: '1px solid #30363d', borderRadius: '12px', padding: '24px', display: 'flex', flexDirection: 'column', gap: '15px' }}>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#8b949e', marginBottom: '6px' }}>ADVOCATE NAME</label>
+                                            <input type="text" placeholder="Your Name" required value={formInputs.name} onChange={e => setFormInputs({ ...formInputs, name: e.target.value })} style={{ width: '100%', background: '#0d1117', border: '1px solid #30363d', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '15px' }} />
                                         </div>
-
-                                        <div style={{ display: 'flex', gap: '15px' }}>
-                                            <div style={{ flex: 1 }}>
-                                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#8b949e', marginBottom: '6px' }}>UPI ID</label>
-                                                <input type="text" placeholder="name@upi" value={formInputs.upi} onChange={e => setFormInputs({ ...formInputs, upi: e.target.value })} style={{ width: '100%', background: '#0d1117', border: '1px solid #30363d', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
-                                            </div>
-                                            <div style={{ flex: 1 }}>
-                                                <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#8b949e', marginBottom: '6px' }}>CREDIT / DEBIT CARD</label>
-                                                <input type="text" placeholder="4242 4242 4242 4242" value={formInputs.cardNumber} onChange={e => setFormInputs({ ...formInputs, cardNumber: e.target.value })} style={{ width: '100%', background: '#0d1117', border: '1px solid #30363d', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none' }} />
-                                            </div>
+                                        <div>
+                                            <label style={{ display: 'block', fontSize: '12px', fontWeight: 'bold', color: '#8b949e', marginBottom: '6px' }}>EMAIL</label>
+                                            <input type="email" value={formInputs.email} onChange={e => setFormInputs({ ...formInputs, email: e.target.value })} style={{ width: '100%', background: '#0d1117', border: '1px solid #30363d', padding: '14px', borderRadius: '8px', color: '#fff', outline: 'none', fontSize: '15px' }} />
                                         </div>
                                     </div>
                                 </div>

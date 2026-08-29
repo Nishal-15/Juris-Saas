@@ -80,18 +80,8 @@ export default function RealTimeChat() {
   };
 
   const startVideoCall = () => {
-    // Generate a unique room ID or use the current chat ID
-    const roomId = [userId, id].sort().join("-");
-    
-    // ✅ ALERT THE OTHER PERSON
-    socket.emit("video-call-request", { 
-      to: id, 
-      from: userId, 
-      fromName: user.name || "Client", 
-      roomId 
-    });
-
-    navigate(`/video/${roomId}`);
+    socket.emit("incoming-call", { to: id, callerName: user.name || "Client" });
+    navigate(`/video/${id}`, { state: { targetUser: id, isCaller: true } });
   };
 
   const [showEmojis, setShowEmojis] = useState(false);

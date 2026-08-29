@@ -343,7 +343,7 @@
 .cd-textarea { resize: vertical; line-height: 1.6; }
 
 select.cd-input option {
-  background: #1c2333;
+  background: var(--bg-2);
   color: var(--text-primary);
 }
 

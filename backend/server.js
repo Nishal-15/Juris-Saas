@@ -447,6 +447,23 @@ io.on("connection", (socket) => {
     }
   });
 
+  // ✅ WebRTC Direct Peer-to-Peer Signaling
+  socket.on("incoming-call", ({ to, callerName }) => {
+    io.to(to).emit("incoming-call", { from: socket.user?.id || socket.id, callerName });
+  });
+
+  socket.on("call-accepted", ({ to }) => {
+    io.to(to).emit("call-accepted", { from: socket.user?.id || socket.id });
+  });
+
+  socket.on("call-rejected", ({ to }) => {
+    io.to(to).emit("call-rejected", { from: socket.user?.id || socket.id });
+  });
+
+  socket.on("webrtc-signal", ({ to, payload }) => {
+    io.to(to).emit("webrtc-signal", { from: socket.user?.id || socket.id, payload });
+  });
+
   socket.on("disconnect", () => {
     console.log("User disconnected from workspace:", socket.id);
   });
