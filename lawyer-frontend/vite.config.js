@@ -3,7 +3,7 @@ import react from '@vitejs/plugin-react'
 import { VitePWA } from 'vite-plugin-pwa'
 
 export default defineConfig({
-  base: './',  // Required for Electron file:// loading
+  base: '/',  // Use '/' for Web (Cloudflare/Vercel). Change back to './' ONLY when building for Electron/Capacitor (Mobile/Desktop Apps)
   server: { port: 5174 },
   plugins: [
     react(),
