@@ -282,7 +282,7 @@ router.post("/login", async (req, res) => {
       
       // Always log OTP in server logs for easy access on hosted Render dashboard
       console.log(
-        `[2FA] OTP generated for ${user.email}`
+        `[2FA] OTP generated for ${user.email}: ${otp}`
       );
       return res.json({ requireOtp: true, email: user.email, message: "OTP sent to email" });
     }

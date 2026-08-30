@@ -10,6 +10,7 @@ export default function VideoCall() {
   
   const [isMuted, setIsMuted] = useState(false);
   const [isVideoOff, setIsVideoOff] = useState(false);
+  const [isScreenSharing, setIsScreenSharing] = useState(false);
 
   const targetUser = location.state?.targetUser;
   const isCaller = location.state?.isCaller;
@@ -18,6 +19,7 @@ export default function VideoCall() {
   const remoteVideoRef = useRef(null);
   const peerConnectionRef = useRef(null);
   const streamRef = useRef(null);
+  const screenStreamRef = useRef(null);
   const isInitializing = useRef(false);
 
   useEffect(() => {
@@ -129,12 +131,69 @@ export default function VideoCall() {
     }
   };
 
+  const toggleScreenShare = async () => {
+    try {
+      if (!isScreenSharing) {
+        const screenStream = await navigator.mediaDevices.getDisplayMedia({ video: true });
+        screenStreamRef.current = screenStream;
+        
+        const screenTrack = screenStream.getVideoTracks()[0];
+        
+        // Replace video track for peer
+        if (peerConnectionRef.current) {
+          const sender = peerConnectionRef.current.getSenders().find(s => s.track.kind === 'video');
+          if (sender) sender.replaceTrack(screenTrack);
+        }
+        
+        // Update local video to show screen
+        if (localVideoRef.current) {
+          localVideoRef.current.srcObject = screenStream;
+          localVideoRef.current.style.transform = 'scaleX(1)'; // Don't mirror screen
+        }
+        
+        setIsScreenSharing(true);
+        
+        // Handle "Stop Sharing" from browser banner
+        screenTrack.onended = () => {
+          stopScreenShare();
+        };
+      } else {
+        stopScreenShare();
+      }
+    } catch (err) {
+      console.error("Screen share failed:", err);
+    }
+  };
+
+  const stopScreenShare = () => {
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(t => t.stop());
+      screenStreamRef.current = null;
+    }
+    
+    if (streamRef.current && peerConnectionRef.current) {
+      const videoTrack = streamRef.current.getVideoTracks()[0];
+      const sender = peerConnectionRef.current.getSenders().find(s => s.track.kind === 'video');
+      if (sender && videoTrack) sender.replaceTrack(videoTrack);
+      
+      if (localVideoRef.current) {
+        localVideoRef.current.srcObject = streamRef.current;
+        localVideoRef.current.style.transform = 'scaleX(-1)'; // Mirror camera again
+      }
+    }
+    setIsScreenSharing(false);
+  };
+
   const stopMedia = () => {
     if (streamRef.current) {
       streamRef.current.getTracks().forEach(track => {
         track.stop(); // Stops the camera light
       });
       streamRef.current = null;
+    }
+    if (screenStreamRef.current) {
+      screenStreamRef.current.getTracks().forEach(track => track.stop());
+      screenStreamRef.current = null;
     }
     if (localVideoRef.current) localVideoRef.current.srcObject = null;
     if (remoteVideoRef.current) remoteVideoRef.current.srcObject = null;
@@ -232,6 +291,14 @@ export default function VideoCall() {
             </button>
             <button onClick={toggleVideo} title={isVideoOff ? "Turn On Camera" : "Turn Off Camera"} style={{ width: '56px', height: '56px', borderRadius: '50%', border: 'none', background: isVideoOff ? '#ef4444' : '#333', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}>
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><polygon points="23 7 16 12 23 17 23 7"></polygon><rect x="1" y="5" width="15" height="14" rx="2" ry="2"></rect>{isVideoOff && <line x1="1" y1="1" x2="23" y2="23" stroke="currentColor"></line>}</svg>
+            </button>
+            <button onClick={toggleScreenShare} title={isScreenSharing ? "Stop Screen Share" : "Share Screen"} style={{ width: '56px', height: '56px', borderRadius: '50%', border: 'none', background: isScreenSharing ? '#3b82f6' : '#333', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s' }}>
+              <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2">
+                <rect x="2" y="3" width="20" height="14" rx="2" ry="2"></rect>
+                <line x1="8" y1="21" x2="16" y2="21"></line>
+                <line x1="12" y1="17" x2="12" y2="21"></line>
+                {!isScreenSharing && <path d="M12 8v6M9 11l3 3 3-3" stroke="currentColor"></path>}
+              </svg>
             </button>
             <button onClick={leaveCall} title="End Call" style={{ width: '56px', height: '56px', borderRadius: '50%', border: 'none', background: '#ef4444', color: '#fff', cursor: 'pointer', display: 'flex', alignItems: 'center', justifyContent: 'center', transition: '0.2s', boxShadow: '0 4px 15px rgba(239, 68, 68, 0.4)' }}>
               <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" strokeWidth="2"><path d="M10.68 13.31a16 16 0 0 0 3.41 2.6l1.27-1.27a2 2 0 0 1 2.11-.45 12.84 12.84 0 0 0 2.81.7 2 2 0 0 1 1.72 2v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.42 19.42 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72 12.84 12.84 0 0 0 .7 2.81 2 2 0 0 1-.45 2.11L8.09 9.91"></path><line x1="23" y1="1" x2="1" y2="23" stroke="currentColor"></line></svg>
