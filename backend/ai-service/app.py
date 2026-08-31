@@ -676,8 +676,9 @@ LEGAL CONTEXT:
             payload = {
                 "model": "openai/gpt-oss-120b",
                 "messages": messages_list,
-                "temperature": 0.2,
-                "max_tokens": 3000
+                "temperature": 0.5,
+                "max_tokens": 3000,
+                "frequency_penalty": 0.5
             }
             res = requests.post(url, headers={"Authorization": f"Bearer {NVIDIA_API_KEY}"}, json=payload, timeout=60)
             data = res.json()
@@ -699,8 +700,9 @@ LEGAL CONTEXT:
             payload = {
                 "model": "qwen/qwen3.8-27b",
                 "messages": messages_list,
-                "temperature": 0.2,
-                "max_tokens": 3000
+                "temperature": 0.5,
+                "max_tokens": 3000,
+                "frequency_penalty": 0.5
             }
             res = requests.post(url, headers={"Authorization": f"Bearer {GROQ_API_KEY}"}, json=payload, timeout=30)
             data = res.json()
