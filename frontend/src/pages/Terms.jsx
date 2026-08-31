@@ -50,8 +50,11 @@ export default function Terms() {
       </section>
 
       <div style={{ borderTop: '1px solid var(--border)', paddingTop: '32px', marginTop: '40px', textAlign: 'center' }}>
-        <p style={{ fontSize: '14px', color: 'var(--muted)' }}>
+        <p style={{ fontSize: '14px', color: 'var(--muted)', marginBottom: '8px' }}>
           By checking the box during registration, you confirm that you have read, understood, and agreed to these terms.
+        </p>
+        <p style={{ fontSize: '14px', color: 'var(--muted)' }}>
+          © 2026 JurisBot AI. All Rights Reserved. Protected by International Software Copyrights.
         </p>
       </div>
     </div>

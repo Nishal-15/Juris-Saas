@@ -1,7 +1,0 @@
-<?xml version='1.0' encoding='utf-8'?>
-<resources>
-    <string name="app_name">JurisBot Citizen</string>
-    <string name="title_activity_main">JurisBot Citizen</string>
-    <string name="package_name">com.jurisbot.citizen</string>
-    <string name="custom_url_scheme">com.jurisbot.citizen</string>
-</resources>

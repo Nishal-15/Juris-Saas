@@ -235,7 +235,7 @@ No legal jargon."""
       url = ("https://integrate.api.nvidia.com"
              "/v1/chat/completions")
       payload = {
-        "model": "meta/llama-3.1-8b-instruct",
+        "model": "openai/gpt-oss-120b",
         "messages": [
           {"role":"system","content":system_prompt},
           {"role":"user","content":
@@ -264,7 +264,7 @@ No legal jargon."""
       url = ("https://api.groq.com"
              "/openai/v1/chat/completions")
       payload = {
-        "model": "llama-3.1-8b-instant",
+        "model": "qwen/qwen3.8-27b",
         "messages": [
           {"role":"system","content":system_prompt},
           {"role":"user","content":
@@ -671,15 +671,15 @@ LEGAL CONTEXT:
     NVIDIA_API_KEY = os.getenv("NVIDIA_API_KEY")
     if NVIDIA_API_KEY:
         try:
-            print("Sending to NVIDIA (meta/llama-3.1-8b-instruct)...", flush=True)
+            print("Sending to NVIDIA (openai/gpt-oss-120b)...", flush=True)
             url = "https://integrate.api.nvidia.com/v1/chat/completions"
             payload = {
-                "model": "meta/llama-3.1-8b-instruct",
+                "model": "openai/gpt-oss-120b",
                 "messages": messages_list,
                 "temperature": 0.2,
-                "max_tokens": 600
+                "max_tokens": 3000
             }
-            res = requests.post(url, headers={"Authorization": f"Bearer {NVIDIA_API_KEY}"}, json=payload, timeout=20)
+            res = requests.post(url, headers={"Authorization": f"Bearer {NVIDIA_API_KEY}"}, json=payload, timeout=60)
             data = res.json()
             if "choices" in data:
                 print("SUCCESS: NVIDIA responded successfully!", flush=True)
@@ -697,12 +697,12 @@ LEGAL CONTEXT:
             print("NVIDIA failed/timed out. Falling back to Groq...", flush=True)
             url = "https://api.groq.com/openai/v1/chat/completions"
             payload = {
-                "model": "llama-3.1-8b-instant",
+                "model": "qwen/qwen3.8-27b",
                 "messages": messages_list,
                 "temperature": 0.2,
-                "max_tokens": 600
+                "max_tokens": 3000
             }
-            res = requests.post(url, headers={"Authorization": f"Bearer {GROQ_API_KEY}"}, json=payload, timeout=10)
+            res = requests.post(url, headers={"Authorization": f"Bearer {GROQ_API_KEY}"}, json=payload, timeout=30)
             data = res.json()
             if "choices" in data:
                 print("SUCCESS: Groq responded successfully!", flush=True)
@@ -900,7 +900,7 @@ Format your response exactly like this:
             try:
                 url = "https://api.groq.com/openai/v1/chat/completions"
                 payload = {
-                    "model": "llama-3.1-8b-instant",
+                    "model": "qwen/qwen3.8-27b",
                     "messages": [
                         {"role": "system", "content": system_instruction},
                         {"role": "user", "content": f"Here is the document text:\n\n{truncated_text}"}
@@ -976,7 +976,7 @@ Date: _______
             try:
                 url = "https://api.groq.com/openai/v1/chat/completions"
                 payload = {
-                    "model": "llama-3.1-8b-instant",
+                    "model": "qwen/qwen3.8-27b",
                     "messages": [
                         {"role": "system", "content": system_instruction}
                     ],

@@ -20,6 +20,7 @@ import VideoCall from "./pages/VideoCall";
 import GlobalCallNotification from "./components/layout/GlobalCallNotification";
 import PwaInstallPill from "./components/common/PwaInstallPill";
 import Terms from "./pages/Terms";
+import Privacy from "./pages/Privacy";
 import CaseDetails from "./pages/CaseDetails";
 import Alerts from "./pages/Alerts";
 import ResetPassword from "./auth/ResetPassword";
@@ -119,7 +120,7 @@ export default function App() {
     <Route path="/register" element={<Register />} />
     <Route path="/reset-password/:token" element={<ResetPassword />} />
     <Route path="/terms" element={<Terms />} />
-
+    <Route path="/privacy" element={<Privacy />} />
 
       <Route path="/user" element={
         <ProtectedRoute allowedRoles={["user", "admin"]}><UserDashboard /></ProtectedRoute>
